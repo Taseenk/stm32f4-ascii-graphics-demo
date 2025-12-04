@@ -22,7 +22,7 @@
 /* externs -------------------------------------------------------------------*/
 
 /* function prototypes -------------------------------------------------------*/
-void consolePrint(UART_HandleTypeDef *huart, const char *str);
+HAL_StatusTypeDef consolePrint(UART_HandleTypeDef *huart, const char *str);
 HAL_StatusTypeDef consolePrintNewLine(UART_HandleTypeDef *huart, const char *str);
 
 #endif /* __CONSOLE_H */
