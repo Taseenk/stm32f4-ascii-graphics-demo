@@ -23,6 +23,7 @@
 
 /* function prototypes -------------------------------------------------------*/
 HAL_StatusTypeDef consolePrint(UART_HandleTypeDef *huart, const char *str);
+HAL_StatusTypeDef consolePrintN(UART_HandleTypeDef *huart, const char *str, size_t len);
 HAL_StatusTypeDef consolePrintNewLine(UART_HandleTypeDef *huart, const char *str);
 
 #endif /* __CONSOLE_H */

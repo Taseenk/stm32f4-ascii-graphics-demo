@@ -36,6 +36,26 @@ HAL_StatusTypeDef consolePrint(UART_HandleTypeDef *huart, const char *str)
 }
 
 /**
+ * @fn  HAL_StatusTypeDef consolePrintN(UART_HandleTypeDef *huart, const char *str, size_t len)
+ * @brief Prints a string of a specified length using the UART handle, avoiding strlen.
+ * @param huart A pointer to the UART_HandleTypeDef structure that contains
+ * the configuration information for the specified UART.
+ * @param str The string (or buffer) to transmit. Does not need to be null-terminated.
+ * @param len The exact number of bytes to transmit.
+ * @return HAL_StatusTypeDef status of the final HAL_UART_Transmit call.
+ */
+ HAL_StatusTypeDef consolePrintN(UART_HandleTypeDef *huart, const char *str, size_t len)
+{
+    // Ensure both the UART handle and the data pointer are not NULL
+    if (huart == NULL || str == NULL)
+        return HAL_ERROR;
+
+    // Call the HAL UART transmit function to send the specified number of bytes.
+    // HAL_MAX_DELAY ensures the function BLOCKS until all data is transmitted.
+    return HAL_UART_Transmit(huart, (uint8_t *)str, (uint16_t)len, HAL_MAX_DELAY);
+}
+
+/**
  * @fn HAL_StatusTypeDef consolePrintNewLine(UART_HandleTypeDef *huart, const char *str)
  * @brief Prints a null-terminated string followed by a newline using the
  * specified UART handle.
