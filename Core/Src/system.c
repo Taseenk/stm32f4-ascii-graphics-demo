@@ -63,36 +63,29 @@ void ConsoleProcessData(UART_HandleTypeDef *huart)
 	Rx_Message_t rx_message;
 
 	// Variables used to calculate and track positions within the circular buffer
-	size_t message_length, buffer_index, copy_index;
+	size_t message_length, buffer_index;
 
 	// Iterate through the newly received data
 	for (message_length = 0; message_length < rx_received_length; message_length++) {
 		// Calculate the absolute index for the circular buffer
 		buffer_index = (s_uart_rx.read_index + message_length) % UART_RX_BUFFER_SIZE;
 
+		// Check if the message is too long for the buffer to hold
+		if (message_length > sizeof(rx_message.message)) {
+			// Log a warning message
+			ConsolePrint(huart, "WARNING: Received message was too long");
+
+			// Update and save the new start reading position
+			s_uart_rx.read_index = (buffer_index + 1) % UART_RX_BUFFER_SIZE;
+
+			// Early exit problems with message length
+			return;
+		}
+
 		// Check if the end-of-message ('\r') delimiter is found
 		if (s_uart_rx.buffer[buffer_index] == CARRIAGE_RETURN) {
-			// Check if the message is too long for the buffer to hold
-			if (message_length > sizeof(rx_message.message)) {
-				// Log a warning message
-				ConsolePrint(huart, "WARNING: Received message was too long");
-
-				// Update and save the new start reading position
-				s_uart_rx.read_index = (buffer_index + 1) % UART_RX_BUFFER_SIZE;
-
-				// Early exit problems with message length
-				return;
-			}
-
 			// Log delimiter successfully found
 			ConsolePrint(huart, "DEBUG delimiter was found, Received: ");
-
-			// Iterate trough the received data to copy into the new buffer
-			for (copy_index = 0; copy_index < message_length; copy_index++) {
-				// Calculate the absolute index for the circular buffer
-				uint8_t sourceIndex = (s_uart_rx.read_index + copy_index) % UART_RX_BUFFER_SIZE;
-				rx_message.message[copy_index] = (char)s_uart_rx.buffer[sourceIndex];
-			}
 
 			// Null-terminate the message in the buffer
 			rx_message.message[message_length] = NULL_TERMINATOR;
@@ -110,5 +103,8 @@ void ConsoleProcessData(UART_HandleTypeDef *huart)
 			// Exit loop safely
 			return;
 		}
+
+		// If it no delimiter found, copy the character into the new buffer
+		rx_message.message[message_length] = (char)s_uart_rx.buffer[buffer_index];
 	}
 }
