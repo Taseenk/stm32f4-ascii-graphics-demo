@@ -33,7 +33,7 @@ void ConsoleReceiveInit(UART_HandleTypeDef *huart)
 	HAL_UART_Receive_DMA(huart, s_uart_rx.buffer, UART_RX_BUFFER_SIZE);
 
 	// Log successful initialization of the DMA transfer
-	consolePrint(huart, "DEBUG: DMA has been started\r\n\n");
+	ConsolePrint(huart, "DEBUG: DMA has been started\r\n\n");
 }
 
 /**
@@ -75,7 +75,7 @@ void ConsoleProcessData(UART_HandleTypeDef *huart)
 			// Check if the message is too long for the buffer to hold
 			if (message_length > sizeof(rx_message.message)) {
 				// Log a warning message
-				consolePrint(huart, "WARNING: Received message was too long");
+				ConsolePrint(huart, "WARNING: Received message was too long");
 
 				// Update and save the new start reading position
 				s_uart_rx.read_index = (buffer_index + 1) % UART_RX_BUFFER_SIZE;
@@ -85,7 +85,7 @@ void ConsoleProcessData(UART_HandleTypeDef *huart)
 			}
 
 			// Log delimiter successfully found
-			consolePrint(huart, "DEBUG delimiter was found, Received: ");
+			ConsolePrint(huart, "DEBUG delimiter was found, Received: ");
 
 			// Iterate trough the received data to copy into the new buffer
 			for (copy_index = 0; copy_index < message_length; copy_index++) {
@@ -101,7 +101,7 @@ void ConsoleProcessData(UART_HandleTypeDef *huart)
 			rx_message.length = message_length + 1;
 
 			// Print the received string
-			consolePrintNewLine(huart, rx_message.message);
+			ConsolePrintNewLine(huart, rx_message.message);
 
 			// Update and save the new start reading position
 			// Wrap the circular buffer back to the start using modulo (remainder)

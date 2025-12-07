@@ -8,19 +8,17 @@
 /* Includes ------------------------------------------------------------------*/
 #include "console.h"
 
-/* variables -----------------------------------------------------------------*/
-
 /* Functions -----------------------------------------------------------------*/
 
 /**
- * @fn HAL_StatusTypeDef consolePrint(UART_HandleTypeDef *huart, const char *str)
+ * @fn HAL_StatusTypeDef ConsolePrint(UART_HandleTypeDef *huart, const char *str)
  * @brief Prints a null-terminated string using the specified UART handle.
  * @param huart A pointer to the UART_HandleTypeDef structure that contains
  * the configuration information for the specified UART.
  * @param str The string to transmit
  * @return HAL_StatusTypeDef status of the final HAL_UART_Transmit call for the newline.
  */
-HAL_StatusTypeDef consolePrint(UART_HandleTypeDef *huart, const char *str)
+HAL_StatusTypeDef ConsolePrint(UART_HandleTypeDef *huart, const char *str)
 {
 	// Ensure both the UART handle and the data pointer are not NULL
 	if (huart == NULL || str == NULL)
@@ -36,7 +34,7 @@ HAL_StatusTypeDef consolePrint(UART_HandleTypeDef *huart, const char *str)
 }
 
 /**
- * @fn  HAL_StatusTypeDef consolePrintN(UART_HandleTypeDef *huart, const char *str, size_t len)
+ * @fn  HAL_StatusTypeDef ConsolePrintN(UART_HandleTypeDef *huart, const char *str, size_t len)
  * @brief Prints a string of a specified length using the UART handle, avoiding strlen.
  * @param huart A pointer to the UART_HandleTypeDef structure that contains
  * the configuration information for the specified UART.
@@ -44,19 +42,19 @@ HAL_StatusTypeDef consolePrint(UART_HandleTypeDef *huart, const char *str)
  * @param len The exact number of bytes to transmit.
  * @return HAL_StatusTypeDef status of the final HAL_UART_Transmit call.
  */
- HAL_StatusTypeDef consolePrintN(UART_HandleTypeDef *huart, const char *str, size_t len)
+HAL_StatusTypeDef ConsolePrintN(UART_HandleTypeDef *huart, const char *str, size_t len)
 {
-    // Ensure both the UART handle and the data pointer are not NULL
-    if (huart == NULL || str == NULL)
-        return HAL_ERROR;
+	// Ensure both the UART handle and the data pointer are not NULL
+	if (huart == NULL || str == NULL)
+		return HAL_ERROR;
 
-    // Call the HAL UART transmit function to send the specified number of bytes.
-    // HAL_MAX_DELAY ensures the function BLOCKS until all data is transmitted.
-    return HAL_UART_Transmit(huart, (uint8_t *)str, (uint16_t)len, HAL_MAX_DELAY);
+	// Call the HAL UART transmit function to send the specified number of bytes.
+	// HAL_MAX_DELAY ensures the function BLOCKS until all data is transmitted.
+	return HAL_UART_Transmit(huart, (uint8_t *)str, (uint16_t)len, HAL_MAX_DELAY);
 }
 
 /**
- * @fn HAL_StatusTypeDef consolePrintNewLine(UART_HandleTypeDef *huart, const char *str)
+ * @fn HAL_StatusTypeDef ConsolePrintNewLine(UART_HandleTypeDef *huart, const char *str)
  * @brief Prints a null-terminated string followed by a newline using the
  * specified UART handle.
  * @param huart A pointer to the UART_HandleTypeDef structure that contains
@@ -64,20 +62,20 @@ HAL_StatusTypeDef consolePrint(UART_HandleTypeDef *huart, const char *str)
  * @param str The string to transmit
  * @return HAL_StatusTypeDef status of the final HAL_UART_Transmit call for the newline.
  */
-HAL_StatusTypeDef consolePrintNewLine(UART_HandleTypeDef *huart, const char *str)
+HAL_StatusTypeDef ConsolePrintNewLine(UART_HandleTypeDef *huart, const char *str)
 {
 	// Ensure both the UART handle and the data pointer are not NULL
 	if (huart == NULL || str == NULL)
 		// Return an error status on invalid input
 		return HAL_ERROR;
 
-	// Use the existing consolePrint helper function to send the string
-	HAL_StatusTypeDef status = consolePrint(huart, str);
+	// Use the existing ConsolePrint helper function to send the string
+	HAL_StatusTypeDef status = ConsolePrint(huart, str);
 
 	// If the string failed to send, return the error
 	if (status != HAL_OK) {
-        return status;
-    }
+		return status;
+	}
 
 	// Call the HAL UART transmit function and send newline characters "\r\n" excluding the null terminator
 	// Will return the status of the HAL UART transmit
