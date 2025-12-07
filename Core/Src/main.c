@@ -103,7 +103,7 @@ int main(void)
   MX_USB_HOST_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-	consoleReceiveInit(&huart2);
+	ConsoleReceiveInit(&huart2);
 
   /* USER CODE END 2 */
 
@@ -115,7 +115,7 @@ int main(void)
     MX_USB_HOST_Process();
 
     /* USER CODE BEGIN 3 */
-		consoleProcessData(&huart2);
+		ConsoleProcessData(&huart2);
 	}
   /* USER CODE END 3 */
 }
