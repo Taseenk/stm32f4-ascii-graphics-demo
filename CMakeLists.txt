@@ -47,6 +47,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     Core/Src/console.c
     Core/Src/system.c
+    Core/Src/renderer.c
 )
 
 # Add include paths
