@@ -26,7 +26,9 @@
 typedef struct {
 	uint8_t ascii_code;         // The character this entry represents (e.g., 'A', 'a', '!')
 	uint8_t start_offset_rle;   // The starting index in the font's raw RLE data array
-    uint8_t data_length_rle;    // The total length (in bytes) of this character's RLE data
+    uint8_t end_offset_rle;     // The ending index in the font's raw RLE data array
+    uint8_t col_width;          // The maximum width of the character in columns
+	uint8_t row_height;         // The height of the character in rows
 } Charachter_Font_t;
 
 typedef struct {
@@ -34,8 +36,6 @@ typedef struct {
     const Charachter_Font_t *lookup_table;
     const size_t table_size; 
     const uint8_t *rle_data;
-    const uint8_t col_width;                // The maximum width of the character in columns
-	const uint8_t row_height;               // The height of the character in rows
 } Font_t;
 
 /* Private Variables ---------------------------------------------------------*/
