@@ -48,7 +48,7 @@ const Charachter_Font_t *CharachterLookup(UART_HandleTypeDef *huart, char font_c
  */
 void DecodeCharachterRle(UART_HandleTypeDef *huart, char *str, const Font_t *font)
 {
-	// Extract the character to be decoded and find the RLE data (offset and length)
+	// Extract the character to be decoded and find the RLE data (start-offset, end-offset,width and height)
 	char font_char = str[0];
 	const Charachter_Font_t *lookup = CharachterLookup(huart, font_char, font);
 
@@ -62,9 +62,46 @@ void DecodeCharachterRle(UART_HandleTypeDef *huart, char *str, const Font_t *fon
 
 	// Get the RLE data offsets from the lookup entry
 	uint8_t start_offset = lookup->start_offset_rle;
-	uint8_t end_offset = lookup->data_length_rle;
+	uint8_t end_offset = lookup->end_offset_rle;
 
 	// Font character dimensions used for sizing the output buffer
-	uint8_t col = font->col_width;
-	uint8_t row = font->row_height;
+	uint8_t col = lookup->col_width;
+	uint8_t row = lookup->row_height;
+
+	// Prepare a buffer for one row, size temporary set to col + 3 (to fit largest font + \r\n + \0)
+	char decoded_row_buffer[13]; 
+
+	// Initializing indexes for RLE data and decoded buffer
+	uint8_t rle_index = 0, decoder_index = 0, multiplier = 0;
+	char character_code;
+
+	// Outerloop for itterating through the rle font data array
+	for (rle_index = start_offset; rle_index < end_offset; rle_index += 2) {
+		// Read the multiplier (Count) from the RLE data array
+		multiplier = font->rle_data[rle_index];
+
+		// Read the character code from the next byte
+		character_code = (char)font->rle_data[rle_index + 1];
+
+		// Write the character code 'multiplier' number of times
+		for (int i = 0; i < multiplier; i++) {
+			// Write the character code into the decoded buffer
+            decoded_row_buffer[decoder_index] = character_code;
+
+            // Increment the decoder index
+            decoder_index++;
+
+			// Check if the current row is now full
+            if (decoder_index == col) {
+                // Terminate and print the row
+                decoded_row_buffer[col] = '\r';
+                decoded_row_buffer[col + 1] = '\n';
+                decoded_row_buffer[col + 2] = '\0'; // Note: Using col for clarity
+                ConsolePrint(huart, decoded_row_buffer);
+
+                // Reset the decoder index for the next row
+                decoder_index = 0;
+            }
+		}
+	}
 }

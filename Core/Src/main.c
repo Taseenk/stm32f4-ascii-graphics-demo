@@ -30,6 +30,8 @@
 /* USER CODE BEGIN Includes */
 #include "console.h"
 #include "system.h"
+#include "renderer.h"
+#include "big_money_nw_font.h"
 
 /* USER CODE END Includes */
 
@@ -104,6 +106,8 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 	ConsoleReceiveInit(&huart2);
+  ConsoleClearAndHome(&huart2);
+  DecodeCharachterRle(&huart2, "b", &font_big_money_nw);
 
   /* USER CODE END 2 */
 
