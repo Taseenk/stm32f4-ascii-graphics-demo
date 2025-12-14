@@ -8,8 +8,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "renderer.h"
 
-/* Private Variables ---------------------------------------------------------*/
-
 /* Functions -----------------------------------------------------------------*/
 /**
  * @fn const Charachter_Font_t *CharachterLookup(UART_HandleTypeDef *huart, char font_char, const Font_t *font)
@@ -23,13 +21,17 @@
  */
 const Charachter_Font_t *CharachterLookup(UART_HandleTypeDef *huart, char font_char, const Font_t *font)
 {
-	// Iterate through the font's lookup table
-	for (uint8_t i = 0; i < font->table_size; i++) {
-		// Check if the current entry's ASCII code matches the character
-		if (font->lookup_table[i].ascii_code == font_char)
-			// Return the adress to the matching entry structure
-			return &font->lookup_table[i];
-	}
+	// Calculate the starting ASCII code for the lookup table
+	const uint8_t start_ascii_code = 32;
+
+	// Calculate the expected index
+    uint8_t index = (uint8_t)font_char - start_ascii_code;
+
+	// Check if the calculated index is within the valid range
+	if (index >= 0 && (index < (uint8_t)font->table_size)) {
+		// Verify that the ASCII code at the calculated index matches the requested character
+        return &font->lookup_table[index];
+    }
 
 	// Log a warning message that the character was not recognized
 	ConsolePrintNewLine(huart, "ERROR: Character was not recognized");
@@ -69,7 +71,7 @@ void DecodeCharachterRle(UART_HandleTypeDef *huart, char *str, const Font_t *fon
 	uint8_t row = lookup->row_height;
 
 	// Prepare a buffer for one row, size temporary set to col + 3 (to fit largest font + \r\n + \0)
-	char decoded_row_buffer[13]; 
+	char decoded_row_buffer[13];
 
 	// Initializing indexes for RLE data and decoded buffer
 	uint8_t rle_index = 0, decoder_index = 0, multiplier = 0;
