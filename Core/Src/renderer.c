@@ -63,8 +63,8 @@ void DecodeCharachterRle(UART_HandleTypeDef *huart, char *str, const Font_t *fon
 	}
 
 	// Get the RLE data offsets from the lookup entry
-	uint8_t start_offset = lookup->start_offset_rle;
-	uint8_t end_offset = lookup->end_offset_rle;
+	uint16_t start_offset = lookup->start_offset_rle;
+	uint16_t end_offset = lookup->end_offset_rle;
 
 	// Font character dimensions used for sizing the output buffer
 	uint8_t col = lookup->col_width;
@@ -74,13 +74,14 @@ void DecodeCharachterRle(UART_HandleTypeDef *huart, char *str, const Font_t *fon
 	char decoded_row_buffer[13];
 
 	// Initializing indexes for RLE data and decoded buffer
-	uint8_t rle_index = 0, decoder_index = 0, multiplier = 0;
+	uint16_t rle_index = 0;
+	uint8_t decoder_index = 0, multiplier = 0;
 	char character_code;
 
 	// Outerloop for itterating through the rle font data array
 	for (rle_index = start_offset; rle_index < end_offset; rle_index += 2) {
 		// Read the multiplier (Count) from the RLE data array
-		multiplier = font->rle_data[rle_index];
+		multiplier = (uint8_t)font->rle_data[rle_index];
 
 		// Read the character code from the next byte
 		character_code = (char)font->rle_data[rle_index + 1];
