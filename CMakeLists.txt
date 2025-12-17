@@ -50,6 +50,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Core/Src/renderer.c
     Fonts/Src/big_money_nw_font.c
     Fonts/Src/fender_font.c
+    Fonts/Src/doom_font.c
 )
 
 # Add include paths
