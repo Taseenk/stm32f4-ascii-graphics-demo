@@ -48,11 +48,13 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Core/Src/console.c
     Core/Src/system.c
     Core/Src/renderer.c
+    Fonts/Src/big_money_nw_font.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+    Fonts/Inc
 )
 
 # Add project symbols (macros)
