@@ -1,12 +1,12 @@
 /**
  ******************************************************************************
- * @file           : renderer.h
+ * @file           : gfx_text.h
  * @brief          :
  ******************************************************************************
  */
 
-#ifndef __RENDERER_H
-#define __RENDERER_H
+#ifndef __GFX_TEXT_H
+#define __GFX_TEXT_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -45,4 +45,4 @@ typedef struct {
 const Charachter_Font_t *CharachterLookup(UART_HandleTypeDef *huart, char font_char, const Font_t *font);
 void DecodeCharachterRle(UART_HandleTypeDef *huart, char *str, const Font_t *font);
 
-#endif /* __RENDERER_H */
+#endif /* __GFX_TEXT_H */

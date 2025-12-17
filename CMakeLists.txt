@@ -47,7 +47,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     Core/Src/console.c
     Core/Src/system.c
-    Core/Src/renderer.c
+    Core/Src/gfx_text.c
     Fonts/Src/big_money_nw_font.c
     Fonts/Src/fender_font.c
     Fonts/Src/doom_font.c

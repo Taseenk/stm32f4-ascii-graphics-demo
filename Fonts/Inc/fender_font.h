@@ -12,7 +12,7 @@
 #include "main.h"
 
 // User includes
-#include "renderer.h"
+#include "gfx_text.h"
 
 /* defines -------------------------------------------------------------------*/
 // ASCII printable characters (character code 32-127)

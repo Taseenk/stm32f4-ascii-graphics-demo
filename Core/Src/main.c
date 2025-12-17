@@ -30,7 +30,7 @@
 /* USER CODE BEGIN Includes */
 #include "console.h"
 #include "system.h"
-#include "renderer.h"
+#include "gfx_text.h"
 #include "big_money_nw_font.h"
 
 /* USER CODE END Includes */
