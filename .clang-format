@@ -1,0 +1,12 @@
+BreakBeforeBraces: Linux
+
+# General Style & Layout -------------------------------------------------------------- #
+# Inherit a base style (like LLVM, Google, WebKit, etc.)
+BasedOnStyle: Microsoft
+
+# The number of spaces used for a single level of indentation
+IndentWidth: 4
+UseTab: ForIndentation
+
+# The indentation width used for wrapped lines (e.g., arguments split across multiple lines).
+ContinuationIndentWidth: 4

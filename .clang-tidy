@@ -1,0 +1,16 @@
+Checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  misc-*,
+  readability-*,
+  portability-*,
+  llvm-header-guard,
+
+  -*,
+  -cppcoreguidelines-*,
+  -hicpp-*,
+  -modernize-*,
+  -cert-*-cpp,
+  -performance-no-int-to-ptr
+WarningsAsErrors: ''
+HeaderFilterRegex: "(.*(Core|Drivers).*|.*startup_.*\\.s)"
