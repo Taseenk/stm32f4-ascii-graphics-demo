@@ -18,6 +18,6 @@
 
 
 /* Function prototypes -------------------------------------------------------*/
-
+uint8_t ConsolePrint(const char *str);
 
 #endif /* __TERMINAL_H */
