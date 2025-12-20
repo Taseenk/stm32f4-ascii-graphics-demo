@@ -31,6 +31,8 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#define TRUE    1   // Boolean True
+#define FALSE   0   // Boolean False
 
 /* USER CODE END Includes */
 
