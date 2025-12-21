@@ -12,6 +12,7 @@
 #include "stm32f4xx_hal_uart.h"
 
 // Standard libraries
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -37,6 +38,33 @@ uint8_t ConsolePrint(const char *str)
 
 	// Calculate the number of characters/bytes to send
 	uint16_t len = (uint16_t)strlen(str);
+
+    // Call the HAL UART transmit function to send the string
+	// HAL_MAX_DELAY ensures the function BLOCKS until all data is transmitted
+	// Will return the status of the HAL UART transmit
+    HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)str, len, HAL_MAX_DELAY);
+
+    // Check if the transmission was successful
+    if (status != HAL_OK) {
+        return FALSE; 
+    }
+
+    // Return Transmission successful
+    return TRUE;
+}
+
+/**
+ * @fn  uint8_t ConsolePrintN(const char *str, uint16_t len)
+ * @brief Prints a string of a specified length using the UART handle, avoiding strlen.
+ * @param str The string (or buffer) to transmit. Does not need to be null-terminated.
+ * @param len The exact number of bytes to transmit.
+ * @return TRUE if transmission was successful, FALSE otherwise.
+ */
+uint8_t ConsolePrintN(const char *str, uint16_t len)
+{
+    // Ensure both the UART handle and the data pointer are not NULL
+	if (p_uart->Instance == NULL || str == NULL)
+		return FALSE;
 
     // Call the HAL UART transmit function to send the string
 	// HAL_MAX_DELAY ensures the function BLOCKS until all data is transmitted

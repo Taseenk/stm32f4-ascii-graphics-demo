@@ -20,6 +20,7 @@
 
 /* Function prototypes -------------------------------------------------------*/
 uint8_t ConsolePrint(const char *str);
+uint8_t ConsolePrintN(const char *str, uint16_t len);
 uint8_t ConsolePrintNewLine(const char *str);
 uint8_t ConsolePrintDMA(const char *str);
 
