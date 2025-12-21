@@ -19,5 +19,6 @@
 
 /* Function prototypes -------------------------------------------------------*/
 uint8_t ConsolePrint(const char *str);
+uint8_t ConsolePrintDMA(const char *str);
 
 #endif /* __TERMINAL_H */

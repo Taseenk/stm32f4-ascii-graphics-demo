@@ -51,3 +51,37 @@ uint8_t ConsolePrint(const char *str)
     // Return Transmission successful
     return TRUE;
 }
+
+/**
+ * @fn uint8_t ConsolePrintDMA(const char *str)
+ * @brief Prints a null-terminated string using DMA (Non-blocking)
+ * @param str The string to transmit (Must remain valid until transmission completes)
+ * @return TRUE if transmission was started successfully, FALSE otherwise.
+*/
+uint8_t ConsolePrintDMA(const char *str)
+{
+    // Ensure both the UART handle and the data pointer are not NULL
+	if (p_uart->Instance == NULL || str == NULL)
+		return FALSE;
+
+    // Ensure the UART is ready for a new transmission
+    if (p_uart->gState != HAL_UART_STATE_READY)
+        return FALSE;
+
+    // Calculate the number of characters/bytes to send
+    uint16_t len = (uint16_t)strlen(str);
+
+    // Start the DMA transmission
+    // Will return the status of the UART DMA transmit
+    HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(p_uart, (uint8_t *)str, len);
+
+    // Check if the DMA started correctly
+    if (status != HAL_OK) {
+        // Return transmission failed or UART is already busy with another DMA transmission
+        return FALSE; 
+    }
+
+    // Return Transmission successful
+    return TRUE;
+}
+
