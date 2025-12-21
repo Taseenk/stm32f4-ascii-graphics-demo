@@ -19,9 +19,15 @@
 /* Defines -------------------------------------------------------------------*/
 
 
-/* Variables -----------------------------------------------------------------*/
-extern UART_HandleTypeDef huart2;
-static UART_HandleTypeDef *p_uart = &huart2;
+/* Private Variables ---------------------------------------------------------*/
+typedef struct{
+	volatile uint8_t buffer[UART_BUFFER_SIZE];  // Circular buffer to store incoming UART data via DMA
+	uint8_t read_index;                         // Read/Start position in the RxBuffer
+}UART_RxDmaBuffer_t;
+
+extern UART_HandleTypeDef huart2;               // UART handle defined in usart
+static UART_HandleTypeDef *p_uart = &huart2;    // Private pointer to the UART handle used for terminal I/O
+static UART_RxDmaBuffer_t s_uart_rx = {0};      // Holds the state for UART DMA Rx
 
 /* Functions -----------------------------------------------------------------*/
 /**
@@ -117,39 +123,6 @@ uint8_t TerminalPrintNewLine(const char *str)
 }
 
 /**
- * @fn uint8_t TerminalPrintDMA(const char *str)
- * @brief Prints a null-terminated string using DMA (Non-blocking)
- * @param str The string to transmit (Must remain valid until transmission completes)
- * @return TRUE if transmission was started successfully, FALSE otherwise.
-*/
-uint8_t TerminalPrintDMA(const char *str)
-{
-    // Ensure both the UART handle and the data pointer are not NULL
-	if (p_uart->Instance == NULL || str == NULL)
-		return FALSE;
-
-    // Ensure the UART is ready for a new transmission
-    if (p_uart->gState != HAL_UART_STATE_READY)
-        return FALSE;
-
-    // Calculate the number of characters/bytes to send
-    uint16_t len = (uint16_t)strlen(str);
-
-    // Start the DMA transmission
-    // Will return the status of the UART DMA transmit
-    HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(p_uart, (uint8_t *)str, len);
-
-    // Check if the DMA started correctly
-    if (status != HAL_OK) {
-        // Return transmission failed or UART is already busy with another DMA transmission
-        return FALSE; 
-    }
-
-    // Return Transmission successful
-    return TRUE;
-}
-
-/**
  * @fn void TerminalCursorHome(void)
  * @brief Sends the ANSI escape sequence to move the terminal cursor to the home position (1,1).
  * This function uses the ANSI_CURSOR_HOME (ESC[H) to quickly reposition
@@ -212,4 +185,59 @@ void TerminalSetCursorPos(uint8_t row, uint8_t col)
 
 	// Transmit the escape sequence via using the precise length calculated by sprintf
     TerminalPrintN(buffer, (uint16_t)len);
+}
+
+/**
+ * @fn uint8_t TerminalPrintDMA(const char *str)
+ * @brief Prints a null-terminated string using DMA (Non-blocking)
+ * @param str The string to transmit (Must remain valid until transmission completes)
+ * @return TRUE if transmission was started successfully, FALSE otherwise.
+*/
+uint8_t TerminalPrintDMA(const char *str)
+{
+    // Ensure both the UART handle and the data pointer are not NULL
+	if (p_uart->Instance == NULL || str == NULL)
+		return FALSE;
+
+    // Ensure the UART is ready for a new transmission
+    if (p_uart->gState != HAL_UART_STATE_READY)
+        return FALSE;
+
+    // Calculate the number of characters/bytes to send
+    uint16_t len = (uint16_t)strlen(str);
+
+    // Start the DMA transmission
+    // Will return the status of the UART DMA transmit
+    HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(p_uart, (uint8_t *)str, len);
+
+    // Check if the DMA started correctly
+    if (status != HAL_OK) {
+        // Return transmission failed or UART is already busy with another DMA transmission
+        return FALSE; 
+    }
+
+    // Return Transmission successful
+    return TRUE;
+}
+
+/**
+ * @fn void TerminalReceiveInit(void)
+ * @brief Initializes the console reception via UART in DMA mode in circular buffer.
+ * Allowing data to be transferred directly into a buffer in the background without
+ * constant CPU intervention. It resets the internal state and starts the DMA transfer process.
+ */
+void TerminalReceiveInit(void)
+{
+    // Ensure the UART handle are not NULL
+	if (p_uart->Instance == NULL)
+		return;
+
+    // Reset structures before starting
+	s_uart_rx.read_index = 0;
+
+    // Start the reception of UART data in DMA mode
+	HAL_UART_Receive_DMA(p_uart, (uint8_t *)s_uart_rx.buffer, (uint16_t )UART_BUFFER_SIZE);
+
+    // Log successful initialization of the DMA transfer
+	TerminalPrint("DEBUG: DMA has been started\r\n\n");
 }
