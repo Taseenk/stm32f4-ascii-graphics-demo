@@ -25,12 +25,12 @@ static UART_HandleTypeDef *p_uart = &huart2;
 
 /* Functions -----------------------------------------------------------------*/
 /**
- * @fn uint8_t ConsolePrint(const char *str)
+ * @fn uint8_t TerminalPrint(const char *str)
  * @brief Prints a null-terminated string using the private UART handle
  * @param str The string to transmit
  * @return TRUE if transmission was successful, FALSE otherwise.
 */
-uint8_t ConsolePrint(const char *str)
+uint8_t TerminalPrint(const char *str)
 {
 	// Ensure both the UART handle and the data pointer are not NULL
 	if (p_uart->Instance == NULL || str == NULL)
@@ -54,13 +54,13 @@ uint8_t ConsolePrint(const char *str)
 }
 
 /**
- * @fn  uint8_t ConsolePrintN(const char *str, uint16_t len)
+ * @fn  uint8_t TerminalPrintN(const char *str, uint16_t len)
  * @brief Prints a string of a specified length using the UART handle, avoiding strlen.
  * @param str The string (or buffer) to transmit. Does not need to be null-terminated.
  * @param len The exact number of bytes to transmit.
  * @return TRUE if transmission was successful, FALSE otherwise.
  */
-uint8_t ConsolePrintN(const char *str, uint16_t len)
+uint8_t TerminalPrintN(const char *str, uint16_t len)
 {
     // Ensure both the UART handle and the data pointer are not NULL
 	if (p_uart->Instance == NULL || str == NULL)
@@ -81,12 +81,12 @@ uint8_t ConsolePrintN(const char *str, uint16_t len)
 }
 
 /**
- * @fn uint8_t ConsolePrintNewLine(const char *str)
+ * @fn uint8_t TerminalPrintNewLine(const char *str)
  * @brief Prints a null-terminated string followed by a newline using the private UART handle
  * @param str The string to transmit
  * @return TRUE if transmission was successful, FALSE otherwise.
 */
-uint8_t ConsolePrintNewLine(const char *str)
+uint8_t TerminalPrintNewLine(const char *str)
 {
     // Ensure both the UART handle and the data pointer are not NULL
 	if (p_uart->Instance == NULL || str == NULL)
@@ -117,12 +117,12 @@ uint8_t ConsolePrintNewLine(const char *str)
 }
 
 /**
- * @fn uint8_t ConsolePrintDMA(const char *str)
+ * @fn uint8_t TerminalPrintDMA(const char *str)
  * @brief Prints a null-terminated string using DMA (Non-blocking)
  * @param str The string to transmit (Must remain valid until transmission completes)
  * @return TRUE if transmission was started successfully, FALSE otherwise.
 */
-uint8_t ConsolePrintDMA(const char *str)
+uint8_t TerminalPrintDMA(const char *str)
 {
     // Ensure both the UART handle and the data pointer are not NULL
 	if (p_uart->Instance == NULL || str == NULL)
@@ -149,3 +149,67 @@ uint8_t ConsolePrintDMA(const char *str)
     return TRUE;
 }
 
+/**
+ * @fn void TerminalCursorHome(void)
+ * @brief Sends the ANSI escape sequence to move the terminal cursor to the home position (1,1).
+ * This function uses the ANSI_CURSOR_HOME (ESC[H) to quickly reposition
+ * the cursor to the top-left corner of the terminal screen.
+*/
+void TerminalCursorHome(void)
+{
+    // Transmit the ANSI command string for moving the cursor to (1,1)
+	TerminalPrint( ANSI_CURSOR_HOME);
+}
+
+/**
+ * @fn void TerminalClearScreen(void)
+ * @brief Sends the ANSI escape sequence to clear the entire terminal screen.
+ * This function uses the CLEAR_SCREEN (ESC[2J) to erase all content
+ * displayed in the terminal window.
+ */
+void TerminalClearScreen(void)
+{
+    // Transmit the ANSI command string for clearing the entire screen
+	TerminalPrint( ANSI_CLEAR_SCREEN);
+}
+
+/**
+ * @fn void TerminalClearAndHome(void)
+ * @brief Sends the combined ANSI escape sequence to clear the screen AND move the cursor to home (1,1).
+ * This function uses the ANSI_CLS_HOME define (ESC[2JESC[H).
+ */
+void TerminalClearAndHome(void)
+{
+	// Transmit the combined ANSI command string for clearing the screen and setting the cursor to home (1,1)
+	TerminalPrint( ANSI_CLS_HOME);
+}
+
+/**
+ * @fn void TerminalSetCursorPos(uint8_t row, uint8_t col)
+ * @brief Sends the ANSI escape sequence to explicitly set the terminal cursor position.
+ * The ANSI command format is ESC[<row>;<col>H.
+ * @param row The target row number (1-based index).
+ * @param col The target column number (1-based index).
+ */
+void TerminalSetCursorPos(uint8_t row, uint8_t col)
+{
+	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H)
+	char buffer[16];
+
+	// Make row and column always be 1 or greater for ANSI terminals
+	if (row == 0)
+		row = 1;
+	if (col == 0)
+		col = 1;
+
+	// Format the escape sequence to move the cursor and return the length
+	// The length here is without the string terminator (\0)
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%u;%uH", (unsigned int)row, (unsigned int)col);
+
+	// Check if sprintf failed (len < 0) or if the formatted string exceeded the buffer size
+	if (len <= 0 || (size_t)len >= sizeof(buffer))
+        return;
+
+	// Transmit the escape sequence via using the precise length calculated by sprintf
+    TerminalPrintN(buffer, (uint16_t)len);
+}
