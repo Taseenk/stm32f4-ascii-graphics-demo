@@ -1,9 +1,9 @@
 /**
-  ******************************************************************************
-  * @file           : terminal.h
-  * @brief          : 
-  ******************************************************************************
-*/
+ ******************************************************************************
+ * @file           : terminal.h
+ * @brief          :
+ ******************************************************************************
+ */
 
 #ifndef __TERMINAL_H
 #define __TERMINAL_H
@@ -12,25 +12,28 @@
 #include "main.h"
 
 /* Defines -------------------------------------------------------------------*/
-#define UART_BUFFER_SIZE    128      	// Size of the buffer for UART Rx/Tx (in bytes)
-#define TERMINAL_EOL        "\r\n"    // End of line characters for the terminal
-#define CARRIAGE_RETURN     "\r"      // Delimiter character to signify the end of a message
-#define NULL_TERMINATOR			"\0"      // String termination character
+#define UART_BUFFER_SIZE 128 // Size of the buffer for UART Rx/Tx (in bytes)
+#define TERMINAL_EOL "\r\n"  // End of line characters for the terminal
+#define CARRIAGE_RETURN '\r' // Delimiter character to signify the end of a message
+#define NULL_TERMINATOR '\0' // String termination character
 
 // Standard ANSI terminal control codes
-#define ANSI_ESC                "\x1b["         // The standard ANSI Escape sequence initiator
-#define ANSI_CURSOR_HOME        ANSI_ESC "H"    // Move cursor to home (1,1): ESC [ H
-#define ANSI_CLEAR_SCREEN       ANSI_ESC "2J"   // Clear the entire screen: ESC [ 2 J
-#define ANSI_CLEAR_LINE         ANSI_ESC "2K"   // Clear the entire current line: ESC [ 2 K
-#define ANSI_CURSOR_INVISIBLE   ANSI_ESC "?25l" // Hide the cursor: ESC [ ? 25 l
-#define ANSI_CURSOR_VISIBLE     ANSI_ESC "?25h" // Show the cursor: ESC [ ? 25 h
+#define ANSI_ESC "\x1b["                      // The standard ANSI Escape sequence initiator
+#define ANSI_CURSOR_HOME ANSI_ESC "H"         // Move cursor to home (1,1): ESC [ H
+#define ANSI_CLEAR_SCREEN ANSI_ESC "2J"       // Clear the entire screen: ESC [ 2 J
+#define ANSI_CLEAR_LINE ANSI_ESC "2K"         // Clear the entire current line: ESC [ 2 K
+#define ANSI_CURSOR_INVISIBLE ANSI_ESC "?25l" // Hide the cursor: ESC [ ? 25 l
+#define ANSI_CURSOR_VISIBLE ANSI_ESC "?25h"   // Show the cursor: ESC [ ? 25 h
 
 // ANSI Common combination control codes
-#define ANSI_CLS_HOME       ANSI_CLEAR_SCREEN ANSI_CURSOR_HOME
-#define ANSI_HIDE_CLS_HOME  ANSI_CURSOR_INVISIBLE ANSI_CLS_HOME
+#define ANSI_CLS_HOME ANSI_CLEAR_SCREEN ANSI_CURSOR_HOME
+#define ANSI_HIDE_CLS_HOME ANSI_CURSOR_INVISIBLE ANSI_CLS_HOME
 
-/* Externs -------------------------------------------------------------------*/
-
+/* typedefs ------------------------------------------------------------------*/
+typedef struct {
+	char message[UART_BUFFER_SIZE]; // The extracted, null-terminated string.
+	size_t length;                  // The actual length of the message (excluding the null terminator).
+} Rx_Message_t;
 
 /* Function prototypes -------------------------------------------------------*/
 // Basic terminal output functions
@@ -47,5 +50,6 @@ void TerminalSetCursorPos(uint8_t row, uint8_t col);
 // DMA based functions
 uint8_t TerminalPrintDMA(const char *str);
 void TerminalReceiveInit(void);
+void TerminalProcessData(void);
 
 #endif /* __TERMINAL_H */
