@@ -235,6 +235,9 @@ void TerminalReceiveInit(void)
     // Reset structures before starting
 	s_uart_rx.read_index = 0;
 
+    // Stop any ongoing DMA reception before starting a new one
+    HAL_UART_DMAStop(p_uart);
+
     // Start the reception of UART data in DMA mode
 	HAL_UART_Receive_DMA(p_uart, (uint8_t *)s_uart_rx.buffer, (uint16_t )UART_BUFFER_SIZE);
 
