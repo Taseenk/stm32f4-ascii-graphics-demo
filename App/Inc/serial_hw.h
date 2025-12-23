@@ -28,8 +28,8 @@ extern Rx_Message_t rx_message; // Structure to hold the incoming rx message
 
 /* Function prototypes -------------------------------------------------------*/
 // Basic terminal output functions
-uint8_t SerialPrint(const char *str);
 uint8_t SerialPrintN(const char *str, uint16_t len);
+uint8_t SerialPrint(const char *str);
 uint8_t SerialPrintLn(const char *str);
 
 // DMA related functions

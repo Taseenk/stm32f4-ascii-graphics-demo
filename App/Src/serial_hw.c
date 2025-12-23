@@ -28,35 +28,6 @@ Rx_Message_t rx_message;                     // Global structure to hold the inc
 
 /* Functions -----------------------------------------------------------------*/
 /**
- * @fn uint8_t SerialPrint(const char *str)
- * @brief Prints a null-terminated string using the private UART handle
- * @param str The string to transmit
- * @return TRUE if transmission was successful, FALSE otherwise.
- */
-uint8_t SerialPrint(const char *str)
-{
-	// Ensure both the UART handle and the data pointer are not NULL
-	if (p_uart->Instance == NULL || str == NULL)
-		return FALSE;
-
-	// Calculate the number of characters/bytes to send
-	uint16_t len = (uint16_t)strlen(str);
-
-	// Call the HAL UART transmit function to send the string
-	// HAL_MAX_DELAY ensures the function BLOCKS until all data is transmitted
-	// Will return the status of the HAL UART transmit
-	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)str, len, HAL_MAX_DELAY);
-
-	// Check if the transmission was successful
-	if (status != HAL_OK) {
-		return FALSE;
-	}
-
-	// Return Transmission successful
-	return TRUE;
-}
-
-/**
  * @fn  uint8_t SerialPrintN(const char *str, uint16_t len)
  * @brief Prints a string of a specified length using the UART handle, avoiding strlen.
  * @param str The string (or buffer) to transmit. Does not need to be null-terminated.
@@ -81,6 +52,25 @@ uint8_t SerialPrintN(const char *str, uint16_t len)
 
 	// Return Transmission successful
 	return TRUE;
+}
+
+/**
+ * @fn uint8_t SerialPrint(const char *str)
+ * @brief Prints a null-terminated string using the private UART handle
+ * @param str The string to transmit
+ * @return TRUE if transmission was successful, FALSE otherwise.
+ */
+uint8_t SerialPrint(const char *str)
+{
+	// Ensure the data pointer is not NULL
+	if (str == NULL)
+		return FALSE;
+
+	// Calculate the number of characters/bytes to send
+	uint16_t len = (uint16_t)strlen(str);
+
+	// Use SerialPrintN to send the string and return its result
+	return SerialPrintN(str, len);
 }
 
 /**
