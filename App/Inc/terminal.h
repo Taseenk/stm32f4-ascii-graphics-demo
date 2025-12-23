@@ -12,11 +12,6 @@
 #include "main.h"
 
 /* Defines -------------------------------------------------------------------*/
-#define UART_BUFFER_SIZE 128 // Size of the buffer for UART Rx/Tx (in bytes)
-#define TERMINAL_EOL "\r\n"  // End of line characters for the terminal
-#define CARRIAGE_RETURN '\r' // Delimiter character to signify the end of a message
-#define NULL_TERMINATOR '\0' // String termination character
-
 // Standard ANSI terminal control codes
 #define ANSI_ESC "\x1b["                      // The standard ANSI Escape sequence initiator
 #define ANSI_CURSOR_HOME ANSI_ESC "H"         // Move cursor to home (1,1): ESC [ H
@@ -29,27 +24,11 @@
 #define ANSI_CLS_HOME ANSI_CLEAR_SCREEN ANSI_CURSOR_HOME
 #define ANSI_HIDE_CLS_HOME ANSI_CURSOR_INVISIBLE ANSI_CLS_HOME
 
-/* typedefs ------------------------------------------------------------------*/
-typedef struct {
-	char message[UART_BUFFER_SIZE]; // The extracted, null-terminated string.
-	size_t length;                  // The actual length of the message (excluding the null terminator).
-} Rx_Message_t;
-
 /* Function prototypes -------------------------------------------------------*/
-// Basic terminal output functions
-uint8_t TerminalPrint(const char *str);
-uint8_t TerminalPrintN(const char *str, uint16_t len);
-uint8_t TerminalPrintNewLine(const char *str);
-
 // ANSI Terminal control functions
 void TerminalCursorHome(void);
 void TerminalClearScreen(void);
 void TerminalClearAndHome(void);
 void TerminalSetCursorPos(uint8_t row, uint8_t col);
-
-// DMA based functions
-uint8_t TerminalPrintDMA(const char *str);
-void TerminalReceiveInit(void);
-void TerminalProcessData(void);
 
 #endif /* __TERMINAL_H */
