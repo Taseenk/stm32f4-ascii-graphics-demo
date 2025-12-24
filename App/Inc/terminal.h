@@ -38,6 +38,7 @@ void TerminalClearAndHome(void);
 void TerminalSetCursorPos(uint8_t row, uint8_t col);
 
 // Framebuffer management functions
+void TerminalClearBuffer(void);
 void TerminalDrawChar(char c, uint8_t row, uint8_t col);
 
 #endif /* __TERMINAL_H */

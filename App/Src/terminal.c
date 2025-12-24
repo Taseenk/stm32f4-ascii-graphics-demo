@@ -16,6 +16,7 @@
 
 // Standard libraries
 #include <stdio.h>
+#include <string.h>
 
 /* Private Variables ---------------------------------------------------------*/
 uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
@@ -84,6 +85,17 @@ void TerminalSetCursorPos(uint8_t row, uint8_t col)
 
 	// Transmit the escape sequence via using the precise length calculated by sprintf
 	SerialPrintN(buffer, (uint16_t)len);
+}
+
+/**
+ * @fn void TerminalClearBuffer(void)
+ * @brief Clears the internal terminal framebuffer by filling it with space characters.
+ * This function does NOT send any data to the terminal; it only updates the internal framebuffer.
+ */
+void TerminalClearBuffer(void)
+{
+	// Fill the entire framebuffer with space characters
+	memset(framebuffer, SPACE_CHAR, TERMINAL_BUFFER_SIZE);
 }
 
 /**
