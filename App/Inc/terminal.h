@@ -12,6 +12,12 @@
 #include "main.h"
 
 /* Defines -------------------------------------------------------------------*/
+#define TERMINAL_WIDTH 80                                       // Width of the terminal in characters
+#define TERMINAL_HEIGHT 24                                      // Height of the terminal in characters
+#define TERMINAL_BUFFER_SIZE (TERMINAL_WIDTH * TERMINAL_HEIGHT) // Total size of the terminal buffer
+
+#define SPACE_CHAR ' ' // Space character used for clearing the terminal buffer
+
 // Standard ANSI terminal control codes
 #define ANSI_ESC "\x1b["                      // The standard ANSI Escape sequence initiator
 #define ANSI_CURSOR_HOME ANSI_ESC "H"         // Move cursor to home (1,1): ESC [ H
@@ -30,5 +36,8 @@ void TerminalCursorHome(void);
 void TerminalClearScreen(void);
 void TerminalClearAndHome(void);
 void TerminalSetCursorPos(uint8_t row, uint8_t col);
+
+// Framebuffer management functions
+void TerminalDrawChar(char c, uint8_t row, uint8_t col);
 
 #endif /* __TERMINAL_H */

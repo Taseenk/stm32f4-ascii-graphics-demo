@@ -6,14 +6,19 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+// Project libraries
 #include "terminal.h"
 #include "serial_hw.h"
 
-// STM32 specific libraries
+// STM32 libraries
 #include "main.h"
+#include "stm32f407xx.h"
 
 // Standard libraries
 #include <stdio.h>
+
+/* Private Variables ---------------------------------------------------------*/
+uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
 
 /* Functions -----------------------------------------------------------------*/
 /**
@@ -79,4 +84,31 @@ void TerminalSetCursorPos(uint8_t row, uint8_t col)
 
 	// Transmit the escape sequence via using the precise length calculated by sprintf
 	SerialPrintN(buffer, (uint16_t)len);
+}
+
+/**
+ * @fn void TerminalDrawChar(char c, uint8_t row, uint8_t col)
+ * @brief Draws a single character into the terminal framebuffer at the specified row and column.
+ * This function updates the internal framebuffer array but does NOT send any data to the terminal.
+ * @param c The character to draw.
+ * @param row The target row number (1-based index).
+ * @param col The target column number (1-based index).
+ */
+void TerminalDrawChar(char c, uint8_t row, uint8_t col)
+{
+	// Make row and column always be 1 or greater for ANSI terminals
+	if (row == 0)
+		row = 1;
+	if (col == 0)
+		col = 1;
+
+	// Check the maximum screen bounds
+	if (row > TERMINAL_HEIGHT || col > TERMINAL_WIDTH)
+		return;
+
+	// Calculate the 1D array index for the 2D framebuffer
+	uint16_t index = ((uint16_t)(row - 1) * TERMINAL_WIDTH) + (col - 1);
+
+	// Store the character in the framebuffer
+	framebuffer[index] = (uint8_t)c;
 }
