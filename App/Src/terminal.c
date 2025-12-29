@@ -58,6 +58,30 @@ void TerminalClearAndHome(void)
 }
 
 /**
+ * @fn void TerminalInvisibleCursor(void)
+ * @brief Sends the ANSI escape sequence to hide the terminal cursor.
+ * This function uses the ANSI_CURSOR_INVISIBLE (ESC[?25l) to make
+ * the cursor invisible on the terminal display.
+ */
+void TerminalInvisibleCursor(void)
+{
+	// Transmit the ANSI command string for hiding the cursor
+	SerialPrint(ANSI_CURSOR_INVISIBLE);
+}
+
+/**
+ * @fn void TerminalVisibleCursor(void)
+ * @brief Sends the ANSI escape sequence to show the terminal cursor.
+ * This function uses the ANSI_CURSOR_VISIBLE (ESC[?25h) to make
+ * the cursor visible on the terminal display.
+ */
+void TerminalVisibleCursor(void)
+{
+	// Transmit the ANSI command string for showing the cursor
+	SerialPrint(ANSI_CURSOR_VISIBLE);
+}
+
+/**
  * @fn void TerminalSetCursorPos(uint8_t row, uint8_t col)
  * @brief Sends the ANSI escape sequence to explicitly set the terminal cursor position.
  * The ANSI command format is ESC[<row>;<col>H.

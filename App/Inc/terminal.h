@@ -35,6 +35,8 @@
 void TerminalCursorHome(void);
 void TerminalClearScreen(void);
 void TerminalClearAndHome(void);
+void TerminalInvisibleCursor(void);
+void TerminalVisibleCursor(void);
 void TerminalSetCursorPos(uint8_t row, uint8_t col);
 
 // Framebuffer management functions
