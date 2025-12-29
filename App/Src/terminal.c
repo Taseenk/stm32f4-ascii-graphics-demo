@@ -160,3 +160,18 @@ void TerminalDrawString(const char *str, uint8_t row, uint8_t col)
 		framebuffer[index + i] = str[i];
 	}
 }
+
+/**
+ * @fn void TerminalFlush(void)
+ * @brief Sends the entire terminal framebuffer to the terminal display.
+ * This function moves the cursor to the home position before transmitting
+ * the framebuffer content using DMA for non-blocking transmission.
+ */
+void TerminalFlush(void)
+{
+	// Move cursor to home before flushing the framebuffer
+	TerminalCursorHome();
+
+	// Send the entire framebuffer to the terminal
+	SerialTransmitDMA((const char*)framebuffer, TERMINAL_BUFFER_SIZE);
+}

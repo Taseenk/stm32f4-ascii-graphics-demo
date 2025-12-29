@@ -41,5 +41,6 @@ void TerminalSetCursorPos(uint8_t row, uint8_t col);
 void TerminalClearBuffer(void);
 void TerminalDrawChar(char c, uint8_t row, uint8_t col);
 void TerminalDrawString(const char *str, uint8_t row, uint8_t col);
+void TerminalFlush(void);
 
 #endif /* __TERMINAL_H */
