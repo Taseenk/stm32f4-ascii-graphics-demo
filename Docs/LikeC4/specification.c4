@@ -1,0 +1,65 @@
+specification {
+    // Defines an external actor or internal user interacting with the system.
+    element person {
+        description 'A person who uses or benefits from the software.'
+        style {
+            color green
+            shape person
+        }
+    }
+
+    // The highest level of abstraction; represents a top-level software system that delivers value.
+    element softwaresystem {
+        description 'The high-level product or application as a whole.'
+        style {
+            color amber
+            opacity 15%
+        }
+    }
+
+    // Used to group related elements together within a logical boundary or tier.
+    element layer {
+        description 'A logical group for parts that do similar work.'
+        style {
+            color primary
+            opacity 25%
+        }
+    }
+
+    // Represents a deployable unit (e.g., a web application, database, or microservice).
+    element container {
+        description 'A single, runnable part like a web app or a database.'
+        style {
+            color muted
+        }
+    }
+
+    // The lowest level of architectural detail; represents an individual building block or code module.
+    element component {
+        description 'A small piece of code that does one specific job.'
+        style {
+            shape rectangle
+            color gray
+            opacity 15%
+        }
+    }
+
+    // Represents the physical infrastructure where software components are deployed and run.
+    deploymentNode workstation {
+        notation 'Desktop PC'
+        style {
+            color blue
+            icon tech:windows11
+        }
+    }
+
+    // Represents the physical infrastructure where software components are deployed and run.
+    deploymentNode mcu {
+        notation 'Microcontroller'
+        technology 'ARM Cortex-M4'
+        style {
+            color blue
+            icon tech:c
+        }
+    }
+}
