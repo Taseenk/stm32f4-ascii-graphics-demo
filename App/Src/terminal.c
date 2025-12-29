@@ -15,6 +15,7 @@
 #include "stm32f407xx.h"
 
 // Standard libraries
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -22,6 +23,30 @@
 uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
 
 /* Functions -----------------------------------------------------------------*/
+/**
+ * @fn void TerminalInit(uint8_t cursor)
+ * @brief Initializes the terminal by setting cursor visibility, clearing the screen,
+ * and clearing the internal framebuffer.
+ * @param cursor TRUE to show the cursor, FALSE to hide it.
+ */
+void TerminalInit(uint8_t cursor)
+{
+	// Set cursor visibility based on parameter
+	if (cursor == TRUE)
+		TerminalVisibleCursor();
+	else
+		TerminalInvisibleCursor();
+
+	// Clear and home the terminal display
+	TerminalClearAndHome();
+
+	// Clear the internal framebuffer
+	TerminalClearBuffer();
+
+	// Log successful initialization of the terminal
+	SerialPrint("DEBUG: Terminal initialized successfully\r\n");
+}
+
 /**
  * @fn void TerminalCursorHome(void)
  * @brief Sends the ANSI escape sequence to move the terminal cursor to the home position (1,1).
