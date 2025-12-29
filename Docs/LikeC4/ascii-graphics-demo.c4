@@ -1,0 +1,185 @@
+model {
+    user = person "User" {
+        description "Observes the ASCII graphics demo"
+    }
+
+    terminal_system = softwaresystem "Workstation Environment" {
+        description "The PC running the terminal software"
+        terminal = container "Terminal" "Tera Term / PuTTY" "Handles ANSI/VT100 escape codes and renders ASCII demo"
+    }
+
+    firmware = softwaresystem "ASCII Graphics Demo Project Firmware" {
+        description "Firmware for real-time ASCII rendering demo"
+
+        /* Presentation Layer -------------------------------------------------------------------*/
+        presentation_layer = container "Presentation Layer" {
+            description "Responsible for the final formatting of data for the user. It handles the specific 'look' of the terminal and the protocols required to display the characters."
+
+            terminal_module = component "terminal.c/h" {
+                description "Implements ANSI/VT100 control sequences for screen management and cursor positioning."
+            }
+            serial_hw_module = component "serial_hw.c/h" {
+                description "Bridges the graphics logic and the UART hardware to ensure fast data delivery."
+            }
+        }
+
+        /* Application Layer -------------------------------------------------------------------*/
+        application_layer = container "Application Layer" {
+            description "Contains the \"high-level animation logic\". It calculates what should happen in a scene without worrying about how it is done"
+        }
+
+        /* Hardware Layer -------------------------------------------------------------------*/
+        hardware_layer = container "Hardware Layer" {
+            description "The physical hardware configuration and the low-level drivers provided by the chip manufacturer"
+
+            main_module = component "main.c" {
+                description "Entry point & System Clock configuration"
+            }
+
+            peripheral_config = component "Peripheral Drivers" {
+                description "Project-specific hardware setup"
+
+                usart_module = component "usart.c/h" {
+                    description "Sets the communication speed and connection rules for sending text to the terminal."
+                }
+                dma_module = component "dma.c/h" {
+                    description "Sets up the automated data mover so the processor doesn't have to handle every single byte."
+                }
+                gpio_module = component "gpio.c/h" {
+                    description "Maps the internal functions of the chip to the physical pins on the outside."
+                }
+            }
+
+            hal_library = component "STM32F4 HAL" {
+                description "ST Microelectronics Hardware Abstraction Layer"
+
+                hal_uart = component "stm32_hal_uart.c/h" {
+                    description "Provides standardized functions to transmit and receive data over serial lines."
+                }
+                hal_dma = component "stm32_hal_dma.c/h" {
+                    description "Provides the background engine that moves data blocks without using the CPU."
+                }
+                hal_gpio = component "stm32_hal_gpio.c/h" {
+                    description "Provides direct control logic to read or write signals to the pins."
+                }
+            }
+        }
+    }
+
+    /* Relationships -------------------------------------------------------------------*/
+    // user -> pc "Views demo output"
+    user -> terminal_system "Views demo output"
+
+    // Global Cross-Layer Relationships
+    application_layer -> presentation_layer "Sends raw scene data and coordinates"
+    presentation_layer -> hardware_layer "Sends formatted ANSI/VT100 byte data"
+    hardware_layer -> terminal "Transmits serial data via UART/DMA"
+
+    // Internal Presentation Layer Relationship
+    terminal_module -> serial_hw_module "Sends formatted ANSI control strings and framebuffer data."
+
+    // Hardware Internal Relationships
+    main_module -> peripheral_config "Starts the setup process for project hardware and clocks."
+    peripheral_config -> hal_library "Utilizes HAL libraries to turn on and manage the physical hardware features."
+
+    usart_module -> hal_uart "Sets up speed and pins for the UART."
+    dma_module -> hal_dma "Configure project-specific DMA settings and initialize hardware clocks."
+    gpio_module -> hal_gpio "Configures physical pin functions."
+}
+
+views {
+    deployment view index {
+        title "Physical Deployment"
+        include stm32f4, host_pc
+        autoLayout LeftRight
+    }
+
+    view systemView of terminal_system {
+        title "System Overview"
+        include *
+        // Show external incoming and outgoing relationships
+        include user, firmware
+        autoLayout BottomTop
+    }
+
+    view architectureView of firmware {
+        title "3-Tier Firmware Architecture"
+        include *, user
+        // Show external incoming and outgoing relationships
+        include terminal
+        style application_layer {
+            color blue
+        }
+        style presentation_layer {
+            color red
+        }
+        style hardware_layer {
+            color green
+        }
+        autoLayout BottomTop
+    }
+}
+
+views '3-Tier Layer / Application Layer' {
+    view applicationView of application_layer {
+        title "Application Layer"
+        include *, firmware
+        // Show external incoming and outgoing relationships
+        include presentation_layer
+        style firmware.application_layer {
+            color blue
+        }
+        autoLayout TopBottom
+    }
+}
+
+views '3-Tier Layer / Presentation Layer' {
+    view presentationView of presentation_layer {
+        title "Presentation Layer"
+        include *, firmware
+        // Show external incoming and outgoing relationships
+        include application_layer
+        include hardware_layer
+        style presentation_layer {
+            color red
+            opacity 50%
+        }
+        autoLayout TopBottom
+    }
+}
+
+views '3-Tier Layer / Hardware Layer' {
+    view hardwareView of hardware_layer {
+        title "Hardware Layer"
+        include *, firmware
+        // Show external incoming and outgoing relationships
+        include terminal_system
+        autoLayout TopBottom
+        style firmware.hardware_layer {
+            color green
+            opacity 50%
+        }
+    }
+
+    view ConfigurationView of peripheral_config {
+        include *, hardware_layer, terminal_system
+        // Show external incoming and outgoing relationships
+        include hardware_layer.main_module
+        include hardware_layer.hal_library.*
+        style firmware.hardware_layer {
+            color green
+        }
+        autoLayout LeftRight
+    }
+
+    view hal_libraryView of hal_library {
+        include *, hardware_layer, terminal_system
+        // Show external incoming and outgoing relationships
+        include hardware_layer.main_module
+        include hardware_layer.peripheral_config.*
+        style firmware.hardware_layer {
+            color green
+        }
+        autoLayout LeftRight
+    }
+}

@@ -1,0 +1,20 @@
+deployment {
+    // Hardware system representing the terminal application
+    host_pc = workstation "Workstation" {
+        description "The host computer running the terminal"
+
+        // Map the existing terminal container
+        instanceOf terminal_system
+    }
+
+    // Physical target hardware
+    stm32f4 = mcu "STM32F4 Discovery" {
+        description "Physical target hardware"
+
+        // Map the entire firmware softwaresystem
+        instanceOf firmware
+    }
+
+    /* Relationships -------------------------------------------------------------------*/
+    host_pc -> stm32f4 "Provides power via USB"
+}
