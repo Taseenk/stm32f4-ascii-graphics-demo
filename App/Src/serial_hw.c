@@ -113,9 +113,10 @@ uint8_t SerialPrintLn(const char *str)
  * @fn uint8_t SerialTransmitDMA(const char *str)
  * @brief Prints a null-terminated string using DMA (Non-blocking)
  * @param str The string to transmit (Must remain valid until transmission completes)
+ * @param len The length of the string to transmit
  * @return TRUE if transmission was started successfully, FALSE otherwise.
  */
-uint8_t SerialTransmitDMA(const char *str)
+uint8_t SerialTransmitDMA(const char *str, uint16_t len)
 {
 	// Ensure both the UART handle and the data pointer are not NULL
 	if (p_uart->Instance == NULL || str == NULL)
@@ -124,9 +125,6 @@ uint8_t SerialTransmitDMA(const char *str)
 	// Ensure the UART is ready for a new transmission
 	if (p_uart->gState != HAL_UART_STATE_READY)
 		return FALSE;
-
-	// Calculate the number of characters/bytes to send
-	uint16_t len = (uint16_t)strlen(str);
 
 	// Start the DMA transmission
 	// Will return the status of the UART DMA transmit

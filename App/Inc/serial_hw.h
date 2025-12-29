@@ -33,7 +33,7 @@ uint8_t SerialPrint(const char *str);
 uint8_t SerialPrintLn(const char *str);
 
 // DMA related functions
-uint8_t SerialTransmitDMA(const char *str);
+uint8_t SerialTransmitDMA(const char *str, uint16_t len);
 void SerialReceiveInit(void);
 void SerialProcessData(void);
 
