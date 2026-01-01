@@ -23,9 +23,26 @@
 static uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
 
 /* Private Function Prototypes -----------------------------------------------*/
+static void __NormalizeCoordinates(uint16_t *col, uint16_t *row);
 static void __DrawChar(char c, uint16_t col, uint16_t row);
 
 /* Private Functions ---------------------------------------------------------*/
+/**
+ * @fn static void __NormalizeCoordinates(uint16_t *col, uint16_t *row)
+ * @brief Internal function to ensure that the provided column and row
+ * coordinates are at least 1 for ANSI terminal compatibility.
+ * @param col Pointer to the column number (1-based index).
+ * @param row Pointer to the row number (1-based index).
+ */
+static void __NormalizeCoordinates(uint16_t *col, uint16_t *row)
+{
+	// Make row and column always be 1 or greater for ANSI terminals
+	if (*row == 0)
+		*row = 1;
+	if (*col == 0)
+		*col = 1;
+}
+
 /**
  * @fn static void __DrawChar(char c, uint16_t col, uint16_t row)
  * @brief Internal function for drawing a single character into the
@@ -142,10 +159,7 @@ void TerminalSetCursorPos(uint16_t col, uint16_t row)
 	char buffer[16];
 
 	// Make row and column always be 1 or greater for ANSI terminals
-	if (row == 0)
-		row = 1;
-	if (col == 0)
-		col = 1;
+	__NormalizeCoordinates(&col, &row);
 
 	// Format the escape sequence to move the cursor and return the length
 	// The length here is without the string terminator (\0)
@@ -181,10 +195,7 @@ void TerminalClearBuffer(void)
 void TerminalDrawChar(char c, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	if (row == 0)
-		row = 1;
-	if (col == 0)
-		col = 1;
+	__NormalizeCoordinates(&col, &row);
 
 	// Check the maximum screen bounds
 	if (row > TERMINAL_HEIGHT || col > TERMINAL_WIDTH)
@@ -205,10 +216,7 @@ void TerminalDrawChar(char c, uint16_t col, uint16_t row)
 void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	if (row == 0)
-		row = 1;
-	if (col == 0)
-		col = 1;
+	__NormalizeCoordinates(&col, &row);
 
 	// Check the maximum screen bounds
 	if (row > TERMINAL_HEIGHT || col > TERMINAL_WIDTH)
