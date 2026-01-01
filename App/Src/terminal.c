@@ -27,6 +27,7 @@ static void __NormalizeCoordinates(int16_t *col, int16_t *row);
 static uint8_t __IsValidPos(int16_t col, int16_t row);
 static void __DrawChar(char c, int16_t col, int16_t row);
 static void __DrawLineHorizontal(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
@@ -147,6 +148,62 @@ static void __DrawLineHorizontal(char c, uint16_t x0, uint16_t y0, uint16_t x1, 
 	}
 }
 
+/**
+ * @fn static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+ * @brief Internal function for drawing a vertical line using Bresenham's algorithm.
+ * This function draws a line from (x0, y0) to (x1, y1) in the terminal framebuffer
+ * using the specified character. This is a static function and does NOT perform bounds checking.
+ * This function updates the internal framebuffer array but does NOT send any data to the terminal.
+ * @param c The character to use for drawing the line.
+ * @param x0 The starting column (1-based index).
+ * @param y0 The starting row (1-based index).
+ * @param x1 The ending column (1-based index).
+ * @param y1 The ending row (1-based index).
+ */
+static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+{
+	// Make sure to draw from top to bottom
+	if (y0 > y1) {
+		// Swap y0 and y1
+		uint16_t temp_y = y0;
+		y0 = y1;
+		y1 = temp_y;
+
+		// Swap x0 and x1
+		uint16_t temp_x = x0;
+		x0 = x1;
+		x1 = temp_x;
+	}
+
+	// Calculate the horizontal and vertical distances
+	int16_t dx = x1 - x0;
+	int16_t dy = y1 - y0;
+
+	// Determine the step direction for the x-axis
+	int16_t x_direction = (dx < 0) ? -1 : 1;
+	if (dx < 0)
+		dx = -dx;
+
+	// Initialize Bresenham's decision variables (swapped dy and dx)
+	int16_t decision_parameter = (2 * dx) - dy;
+	int16_t x = x0;
+
+	// Iterate across the y-axis
+	for (int16_t y = y0; y <= y1; y++) {
+		// Draw the character at (x, y) in the framebuffer
+		__DrawChar(c, x, y);
+
+		// Check if decision variable is positive then move to the next x
+		if (decision_parameter > 0) {
+			x += x_direction;
+			// Update error for step in both Y and X
+			decision_parameter += (2 * (dx - dy));
+		} else {
+			// Update error for step in Y only
+			decision_parameter += (2 * dx);
+		}
+	}
+}
 
 /* Public Functions ----------------------------------------------------------*/
 /**
