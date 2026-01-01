@@ -23,19 +23,19 @@
 static uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
 
 /* Private Function Prototypes -----------------------------------------------*/
-static void __NormalizeCoordinates(uint16_t *col, uint16_t *row);
-static uint8_t __IsValidPos(uint16_t col, uint16_t row);
-static void __DrawChar(char c, uint16_t col, uint16_t row);
+static void __NormalizeCoordinates(int16_t *col, int16_t *row);
+static uint8_t __IsValidPos(int16_t col, int16_t row);
+static void __DrawChar(char c, int16_t col, int16_t row);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn static void __NormalizeCoordinates(uint16_t *col, uint16_t *row)
+ * @fn static void __NormalizeCoordinates(int16_t *col, int16_t *row)
  * @brief Internal function to ensure that the provided column and row
  * coordinates are at least 1 for ANSI terminal compatibility.
  * @param col Pointer to the column number (1-based index).
  * @param row Pointer to the row number (1-based index).
  */
-static void __NormalizeCoordinates(uint16_t *col, uint16_t *row)
+static void __NormalizeCoordinates(int16_t *col, int16_t *row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	if (*row == 0)
@@ -45,14 +45,14 @@ static void __NormalizeCoordinates(uint16_t *col, uint16_t *row)
 }
 
 /**
- * @fn static uint8_t __IsValidPos(uint16_t col, uint16_t row)
+ * @fn static uint8_t __IsValidPos(int16_t col, int16_t row)
  * @brief Internal function to check if the provided column and row
  * coordinates are within the valid terminal bounds.
  * @param col The column number (1-based index).
  * @param row The row number (1-based index).
  * @return TRUE if the position is valid, FALSE otherwise.
  */
-static uint8_t __IsValidPos(uint16_t col, uint16_t row)
+static uint8_t __IsValidPos(int16_t col, int16_t row)
 {
 	// Check the maximum screen bounds
 	if (row > TERMINAL_HEIGHT || col > TERMINAL_WIDTH)
@@ -72,10 +72,18 @@ static uint8_t __IsValidPos(uint16_t col, uint16_t row)
  * @param col The target column number (1-based index).
  * @param row The target row number (1-based index).
  */
-static void __DrawChar(char c, uint16_t col, uint16_t row)
+static void __DrawChar(char c, int16_t col, int16_t row)
 {
+	// Check for minimum bounds (1-based indexing)
+	if (row < 1 || col < 1)
+		return;
+
+	// Check if the starting position is within the screen boundaries
+	if (!__IsValidPos(col, row))
+		return;
+
 	// Calculate the 1D array index for the 2D framebuffer
-	uint16_t index = ((row - 1) * TERMINAL_WIDTH) + (col - 1);
+	int16_t index = ((row - 1) * TERMINAL_WIDTH) + (col - 1);
 
 	// Store the character in the framebuffer
 	framebuffer[index] = c;
@@ -175,10 +183,10 @@ void TerminalVisibleCursor(void)
 void TerminalSetCursorPos(uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	__NormalizeCoordinates((int16_t *)&col, (int16_t *)&row);
 
 	// Check if the starting position is within the screen boundaries
-	if(!__IsValidPos(col, row))
+	if (!__IsValidPos(col, row))
 		return;
 
 	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H)
@@ -208,6 +216,21 @@ void TerminalClearBuffer(void)
 }
 
 /**
+ * @fn void TerminalFlush(void)
+ * @brief Sends the entire terminal framebuffer to the terminal display.
+ * This function moves the cursor to the home position before transmitting
+ * the framebuffer content using DMA for non-blocking transmission.
+ */
+void TerminalFlush(void)
+{
+	// Move cursor to home before flushing the framebuffer
+	TerminalCursorHome();
+
+	// Send the entire framebuffer to the terminal
+	SerialTransmitDMA((const char *)framebuffer, TERMINAL_BUFFER_SIZE);
+}
+
+/**
  * @fn void TerminalDrawChar(char c, uint16_t col, uint16_t row)
  * @brief Draws a single character into the terminal framebuffer at the specified row and column.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
@@ -218,10 +241,10 @@ void TerminalClearBuffer(void)
 void TerminalDrawChar(char c, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	__NormalizeCoordinates((int16_t *)&col, (int16_t *)&row);
 
 	// Check if the starting position is within the screen boundaries
-	if(!__IsValidPos(col, row))
+	if (!__IsValidPos(col, row))
 		return;
 
 	// Draw the character in the framebuffer using the internal function
@@ -239,10 +262,10 @@ void TerminalDrawChar(char c, uint16_t col, uint16_t row)
 void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	__NormalizeCoordinates((int16_t *)&col, (int16_t *)&row);
 
 	// Check if the starting position is within the screen boundaries
-	if(!__IsValidPos(col, row))
+	if (!__IsValidPos(col, row))
 		return;
 
 	// Calculate the length of the string
@@ -253,23 +276,50 @@ void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
 	if (col + len - 1 > TERMINAL_WIDTH)
 		return;
 
-	// Store the string in the framebuffer using the internal function 
+	// Store the string in the framebuffer using the internal function
 	for (uint16_t i = 0; i < len; i++) {
 		__DrawChar(str[i], col + i, row);
 	}
 }
 
 /**
- * @fn void TerminalFlush(void)
- * @brief Sends the entire terminal framebuffer to the terminal display.
- * This function moves the cursor to the home position before transmitting
- * the framebuffer content using DMA for non-blocking transmission.
+ * @fn void TerminalDrawRect(char c, int16_t col, int16_t row, uint8_t w, uint8_t h)
+ * @brief Draws a rectangle outline into the terminal framebuffer using the specified character.
+ * This function updates the internal framebuffer array but does NOT send any data to the terminal.
+ * @param c The character to use for drawing the rectangle.
+ * @param col The target starting column number (1-based index).
+ * @param row The target starting row number (1-based index).
+ * @param w The width of the rectangle in characters.
+ * @param h The height of the rectangle in characters.
  */
-void TerminalFlush(void)
+void TerminalDrawRect(char c, int16_t col, int16_t row, uint8_t w, uint8_t h)
 {
-	// Move cursor to home before flushing the framebuffer
-	TerminalCursorHome();
+	// Make row and column always be 1 or greater for ANSI terminals
+	__NormalizeCoordinates((int16_t *)&col, (int16_t *)&row);
 
-	// Send the entire framebuffer to the terminal
-	SerialTransmitDMA((const char*)framebuffer, TERMINAL_BUFFER_SIZE);
+	// Quick exit check if the starting position is within the screen boundaries
+	if (!__IsValidPos(col, row))
+		return;
+
+	// Quick exit for zero dimensions
+	if (w == 0 || h == 0)
+		return;
+
+	// Calculate bottom right corner coordinates for x and y
+	int16_t right_col = col + (int16_t)w - 1;
+	int16_t bottom_row = row + (int16_t)h - 1;
+
+	// Draw Top and Bottom edges
+	for (int16_t i = 0; i < (int16_t)w; i++) {
+		__DrawChar(c, col + i, row);
+		if (bottom_row <= TERMINAL_HEIGHT)
+			__DrawChar(c, col + i, bottom_row);
+	}
+
+	// Draw Left and Right edges
+	for (int16_t j = 0; j < (int16_t)h; j++) {
+		__DrawChar(c, col, row + j);
+		if (right_col <= TERMINAL_WIDTH)
+			__DrawChar(c, right_col, row + j);
+	}
 }
