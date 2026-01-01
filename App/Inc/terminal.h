@@ -47,9 +47,12 @@ void TerminalSetCursorPos(uint16_t col, uint16_t row);
 void TerminalClearBuffer(void);
 void TerminalDrawChar(char c, uint16_t col, uint16_t row);
 void TerminalDrawString(const char *str, uint16_t col, uint16_t row);
+
+// Graphics primitives functions
 void TerminalDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h);
 void TerminalFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h);
 void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void TerminalDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 void TerminalDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r);
 
 #endif /* __TERMINAL_H */

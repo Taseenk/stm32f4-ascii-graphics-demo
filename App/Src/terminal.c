@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 /* Private Variables ---------------------------------------------------------*/
 static uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
 
@@ -510,16 +509,51 @@ void TerminalFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h
  */
 void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
-	// Check if the line is not off-screen to the left/top
-	if ((x0 < 1 && x1 < 1) || (y0 < 1 && y1 < 1))
-		return;
+	// Make row and column always be 1 or greater for ANSI terminals
+	__NormalizeCoordinates(&x0, &y0);
+	__NormalizeCoordinates(&x1, &y1);
 
-	// Check if the line is not off-screen to the right/bottom
-	if ((x0 > TERMINAL_WIDTH && x1 > TERMINAL_WIDTH) || (y0 > TERMINAL_HEIGHT && y1 > TERMINAL_HEIGHT))
+	// Check if the line is not off the screen
+	if ((x0 > TERMINAL_WIDTH && x1 > TERMINAL_WIDTH) || 
+		(y0 > TERMINAL_HEIGHT && y1 > TERMINAL_HEIGHT))
 		return;
 
 	// Draw the line using the internal function
 	__DrawLine(c, x0, y0, x1, y1);
+}
+
+/**
+ * @fn void TerminalDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+ * @brief Draws a triangle outline between three points in the terminal framebuffer using Bresenham's algorithm.
+ * This function updates the internal framebuffer array but does NOT send any data to the terminal.
+ * @param c The character to use for drawing the triangle.
+ * @param x0 The column of Vertex A (1-based index).
+ * @param y0 The row of Vertex A (1-based index).
+ * @param x1 The column of Vertex B (1-based index).
+ * @param y1 The row of Vertex B (1-based index).
+ * @param x2 The column of Vertex C (1-based index).
+ * @param y2 The row of Vertex C (1-based index).
+ */
+void TerminalDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+{
+	// Make row and column always be 1 or greater for ANSI terminals
+	__NormalizeCoordinates(&x0, &y0);
+	__NormalizeCoordinates(&x1, &y1);
+	__NormalizeCoordinates(&x2, &y2);
+
+	// Check if the triangle is not off the screen
+	if ((x0 > TERMINAL_WIDTH && x1 > TERMINAL_WIDTH && x2 > TERMINAL_WIDTH) ||
+	    (y0 > TERMINAL_HEIGHT && y1 > TERMINAL_HEIGHT && y2 > TERMINAL_HEIGHT))
+		return;
+
+	// Draw the line Vertex A to Vertex B
+	__DrawLine(c, x0, y0, x1, y1);
+
+	// Draw the line Vertex B to Vertex C
+	__DrawLine(c, x1, y1, x2, y2);
+
+	// Draw the line Vertex C back to Vertex A
+	__DrawLine(c, x2, y2, x0, y0);
 }
 
 /**
