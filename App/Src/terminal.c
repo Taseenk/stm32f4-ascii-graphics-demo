@@ -283,7 +283,7 @@ void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
 }
 
 /**
- * @fn void TerminalDrawRect(char c, int16_t col, int16_t row, uint8_t w, uint8_t h)
+ * @fn void TerminalDrawRect(char c, int16_t col, int16_t row, uint16_t w, uint16_t h)
  * @brief Draws a rectangle outline into the terminal framebuffer using the specified character.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param c The character to use for drawing the rectangle.
@@ -292,20 +292,17 @@ void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
  * @param w The width of the rectangle in characters.
  * @param h The height of the rectangle in characters.
  */
-void TerminalDrawRect(char c, int16_t col, int16_t row, uint8_t w, uint8_t h)
+void TerminalDrawRect(char c, int16_t col, int16_t row, uint16_t w, uint16_t h)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates((int16_t *)&col, (int16_t *)&row);
 
 	// Quick exit check if the starting position is within the screen boundaries
-	if (!__IsValidPos(col, row))
+	// Also check is the rectangle is valid
+	if (!__IsValidPos(col, row) || w == 0 || h == 0)
 		return;
 
-	// Quick exit for zero dimensions
-	if (w == 0 || h == 0)
-		return;
-
-	// Calculate bottom right corner coordinates for x and y
+	// Calculate corner coordinates for x and y
 	int16_t right_col = col + (int16_t)w - 1;
 	int16_t bottom_row = row + (int16_t)h - 1;
 
@@ -321,5 +318,41 @@ void TerminalDrawRect(char c, int16_t col, int16_t row, uint8_t w, uint8_t h)
 		__DrawChar(c, col, row + j);
 		if (right_col <= TERMINAL_WIDTH)
 			__DrawChar(c, right_col, row + j);
+	}
+}
+
+/**
+ * @fn void TerminalFillRect(char c, int16_t col, int16_t row, uint16_t w, uint16_t h)
+ * @brief Fills a rectangle area in the terminal framebuffer using the specified character.
+ * This function updates the internal framebuffer array but does NOT send any data to the terminal.
+ * @param c The character to use for filling the rectangle.
+ * @param col The starting column (1-based index).
+ * @param row The starting row (1-based index).
+ * @param w The width of the rectangle.
+ * @param h The height of the rectangle.
+ */
+void TerminalFillRect(char c, int16_t col, int16_t row, uint16_t w, uint16_t h)
+{
+	// Make row and column always be 1 or greater for ANSI terminals
+	__NormalizeCoordinates((int16_t *)&col, (int16_t *)&row);
+
+	// Quick exit check if the starting position is within the screen boundaries
+	// Also check is the rectangle is valid
+	if (!__IsValidPos(col, row) || w == 0 || h == 0)
+		return;
+
+	// Calculate corner coordinates for x and y
+	int16_t right_col = col + (int16_t)w - 1;
+	int16_t bottom_row = row + (int16_t)h - 1;
+
+	// Clamp width and height to terminal boundaries
+	w = (right_col > TERMINAL_WIDTH) ? (TERMINAL_WIDTH - col + 1) : w;
+	h = (bottom_row > TERMINAL_HEIGHT) ? (TERMINAL_HEIGHT - row + 1) : h;
+
+	// Fill the rectangle area in the framebuffer
+	for (int16_t j = 0; j < (int16_t)h; j++) {
+		for (int16_t i = 0; i < (int16_t)w; i++) {
+			__DrawChar(c, col + i, row + j);
+		}
 	}
 }
