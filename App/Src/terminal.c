@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 /* Private Variables ---------------------------------------------------------*/
 static uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
@@ -203,6 +204,32 @@ static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, ui
 			decision_parameter += (2 * dx);
 		}
 	}
+}
+
+/**
+ * @fn static void __DrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+ * @brief Internal function for drawing a line between two points using Bresenham's algorithm.
+ * This function determines whether to draw a horizontal or vertical line based on
+ * the slope and updates the internal framebuffer array but does NOT send any data to the terminal.
+ * @param c The character to use for drawing the line.
+ * @param x0 The starting column (1-based index).
+ * @param y0 The starting row (1-based index).
+ * @param x1 The ending column (1-based index).
+ * @param y1 The ending row (1-based index).
+ */
+static void __DrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+{
+	// Calculate absolute horizontal and vertical distances
+	int16_t absolute_x = abs(x1 - x0);
+	int16_t absolute_y = abs(y1 - y0);
+
+	// Choose to draw either a horizontal or vertical line based on greater distance between points
+	if (absolute_x > absolute_y)
+		// The line is "flat" (more horizontal than vertical)
+		__DrawLineHorizontal(c, x0, y0, x1, y1);
+	else
+		// Line is "steep" (more vertical than horizontal)
+		__DrawLineVertical(c, x0, y0, x1, y1);
 }
 
 /* Public Functions ----------------------------------------------------------*/
