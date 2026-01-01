@@ -499,3 +499,28 @@ void TerminalFillRect(char c, int16_t col, int16_t row, uint16_t w, uint16_t h)
 		}
 	}
 }
+
+/**
+ * @fn void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+ * @brief Draws a line between two points in the terminal framebuffer using Bresenham's algorithm.
+ * This function determines whether to draw a horizontal or vertical line based on
+ * the slope and updates the internal framebuffer array but does NOT send any data to the terminal.
+ * @param c The character to use for drawing the line.
+ * @param x0 The starting column (1-based index).
+ * @param y0 The starting row (1-based index).
+ * @param x1 The ending column (1-based index).
+ * @param y1 The ending row (1-based index).
+ */
+void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+{
+	// Check if the line is not off-screen to the left/top
+	if ((x0 < 1 && x1 < 1) || (y0 < 1 && y1 < 1)) 
+		return;
+
+	// Check if the line is not off-screen to the right/bottom
+	if ((x0 > TERMINAL_WIDTH && x1 > TERMINAL_WIDTH) || (y0 > TERMINAL_HEIGHT && y1 > TERMINAL_HEIGHT))
+		return;
+
+	// Draw the line using the internal function
+	__DrawLine(c, x0, y0, x1, y1);
+}
