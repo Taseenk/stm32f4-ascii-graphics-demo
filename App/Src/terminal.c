@@ -23,10 +23,27 @@
 static uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
 
 /* Private Function Prototypes -----------------------------------------------*/
-
+static void __DrawChar(char c, uint16_t col, uint16_t row);
 
 /* Private Functions ---------------------------------------------------------*/
+/**
+ * @fn static void __DrawChar(char c, uint16_t col, uint16_t row)
+ * @brief Internal function for drawing a single character into the
+ * terminal framebuffer at the specified row and column. This is a static function and does NOT
+ * perform bounds checking. This function updates the internal framebuffer array but does NOT
+ * send any data to the terminal.
+ * @param c The character to draw.
+ * @param col The target column number (1-based index).
+ * @param row The target row number (1-based index).
+ */
+static void __DrawChar(char c, uint16_t col, uint16_t row)
+{
+	// Calculate the 1D array index for the 2D framebuffer
+	uint16_t index = ((row - 1) * TERMINAL_WIDTH) + (col - 1);
 
+	// Store the character in the framebuffer
+	framebuffer[index] = c;
+}
 
 /* Public Functions ----------------------------------------------------------*/
 /**
@@ -173,11 +190,8 @@ void TerminalDrawChar(char c, uint16_t col, uint16_t row)
 	if (row > TERMINAL_HEIGHT || col > TERMINAL_WIDTH)
 		return;
 
-	// Calculate the 1D array index for the 2D framebuffer
-	uint16_t index = ((uint16_t)(row - 1) * TERMINAL_WIDTH) + (col - 1);
-
-	// Store the character in the framebuffer
-	framebuffer[index] = (uint8_t)c;
+	// Draw the character in the framebuffer using the internal function
+	__DrawChar(c, col, row);
 }
 
 /**
@@ -207,12 +221,9 @@ void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
 	if (col + len > TERMINAL_WIDTH)
 		return;
 
-	// Calculate the 1D array index for the 2D framebuffer
-	uint16_t index = ((uint16_t)(row - 1) * TERMINAL_WIDTH) + (col - 1);
-
-	// Store the string in the framebuffer
-	for (int i = 0; i < len; i++) {
-		framebuffer[index + i] = str[i];
+	// Store the string in the framebuffer using the internal function 
+	for (uint16_t i = 0; i < len; i++) {
+		__DrawChar(str[i], col + i, row);
 	}
 }
 
