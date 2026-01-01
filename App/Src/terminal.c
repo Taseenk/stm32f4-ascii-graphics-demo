@@ -17,8 +17,9 @@
 // Standard libraries
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+
 
 /* Private Variables ---------------------------------------------------------*/
 static uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
@@ -510,7 +511,7 @@ void TerminalFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h
 void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 	// Check if the line is not off-screen to the left/top
-	if ((x0 < 1 && x1 < 1) || (y0 < 1 && y1 < 1)) 
+	if ((x0 < 1 && x1 < 1) || (y0 < 1 && y1 < 1))
 		return;
 
 	// Check if the line is not off-screen to the right/bottom
@@ -519,4 +520,63 @@ void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1
 
 	// Draw the line using the internal function
 	__DrawLine(c, x0, y0, x1, y1);
+}
+
+/**
+ * @fn void TerminalDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
+ * @brief Draws a line between two points in the terminal framebuffer using Bresenham's algorithm.
+ * This function determines whether to draw a horizontal or vertical line based on
+ * the slope and updates the internal framebuffer array but does NOT send any data to the terminal.
+ * @param c The character to use for drawing the circle.
+ * @param col The target center column number (1-based index).
+ * @param row The target center row number (1-based index).
+ * @param r The radius of the circle in characters.
+ */
+void TerminalDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
+{
+	// Make row and column always be 1 or greater for ANSI terminals
+	__NormalizeCoordinates(&col, &row);
+
+	// Aspect ratio adjustment for terminal character cells that are 2:1
+	const uint16_t aspect_ratio = 2;
+
+	// Quick exit check if the circle is valid
+	if (r == 0)
+		return;
+
+	// Initialize starting point
+	int16_t x = 0;
+	int16_t y = (int16_t)r;
+
+	// Initial midpoint probability
+	int16_t midpoint_probability = 3 - (2 * (int16_t)r);
+
+	while (y >= x) {
+		// --- Quadrant 1 (Upper-Right) ---
+		__DrawChar(c, (col + (x * aspect_ratio)), (row - y));
+		__DrawChar(c, (col + (y * aspect_ratio)), (row - x));
+
+		// --- Quadrant 4 (Lower-Right) ---
+		__DrawChar(c, (col + (x * aspect_ratio)), (row + y));
+		__DrawChar(c, (col + (y * aspect_ratio)), (row + x));
+
+		// --- Quadrant 3 (Lower-Left) ---
+		__DrawChar(c, (col - (x * aspect_ratio)), (row + y));
+		__DrawChar(c, (col - (y * aspect_ratio)), (row + x));
+
+		// --- Quadrant 2 (Upper-Left) ---
+		__DrawChar(c, (col - (x * aspect_ratio)), (row - y));
+		__DrawChar(c, (col - (y * aspect_ratio)), (row - x));
+
+		// Update the decision variable and coordinates
+		if (midpoint_probability < 0) {
+			midpoint_probability += (4 * x) + 6;
+		} else {
+			midpoint_probability += (4 * (x - y)) + 10;
+			y--;
+		}
+
+		// Increment the column
+		x++;
+	}
 }
