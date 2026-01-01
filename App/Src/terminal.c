@@ -24,6 +24,7 @@ static uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
 
 /* Private Function Prototypes -----------------------------------------------*/
 static void __NormalizeCoordinates(uint16_t *col, uint16_t *row);
+static uint8_t __IsValidPos(uint16_t col, uint16_t row);
 static void __DrawChar(char c, uint16_t col, uint16_t row);
 
 /* Private Functions ---------------------------------------------------------*/
@@ -41,6 +42,24 @@ static void __NormalizeCoordinates(uint16_t *col, uint16_t *row)
 		*row = 1;
 	if (*col == 0)
 		*col = 1;
+}
+
+/**
+ * @fn static uint8_t __IsValidPos(uint16_t col, uint16_t row)
+ * @brief Internal function to check if the provided column and row
+ * coordinates are within the valid terminal bounds.
+ * @param col The column number (1-based index).
+ * @param row The row number (1-based index).
+ * @return TRUE if the position is valid, FALSE otherwise.
+ */
+static uint8_t __IsValidPos(uint16_t col, uint16_t row)
+{
+	// Check the maximum screen bounds
+	if (row > TERMINAL_HEIGHT || col > TERMINAL_WIDTH)
+		return FALSE;
+
+	// Return position is valid
+	return TRUE;
 }
 
 /**
@@ -155,11 +174,15 @@ void TerminalVisibleCursor(void)
  */
 void TerminalSetCursorPos(uint16_t col, uint16_t row)
 {
-	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H)
-	char buffer[16];
-
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
+
+	// Check if the starting position is within the screen boundaries
+	if(!__IsValidPos(col, row))
+		return;
+
+	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H)
+	char buffer[16];
 
 	// Format the escape sequence to move the cursor and return the length
 	// The length here is without the string terminator (\0)
@@ -197,8 +220,8 @@ void TerminalDrawChar(char c, uint16_t col, uint16_t row)
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
 
-	// Check the maximum screen bounds
-	if (row > TERMINAL_HEIGHT || col > TERMINAL_WIDTH)
+	// Check if the starting position is within the screen boundaries
+	if(!__IsValidPos(col, row))
 		return;
 
 	// Draw the character in the framebuffer using the internal function
@@ -218,15 +241,16 @@ void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
 
-	// Check the maximum screen bounds
-	if (row > TERMINAL_HEIGHT || col > TERMINAL_WIDTH)
+	// Check if the starting position is within the screen boundaries
+	if(!__IsValidPos(col, row))
 		return;
 
 	// Calculate the length of the string
 	uint16_t len = (uint16_t)strlen(str);
 
 	// Ensure the string fits within the terminal width
-	if (col + len > TERMINAL_WIDTH)
+	// Subtract with 1 because the starting 'col' is included in the string length
+	if (col + len - 1 > TERMINAL_WIDTH)
 		return;
 
 	// Store the string in the framebuffer using the internal function 
