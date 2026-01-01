@@ -20,9 +20,15 @@
 #include <string.h>
 
 /* Private Variables ---------------------------------------------------------*/
-uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
+static uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
 
-/* Functions -----------------------------------------------------------------*/
+/* Private Function Prototypes -----------------------------------------------*/
+
+
+/* Private Functions ---------------------------------------------------------*/
+
+
+/* Public Functions ----------------------------------------------------------*/
 /**
  * @fn void TerminalInit(uint8_t cursor)
  * @brief Initializes the terminal by setting cursor visibility, clearing the screen,
@@ -107,13 +113,13 @@ void TerminalVisibleCursor(void)
 }
 
 /**
- * @fn void TerminalSetCursorPos(uint8_t row, uint8_t col)
+ * @fn void TerminalSetCursorPos(uint16_t col, uint16_t row)
  * @brief Sends the ANSI escape sequence to explicitly set the terminal cursor position.
  * The ANSI command format is ESC[<row>;<col>H.
- * @param row The target row number (1-based index).
  * @param col The target column number (1-based index).
+ * @param row The target row number (1-based index).
  */
-void TerminalSetCursorPos(uint8_t row, uint8_t col)
+void TerminalSetCursorPos(uint16_t col, uint16_t row)
 {
 	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H)
 	char buffer[16];
@@ -148,14 +154,14 @@ void TerminalClearBuffer(void)
 }
 
 /**
- * @fn void TerminalDrawChar(char c, uint8_t row, uint8_t col)
+ * @fn void TerminalDrawChar(char c, uint16_t col, uint16_t row)
  * @brief Draws a single character into the terminal framebuffer at the specified row and column.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param c The character to draw.
- * @param row The target row number (1-based index).
  * @param col The target column number (1-based index).
+ * @param row The target row number (1-based index).
  */
-void TerminalDrawChar(char c, uint8_t row, uint8_t col)
+void TerminalDrawChar(char c, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	if (row == 0)
@@ -175,14 +181,14 @@ void TerminalDrawChar(char c, uint8_t row, uint8_t col)
 }
 
 /**
- * @fn void TerminalDrawString(const char *str, uint8_t row, uint8_t col)
+ * @fn void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
  * @brief Draws a null-terminated string into the terminal framebuffer at the specified row and column.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param str The string to draw.
  * @param row The target row number (1-based index).
  * @param col The target column number (1-based index).
  */
-void TerminalDrawString(const char *str, uint8_t row, uint8_t col)
+void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	if (row == 0)

@@ -41,12 +41,12 @@ void TerminalClearScreen(void);
 void TerminalClearAndHome(void);
 void TerminalInvisibleCursor(void);
 void TerminalVisibleCursor(void);
-void TerminalSetCursorPos(uint8_t row, uint8_t col);
+void TerminalSetCursorPos(uint16_t col, uint16_t row);
 
 // Framebuffer management functions
 void TerminalClearBuffer(void);
-void TerminalDrawChar(char c, uint8_t row, uint8_t col);
-void TerminalDrawString(const char *str, uint8_t row, uint8_t col);
+void TerminalDrawChar(char c, uint16_t col, uint16_t row);
+void TerminalDrawString(const char *str, uint16_t col, uint16_t row);
 
 
 #endif /* __TERMINAL_H */
