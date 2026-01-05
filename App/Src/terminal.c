@@ -344,6 +344,29 @@ void TerminalSetCursorPos(uint16_t col, uint16_t row)
 }
 
 /**
+ * @fn void TerminalSetColour(ForegroundColour_t text_colour, BackgroundColour_t background_colour)
+ * @brief Sets the terminal text (foreground) and background colours using ANSI escape sequences.
+ * This function sends the appropriate ANSI command to change both text and background colours.
+ * @param text_colour The desired foreground colour from the ForegroundColour_t enum.
+ * @param background_colour The desired background colour from the BackgroundColour_t enum.
+ */
+void TerminalSetColour(ForegroundColour_t text_colour, BackgroundColour_t background_colour)
+{
+	// Temporary buffer to hold the ANSI escape sequence
+	char buffer[16];
+
+	// Format the escape sequence to move the cursor and return the length
+	// The length here is without the string terminator (\0)
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%d;%dm", text_colour, background_colour);
+
+	// Check if sprintf failed (len < 0) or if the formatted string exceeded the buffer size
+	if (len <= 0 || (size_t)len >= sizeof(buffer))
+		return;
+
+	SerialPrintN(buffer, (uint16_t)len);
+}
+
+/**
  * @fn void TerminalSetTextColour(ForegroundColour_t text_colour)
  * @brief Sets the terminal text (foreground) colour using ANSI escape sequences.
  * This function sends the appropriate ANSI command to change the text colour.
