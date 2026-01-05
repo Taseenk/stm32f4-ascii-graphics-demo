@@ -30,6 +30,32 @@
 #define ANSI_CLS_HOME ANSI_CLEAR_SCREEN ANSI_CURSOR_HOME
 #define ANSI_HIDE_CLS_HOME ANSI_CURSOR_INVISIBLE ANSI_CLS_HOME
 
+/* typedefs ------------------------------------------------------------------*/
+typedef enum {
+    BG_BLACK = 40,
+    BG_RED,
+    BG_GREEN,
+    BG_YELLOW,
+    BG_BLUE,
+    BG_MAGENTA,
+    BG_CYAN,
+    BG_WHITE,
+    BG_DEFAULT = 49
+} BackgroundColour_t;
+
+typedef enum
+{
+    FG_BLACK = 30,
+    FG_RED,
+    FG_GREEN,
+    FG_YELLOW,
+    FG_BLUE,
+    FG_MAGENTA,
+    FG_CYAN,
+    FG_WHITE,
+    FG_DEFAULT = 39
+} ForegroundColour_t;
+
 /* Function prototypes -------------------------------------------------------*/
 // Initialization and frame handling
 void TerminalInit(uint8_t cursor);
@@ -42,6 +68,7 @@ void TerminalClearAndHome(void);
 void TerminalInvisibleCursor(void);
 void TerminalVisibleCursor(void);
 void TerminalSetCursorPos(uint16_t col, uint16_t row);
+void TerminalSetTextColour(ForegroundColour_t text_colour);
 
 // Framebuffer management functions
 void TerminalClearBuffer(void);
