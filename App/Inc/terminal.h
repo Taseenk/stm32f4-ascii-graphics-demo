@@ -1,7 +1,13 @@
 /**
  ******************************************************************************
  * @file           : terminal.h
- * @brief          :
+ * @brief          : Header for ANSI/VT100 Terminal Graphics & Control Driver.
+ * @details        : This file defines the commands, colors, and functions 
+ * available to the rest of the application for:
+ * - Setting screen dimensions and buffer sizes.
+ * - Using ANSI escape codes for cursor and color control.
+ * - Calling drawing functions for text and shapes.
+ * @note           : All coordinates (col, row) are 1-based (1,1)
  ******************************************************************************
  */
 

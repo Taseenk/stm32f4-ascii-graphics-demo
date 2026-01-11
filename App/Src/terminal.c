@@ -1,7 +1,14 @@
 /**
  ******************************************************************************
  * @file           : terminal.c
- * @brief          :
+ * @brief          : ANSI/VT100 Terminal Graphics Driver and Protocol Handler.
+ * @details		   : Provides a high-level API for controlling ANSI-compatible 
+ * terminals (e.g., PuTTY, Tera Term). Core features include:
+ * - Cursor and Terminal control using ANSI Escape Sequences.
+ * - Primitive drawing (Lines, Rectangles, Triangles, Circles).
+ * - Character and String rendering.
+ * @note           : All coordinates (col, row) are 1-based to maintain 
+ * consistency with ANSI/VT100 standards.
  ******************************************************************************
  */
 
