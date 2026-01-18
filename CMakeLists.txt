@@ -48,6 +48,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     App/Src/terminal.c
     App/Src/serial_hw.c
     App/Src/gfx_matrix_stream.c
+    App/Src/scene_manager.c
 )
 
 # Add include paths
