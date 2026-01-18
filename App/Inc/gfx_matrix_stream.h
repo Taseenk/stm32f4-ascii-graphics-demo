@@ -18,6 +18,10 @@
 #define COORDINATE_OFFSET     1    // Terminal coordinates usually start at 1,1
 #define STRING_TERMINATOR   '\0'    // Null terminator for strings
 
+#define FG_BRIGHT_GREEN "\x1b[38;5;82m"
+#define FG_MEDIUM_GREEN "\x1b[38;5;34m"
+#define FG_DARK_GREEN   "\x1b[38;5;22m"
+
 /* typedefs ------------------------------------------------------------------*/
 
 /* Function prototypes -------------------------------------------------------*/
