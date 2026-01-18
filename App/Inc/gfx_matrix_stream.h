@@ -22,5 +22,6 @@
 
 /* Function prototypes -------------------------------------------------------*/
 void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale);
+void MatrixCharacterDissolve(uint32_t frame, uint8_t density_scale);
 
 #endif /* __GFX_MATRIX_STREAM_H */

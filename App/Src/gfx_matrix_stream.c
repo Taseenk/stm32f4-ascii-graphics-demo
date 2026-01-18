@@ -61,7 +61,6 @@ void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale)
 	// Determine density based on frame count
 	uint32_t spawn_count = (frame % density_scale) + COORDINATE_OFFSET; 
 
-	// Draw random characters at random positions
 	for (int i = 0; i < spawn_count; i++) {
 		// Generate random coordinates within terminal bounds
 		random_col = (__GetRandomNumber() % TERMINAL_WIDTH) + COORDINATE_OFFSET;
@@ -74,5 +73,30 @@ void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale)
 		// Move cursor and draw the character on the terminal
 		TerminalSetCursorPos(random_col, random_row);
 		SerialPrintN(char_buffer, 1);
+	}
+}
+
+/**
+ * @fn void MatrixCharacterDissolve(uint32_t frame, uint8_t density_scale)
+ * @brief Erases random characters at random positions.
+ * @param frame The current frame count used for determining density.
+ * @param density_scale The scale factor to adjust the density of characters erased.
+ */
+void MatrixCharacterDissolve(uint32_t frame, uint8_t density_scale)
+{
+	// Variables for coordinate tracking
+	uint16_t random_col, random_row;
+
+	// Determine density based on frame count
+	uint32_t spawn_count = (frame % density_scale) + COORDINATE_OFFSET;
+
+	for (int i = 0; i < spawn_count; i++) {
+		// Generate random coordinates within terminal bounds
+		random_col = (__GetRandomNumber() % TERMINAL_WIDTH) + COORDINATE_OFFSET;
+		random_row = (__GetRandomNumber() % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
+
+		// Move cursor and draw the character on the terminal
+		TerminalSetCursorPos(random_col, random_row);
+		SerialPrintN(" ", 1);
 	}
 }
