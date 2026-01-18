@@ -12,6 +12,9 @@
 #include "serial_hw.h"
 #include "terminal.h"
 
+// Standard libraries
+#include <stdio.h>
+
 /* Private Variables ---------------------------------------------------------*/
 static uint8_t total_scenes = SCENE_MATRIX_FALLING;
 SceneID_t current_scene = SCENE_MATRIX_GLITCH;
@@ -75,4 +78,22 @@ void SceneManager(uint32_t frame_count)
 	default:
 		break;
 	}
+}
+
+void FPSDisplay(uint32_t fps_counter)
+{
+	// Current calculated FPS value
+	uint32_t fps = fps_counter;
+	
+	// Buffer for UART/Terminal debug strings
+	char debug_msg[64];          
+
+	// Output FPS info to the top-left of the terminal
+	TerminalSetTextColour(FG_BLACK);
+	TerminalSetCursorPos(1, 1);
+	sprintf(debug_msg, "FPS: %-3lu", (unsigned long)fps);
+	SerialPrint(debug_msg);
+
+	// Restore the default terminal styling
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 }
