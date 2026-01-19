@@ -51,6 +51,8 @@ typedef enum {
 
 typedef enum
 {
+    FG_DARK_GREEN = 22,
+    FG_MEDIUM_GREEN = 34,
     FG_BLACK = 30,
     FG_RED,
     FG_GREEN,
@@ -59,7 +61,8 @@ typedef enum
     FG_MAGENTA,
     FG_CYAN,
     FG_WHITE,
-    FG_DEFAULT = 39
+    FG_DEFAULT = 39,
+    FG_BRIGHT_GREEN = 82
 } ForegroundColour_t;
 
 /* Function prototypes -------------------------------------------------------*/
