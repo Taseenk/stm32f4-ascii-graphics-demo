@@ -15,7 +15,8 @@
 #include "main.h"
 
 /* Private Variables ---------------------------------------------------------*/
-extern RNG_HandleTypeDef hrng; // RNG handle defined in rng.c
+extern RNG_HandleTypeDef hrng;                                // RNG handle defined in rng.c
+static uint16_t matrix_rain_active_col[TERMINAL_WIDTH] = {0}; // Track active character positions for each column
 
 /* Private Function Prototypes -----------------------------------------------*/
 static uint32_t __GetRandomNumber(void);
@@ -98,5 +99,67 @@ void MatrixCharacterDissolve(uint32_t frame, uint8_t density_scale)
 		// Move cursor and draw the character on the terminal
 		TerminalSetCursorPos(random_col, random_row);
 		SerialPrintN(" ", 1);
+	}
+}
+
+/**
+ * @fn void MatrixRainUpdate(uint32_t frame, uint8_t speed, uint8_t density)
+ * @brief Updates the "Matrix" rain effect by moving characters down the screen.
+ * @param frame The current frame count used for timing the updates.
+ * @param speed The speed factor determining how often characters move down.
+ * @param density The density factor determining how frequently new characters spawn.
+ */
+void MatrixRainUpdate(uint32_t frame, uint8_t speed, uint8_t density)
+{
+	// Early exit if there is no movement this frame, to save calculations
+	if (frame % speed != FALSE)
+		return;
+
+	// Variables for coordinate tracking and character generation
+	char char_buffer[2] = {0, STRING_TERMINATOR};
+	uint16_t pos;
+
+	// Iterate through every vertical column of the terminal
+	for (int i = 0; i <= TERMINAL_WIDTH; i++) {
+		// Get the current position of the active character in this column
+		pos = matrix_rain_active_col[i];
+
+		// Column is currently active (has a charachter)
+		if (pos > 0) {
+			// Remove the last charachter of the trail if the position is on the terminal
+			if (pos > TRAIL_LENGTH && (pos - TRAIL_LENGTH) <= TERMINAL_HEIGHT) {
+				TerminalSetCursorPos(i, pos - TRAIL_LENGTH);
+				SerialPrint(" ");
+			}
+
+			// Draw the character at current position if the position is on the terminal
+			if (pos <= TERMINAL_HEIGHT) {
+				// Generate a random character using a bitwisem mask
+				// Using 0x3F and adding 33 to stay between a range of printable ASCII character
+				char_buffer[0] = (__GetRandomNumber() & ASCII_CHAR_MASK) + ASCII_PRINTABLE_START;
+
+				// Move cursor and draw the character on the terminal
+				TerminalSetCursorPos(i, pos);
+				SerialPrint(char_buffer);
+			}
+
+			// Increment position for the next frame
+			pos++;
+			matrix_rain_active_col[i] = pos;
+
+			// Set column to inactive if character trail has cleared the screen
+			if (pos > TERMINAL_HEIGHT + TRAIL_LENGTH) {
+				matrix_rain_active_col[i] = COORDINATE_OFFSET;
+			}
+
+			// Determine if a new character should start in a inactive column
+		} else {
+			// Using bitwise mask determine probability for a new character based on the density
+			uint32_t chance = __GetRandomNumber();
+			if (chance != FALSE && (chance & DENSITY_MASK) < density) {
+				// Start a new character on a random pos
+				matrix_rain_active_col[i] = ((chance + i) % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
+			}
+		}
 	}
 }
