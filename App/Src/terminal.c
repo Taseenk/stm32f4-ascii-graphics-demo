@@ -390,13 +390,16 @@ void TerminalSetTextColour(ForegroundColour_t text_colour)
 	// Check if the colour is a standard ANSI colour or an extended colour
 	// Format the escape sequence to move the cursor and return the length
 	// The length here is without the string terminator (\0)
-	if (text_colour >= FG_BLACK && text_colour <= FG_DEFAULT && text_colour != 38) {
-		// Format based on the Standard ANSI forground text colour \x1b[32m
-		len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%dm", text_colour);
-	} else {
+	if (text_colour >= EXTENDED_COLOURS_OFFSET) {
+		// Adjust the colour value for extended colours
+		text_colour -= EXTENDED_COLOURS_OFFSET;
+
 		// Format based on the extended ANSI forground text colour \x1b[38;5;82m
 		len = snprintf(buffer, sizeof(buffer), ANSI_ESC "38;5;%dm", text_colour);
-	}
+	} else {
+		// Format based on the Standard ANSI forground text colour \x1b[32m
+		len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%dm", text_colour);
+	} 
 
 	// Check if sprintf failed (len < 0) or if the formatted string exceeded the buffer size
 	if (len <= 0 || (size_t)len >= sizeof(buffer))
