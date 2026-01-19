@@ -13,14 +13,10 @@
 #include "main.h"
 
 /* Defines -------------------------------------------------------------------*/
-#define ASCII_PRINTABLE_START 33   // The '!' character
-#define ASCII_PRINTABLE_RANGE 94   // Total printable characters up to '~'
-#define COORDINATE_OFFSET     1    // Terminal coordinates usually start at 1,1
-#define STRING_TERMINATOR   '\0'    // Null terminator for strings
-
-#define FG_BRIGHT_GREEN "\x1b[38;5;82m"
-#define FG_MEDIUM_GREEN "\x1b[38;5;34m"
-#define FG_DARK_GREEN   "\x1b[38;5;22m"
+#define ASCII_PRINTABLE_START   33      // The '!' character
+#define ASCII_CHAR_MASK         0x3F    // Mask to get 64 printable ASCII characters
+#define COORDINATE_OFFSET       1       // Terminal coordinates usually start at 1,1
+#define STRING_TERMINATOR       '\0'    // Null terminator for strings
 
 /* typedefs ------------------------------------------------------------------*/
 
