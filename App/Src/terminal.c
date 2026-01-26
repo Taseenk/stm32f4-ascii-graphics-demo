@@ -351,6 +351,37 @@ void TerminalSetCursorPos(uint16_t col, uint16_t row)
 }
 
 /**
+ * @fn void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row)
+ * @brief DDraws a string directly to the terminal at the specified row and column.
+ * @param str The string to draw.
+ * @param col The target column number (1-based index).
+ * @param row The target row number (1-based index).
+ */
+void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row)
+{
+	// Make row and column always be 1 or greater for ANSI terminals
+	__NormalizeCoordinates(&col, &row);
+
+	// Check if the starting position is within the screen boundaries
+	if (!__IsValidPos(col, row))
+		return;
+
+	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H)
+	char buffer[16];
+
+	// Format the escape sequence to move the cursor and return the length
+	// The length here is without the string terminator (\0)
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%u;%uH%s", (unsigned int)row, (unsigned int)col, str);
+
+	// Check if sprintf failed (len < 0) or if the formatted string exceeded the terminal size
+	if (len <= 0 || (size_t)len >= sizeof(buffer))
+		return;
+
+	// Transmit the escape sequence via using the precise length calculated by sprintf
+	SerialPrintN(buffer, (uint16_t)len);
+}
+
+/**
  * @fn void TerminalSetColour(ForegroundColour_t text_colour, BackgroundColour_t background_colour)
  * @brief Sets the terminal text (foreground) and background colours using ANSI escape sequences.
  * This function sends the appropriate ANSI command to change both text and background colours.
