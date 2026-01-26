@@ -41,9 +41,9 @@ uint8_t SerialPrintN(const char *str, uint16_t len)
 		return FALSE;
 
 	// Call the HAL UART transmit function to send the string
-	// HAL_MAX_DELAY ensures the function BLOCKS until all data is transmitted
+	// Timeout of 5ms to prevent blocking for too long
 	// Will return the status of the HAL UART transmit
-	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)str, len, HAL_MAX_DELAY);
+	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)str, len, 5);
 
 	// Check if the transmission was successful
 	if (status != HAL_OK) {
@@ -96,9 +96,9 @@ uint8_t SerialPrintLn(const char *str)
 		return FALSE;
 
 	// Call the HAL UART transmit function to send the string
-	// HAL_MAX_DELAY ensures the function BLOCKS until all data is transmitted
+	// Timeout of 5ms to prevent blocking for too long
 	// Will return the status of the HAL UART transmit
-	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)buffer, len, HAL_MAX_DELAY);
+	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)buffer, len, 5);
 
 	// Check if the transmission was successful
 	if (status != HAL_OK) {
