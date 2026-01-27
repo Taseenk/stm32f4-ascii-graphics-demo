@@ -13,6 +13,7 @@
 #include "terminal.h"
 
 // Standard libraries
+#include <stdint.h>
 #include <stdio.h>
 
 /* Private Variables ---------------------------------------------------------*/
@@ -58,7 +59,7 @@ void SceneManager(uint32_t frame_count)
 			MatrixCharacterNoise(frame_count, GLITCH_NOISE_HIGH);
 
 			// Occasional light dissolving to keep the screen from getting too crowded
-			if (frame_count % 3 == 0)
+			if (frame_count % GLITCH_DISSOLVE_INTERVAL == 0)
 				MatrixCharacterDissolve(frame_count, GLITCH_DISSOLVE_LIGHT);
 		}
 		// Light Dimming
@@ -100,8 +101,31 @@ void SceneManager(uint32_t frame_count)
 		}
 		break;
 	case SCENE_MATRIX_FALLING_GLITCH:
-		// TODO: Implement combined rain/falling and glitch character logic
+		// Determine time spent in the current scene
 		time_in_scene = frame_count % interval;
+
+		// Adjust text colour based on time in scene
+		if (time_in_scene < RG_COLOR_BRIGHT_LIMIT) {
+			TerminalSetTextColour(FG_BRIGHT_GREEN);
+		} else if (time_in_scene < RG_COLOR_MEDIUM_LIMIT) {
+			TerminalSetTextColour(FG_MEDIUM_GREEN);
+		} else if (time_in_scene < RG_COLOR_DARK_LIMIT) {
+			TerminalSetTextColour(FG_DARK_GREEN);
+		} else {
+			TerminalSetTextColour(FG_DARK_GREEN);
+		}
+
+		// Transition from high to low density halfway through the scene
+		if (interval < RG_RAIN_TRANSITION)
+			MatrixRainUpdate(frame_count, RAIN_DENSITY_HIGH);
+		else
+			MatrixRainUpdate(frame_count, RAIN_DENSITY_LOW);
+
+		// Add glitch effects at intervals
+		if (frame_count % RG_NOISE_INTERVAL == 0)
+			MatrixCharacterNoise(frame_count, GLITCH_NOISE_MID);
+		if (time_in_scene % RG_DISSOLVE_INTERVAL == 0)
+			MatrixCharacterDissolve(frame_count, GLITCH_DISSOLVE_HIGH);
 		break;
 	default:
 		break;
@@ -117,11 +141,11 @@ void FPSDisplay(uint32_t fps_counter)
 	char debug_msg[64];
 
 	// Output FPS info to the top-left of the terminal
-	TerminalSetTextColour(FG_BLACK);
+	// TerminalSetTextColour(FG_BLACK);
 	TerminalSetCursorPos(1, 1);
 	sprintf(debug_msg, "FPS: %-3lu", (unsigned long)fps);
 	SerialPrint(debug_msg);
 
 	// Restore the default terminal styling
-	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+	// TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 }
