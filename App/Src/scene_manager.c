@@ -35,7 +35,7 @@ void SceneManager(uint32_t frame_count)
 		current_scene = (SceneID_t)((current_scene + 1) % SCENE_TOTAL_COUNT);
 
 		// Reset the terminal display for the new scene
-		TerminalClearAndHome();
+		// TerminalClearAndHome();
 	}
 
 	// Scene-specific logic
@@ -76,6 +76,29 @@ void SceneManager(uint32_t frame_count)
 		}
 
 		break;
+	case SCENE_MATRIX_FALLING_GLITCH:
+		// Determine time spent in the current scene
+		time_in_scene = frame_count % interval;
+
+		// Adjust text colour based on time in scene
+		if (time_in_scene < RG_COLOR_BRIGHT_LIMIT) {
+			TerminalSetTextColour(FG_BRIGHT_GREEN);
+		} else if (time_in_scene < RG_COLOR_MEDIUM_LIMIT) {
+			TerminalSetTextColour(FG_MEDIUM_GREEN);
+		} else if (time_in_scene < RG_COLOR_DARK_LIMIT) {
+			TerminalSetTextColour(FG_DARK_GREEN);
+		} else {
+			TerminalSetTextColour(FG_DARK_GREEN);
+		}
+
+		// Add a low density rain for the transition to the next scene
+		MatrixRainUpdate(frame_count, RAIN_DENSITY_LOW);
+
+		// Add glitch effects at intervals
+		if (time_in_scene % RG_DISSOLVE_INTERVAL == 0)
+			MatrixCharacterDissolve(frame_count, GLITCH_DISSOLVE_HIGH);
+			
+		break;
 	case SCENE_MATRIX_FALLING:
 		// Determine time spent in the current scene
 		time_in_scene = frame_count % interval;
@@ -99,33 +122,6 @@ void SceneManager(uint32_t frame_count)
 			MatrixRainUpdate(frame_count, RAIN_DENSITY_LOW);
 			break;
 		}
-		break;
-	case SCENE_MATRIX_FALLING_GLITCH:
-		// Determine time spent in the current scene
-		time_in_scene = frame_count % interval;
-
-		// Adjust text colour based on time in scene
-		if (time_in_scene < RG_COLOR_BRIGHT_LIMIT) {
-			TerminalSetTextColour(FG_BRIGHT_GREEN);
-		} else if (time_in_scene < RG_COLOR_MEDIUM_LIMIT) {
-			TerminalSetTextColour(FG_MEDIUM_GREEN);
-		} else if (time_in_scene < RG_COLOR_DARK_LIMIT) {
-			TerminalSetTextColour(FG_DARK_GREEN);
-		} else {
-			TerminalSetTextColour(FG_DARK_GREEN);
-		}
-
-		// Transition from high to low density halfway through the scene
-		if (interval < RG_RAIN_TRANSITION)
-			MatrixRainUpdate(frame_count, RAIN_DENSITY_HIGH);
-		else
-			MatrixRainUpdate(frame_count, RAIN_DENSITY_LOW);
-
-		// Add glitch effects at intervals
-		if (frame_count % RG_NOISE_INTERVAL == 0)
-			MatrixCharacterNoise(frame_count, GLITCH_NOISE_MID);
-		if (time_in_scene % RG_DISSOLVE_INTERVAL == 0)
-			MatrixCharacterDissolve(frame_count, GLITCH_DISSOLVE_HIGH);
 		break;
 	default:
 		break;

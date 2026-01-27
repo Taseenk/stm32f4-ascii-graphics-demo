@@ -37,14 +37,13 @@
 #define RG_COLOR_MEDIUM_LIMIT     	80    	// Frame threshold for medium green
 #define RG_COLOR_DARK_LIMIT       	160   	// Frame threshold for dark green
 #define RG_RAIN_TRANSITION        	(SCENE_INTERVAL_FRAMES / 2) // Mid-point for density swap
-#define RG_NOISE_INTERVAL 			2		// Every 2nd frame
-#define RG_DISSOLVE_INTERVAL 		5		// Every 5th frame of scene
+#define RG_DISSOLVE_INTERVAL 		3		// Every 3th frame of scene
 
 /* typedefs ------------------------------------------------------------------*/
 typedef enum {
 	SCENE_MATRIX_GLITCH,
-	SCENE_MATRIX_FALLING,
 	SCENE_MATRIX_FALLING_GLITCH,
+	SCENE_MATRIX_FALLING,
 	SCENE_TOTAL_COUNT
 } SceneID_t;
 
