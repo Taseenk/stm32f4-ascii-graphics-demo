@@ -17,7 +17,9 @@
 /* typedefs ------------------------------------------------------------------*/
 typedef enum {
 	SCENE_MATRIX_GLITCH,
-	SCENE_MATRIX_FALLING
+	SCENE_MATRIX_FALLING,
+	SCENE_MATRIX_FALLING_GLITCH,
+	SCENE_TOTAL_COUNT
 } SceneID_t;
 
 /* Function prototypes -------------------------------------------------------*/

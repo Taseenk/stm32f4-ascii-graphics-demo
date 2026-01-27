@@ -16,8 +16,7 @@
 #include <stdio.h>
 
 /* Private Variables ---------------------------------------------------------*/
-static uint8_t total_scenes = SCENE_MATRIX_FALLING;
-SceneID_t current_scene = SCENE_MATRIX_GLITCH;
+SceneID_t current_scene = SCENE_MATRIX_FALLING;
 
 /* Private Function Prototypes -----------------------------------------------*/
 
@@ -32,7 +31,7 @@ void SceneManager(uint32_t frame_count)
 	// Scene transition at the end of every interval
 	if (frame_count % interval == 0) {
 		// Move to next scene index, wrapping back to 0 at the end of the list
-		current_scene = (current_scene + 1) % total_scenes;
+		current_scene = (SceneID_t)((current_scene + 1) % SCENE_TOTAL_COUNT);
 
 		// Reset the terminal display for the new scene
 		TerminalClearAndHome();
@@ -44,7 +43,7 @@ void SceneManager(uint32_t frame_count)
 		time_in_scene = frame_count % interval;
 		// Full Brightness
 		if (time_in_scene < 20) {
-			SerialPrint(FG_BRIGHT_GREEN);
+			TerminalSetTextColour(FG_BRIGHT_GREEN);
 
 			// Spawn random characters
 			MatrixCharacterNoise(frame_count, 10);
@@ -55,7 +54,7 @@ void SceneManager(uint32_t frame_count)
 		}
 		// Light Dimming
 		else if (time_in_scene < 140) {
-			SerialPrint(FG_MEDIUM_GREEN);
+			TerminalSetTextColour(FG_MEDIUM_GREEN);
 
 			// Spawn fewer new characters, dissolve more existing ones
 			MatrixCharacterNoise(frame_count, 4);
@@ -63,7 +62,7 @@ void SceneManager(uint32_t frame_count)
 		}
 		// Deeper Fade
 		else {
-			SerialPrint(FG_DARK_GREEN);
+			TerminalSetTextColour(FG_DARK_GREEN);
 
 			// Very few new characters and keep dissolving
 			MatrixCharacterNoise(frame_count, 2);
@@ -73,6 +72,10 @@ void SceneManager(uint32_t frame_count)
 		break;
 	case SCENE_MATRIX_FALLING:
 		// TODO: Implement standard rain/falling character logic
+		time_in_scene = frame_count % interval;
+		break;
+	case SCENE_MATRIX_FALLING_GLITCH:
+		// TODO: Implement combined rain/falling and glitch character logic
 		time_in_scene = frame_count % interval;
 		break;
 	default:
