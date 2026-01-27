@@ -23,6 +23,7 @@ static uint16_t matrix_rain_active_col[TERMINAL_WIDTH] = {0}; // Track active ch
 
 /* Private Function Prototypes -----------------------------------------------*/
 static uint32_t __GetRandomNumber(void);
+static void __XorshiftRandomNumber(uint32_t *rand_num);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
@@ -48,6 +49,19 @@ static uint32_t __GetRandomNumber(void)
 	return value;
 }
 
+/**
+ * @fn static void __XorshiftRandomNumber(uint32_t *rand_num)
+ * @brief Updates the provided random number using the Xorshift algorithm.
+ * @param rand_num Pointer to the random number to be updated.
+ */
+static void __XorshiftRandomNumber(uint32_t *rand_num)
+{
+	// Xorshift algorithm to update the random number
+	*rand_num ^= *rand_num << XORSHIFT_S1;
+	*rand_num ^= *rand_num >> XORSHIFT_S2;
+	*rand_num ^= *rand_num << XORSHIFT_S3;
+} 
+
 /* Public Functions ----------------------------------------------------------*/
 /**
  * @fn void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale)
@@ -61,22 +75,30 @@ void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale)
 	// Variables for coordinate tracking and character generation
 	uint16_t random_col, random_row;
 	char char_buffer[2] = {0, STRING_TERMINATOR};
+	uint32_t rand_num = __GetRandomNumber();
 
 	// Determine density based on frame count
 	uint32_t spawn_count = (frame % density_scale) + COORDINATE_OFFSET;
 
 	for (int i = 0; i < spawn_count; i++) {
-		// Generate random coordinates within terminal bounds
-		random_col = (__GetRandomNumber() % TERMINAL_WIDTH) + COORDINATE_OFFSET;
-		random_row = (__GetRandomNumber() % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
+		// Update the random number using Xorshift algorithm
+		// Generate random column within terminal bounds
+		__XorshiftRandomNumber(&rand_num);
+		random_col = (rand_num % TERMINAL_WIDTH) + COORDINATE_OFFSET;
 
-		// Generate a random character using a bitwisem mask
+		// Update the random number using Xorshift algorithm
+		// Generate random row within terminal bounds
+		__XorshiftRandomNumber(&rand_num);
+		random_row = (rand_num % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
+		
+		// Update the random number using Xorshift algorithm
+		__XorshiftRandomNumber(&rand_num);
+		// Generate a random character using a bitwise mask
 		// Using 0x3F and adding 33 to stay between a range of printable ASCII character
-		char_buffer[0] = (__GetRandomNumber() & ASCII_CHAR_MASK) + ASCII_PRINTABLE_START;
+		char_buffer[0] = (rand_num & ASCII_CHAR_MASK) + ASCII_PRINTABLE_START;
 
 		// Move cursor and draw the character on the terminal
-		TerminalSetCursorPos(random_col, random_row);
-		SerialPrintN(char_buffer, 1);
+		TerminalSerialPrintString(char_buffer, random_col, random_row);
 	}
 }
 
@@ -88,20 +110,26 @@ void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale)
  */
 void MatrixCharacterDissolve(uint32_t frame, uint8_t density_scale)
 {
-	// Variables for coordinate tracking
+	// Variables for coordinate tracking and character generation
 	uint16_t random_col, random_row;
+	uint32_t rand_num = __GetRandomNumber();
 
 	// Determine density based on frame count
 	uint32_t spawn_count = (frame % density_scale) + COORDINATE_OFFSET;
 
 	for (int i = 0; i < spawn_count; i++) {
-		// Generate random coordinates within terminal bounds
-		random_col = (__GetRandomNumber() % TERMINAL_WIDTH) + COORDINATE_OFFSET;
-		random_row = (__GetRandomNumber() % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
+		// Update the random number using Xorshift algorithm
+		// Generate random column within terminal bounds
+		__XorshiftRandomNumber(&rand_num);
+		random_col = (rand_num % TERMINAL_WIDTH) + COORDINATE_OFFSET;
 
-		// Move cursor and draw the character on the terminal
-		TerminalSetCursorPos(random_col, random_row);
-		SerialPrintN(" ", 1);
+		// Update the random number using Xorshift algorithm
+		// Generate random row within terminal bounds
+		__XorshiftRandomNumber(&rand_num);
+		random_row = (rand_num % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
+
+		// Move cursor and erase the character on the terminal
+		TerminalSerialPrintString(" ", random_col, random_row);
 	}
 }
 
@@ -124,9 +152,8 @@ void MatrixRainUpdate(uint32_t frame, uint8_t density)
 
 	// Iterate through every vertical column of the terminal
 	for (int i = 0; i <= TERMINAL_WIDTH; i++) {
-		rand_num ^= rand_num << XORSHIFT_S1;
-		rand_num ^= rand_num >> XORSHIFT_S2;
-		rand_num ^= rand_num << XORSHIFT_S3;
+		// Update the random number using Xorshift algorithm
+		__XorshiftRandomNumber(&rand_num);
 
 		// Get the current position of the active character in this column
 		pos = matrix_rain_active_col[i];
