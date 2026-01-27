@@ -25,8 +25,8 @@ SceneID_t current_scene = SCENE_MATRIX_FALLING;
 /* Public Functions ----------------------------------------------------------*/
 void SceneManager(uint32_t frame_count)
 {
-	uint16_t interval = 300; // Duration of each scene before switching
-	uint16_t time_in_scene;  // Time spent in the current scene
+	uint16_t interval = SCENE_INTERVAL_FRAMES; // Duration of each scene before switching
+	uint16_t time_in_scene;                    // Time spent in the current scene
 
 	// Scene transition at the end of every interval
 	if (frame_count % interval == 0) {
@@ -44,40 +44,60 @@ void SceneManager(uint32_t frame_count)
 		time_in_scene = frame_count % interval;
 
 		// Adjust text colour based on time in scene
-		if (time_in_scene == 0) {
+		if (time_in_scene == GLITCH_BRIGHTNESS_START) {
 			TerminalSetTextColour(FG_BRIGHT_GREEN);
-		} else if (time_in_scene == 21) {
+		} else if (time_in_scene == GLITCH_DIM_START) {
 			TerminalSetTextColour(FG_MEDIUM_GREEN);
-		} else if (time_in_scene == 141) {
+		} else if (time_in_scene == GLITCH_FADE_START) {
 			TerminalSetTextColour(FG_DARK_GREEN);
 		}
 
 		// Full Brightness
-		if (time_in_scene < 20) {
+		if (time_in_scene < GLITCH_DIM_START) {
 			// Spawn random characters
-			MatrixCharacterNoise(frame_count, 20);
+			MatrixCharacterNoise(frame_count, GLITCH_NOISE_HIGH);
 
 			// Occasional light dissolving to keep the screen from getting too crowded
 			if (frame_count % 3 == 0)
-				MatrixCharacterDissolve(frame_count, 5);
+				MatrixCharacterDissolve(frame_count, GLITCH_DISSOLVE_LIGHT);
 		}
 		// Light Dimming
-		else if (time_in_scene < 140) {
+		else if (time_in_scene < GLITCH_FADE_START) {
 			// Spawn fewer new characters, dissolve more existing ones
-			MatrixCharacterNoise(frame_count, 4);
-			MatrixCharacterDissolve(frame_count, 15);
+			MatrixCharacterNoise(frame_count, GLITCH_NOISE_MID);
+			MatrixCharacterDissolve(frame_count, GLITCH_DISSOLVE_HIGH);
 		}
 		// Deeper Fade
 		else {
 			// Very few new characters and keep dissolving
-			MatrixCharacterNoise(frame_count, 2);
-			MatrixCharacterDissolve(frame_count, 15);
+			MatrixCharacterNoise(frame_count, GLITCH_NOISE_LOW);
+			MatrixCharacterDissolve(frame_count, GLITCH_DISSOLVE_HIGH);
 		}
 
 		break;
 	case SCENE_MATRIX_FALLING:
-		// TODO: Implement standard rain/falling character logic
+		// Determine time spent in the current scene
 		time_in_scene = frame_count % interval;
+
+		// Cycle through density steps every 40 frames
+		int step = (time_in_scene / RAIN_DENSITY_STEPS) % 3;
+
+		switch (step) {
+		case 0: // High Density
+			TerminalSetTextColour(FG_BRIGHT_GREEN);
+			MatrixRainUpdate(frame_count, RAIN_DENSITY_HIGH);
+			break;
+
+		case 1: // Medium Density
+			TerminalSetTextColour(FG_MEDIUM_GREEN);
+			MatrixRainUpdate(frame_count, RAIN_DENSITY_MID);
+			break;
+
+		case 2: // Low Density
+			TerminalSetTextColour(FG_DARK_GREEN);
+			MatrixRainUpdate(frame_count, RAIN_DENSITY_LOW);
+			break;
+		}
 		break;
 	case SCENE_MATRIX_FALLING_GLITCH:
 		// TODO: Implement combined rain/falling and glitch character logic
