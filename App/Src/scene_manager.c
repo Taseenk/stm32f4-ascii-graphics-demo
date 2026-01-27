@@ -40,13 +40,22 @@ void SceneManager(uint32_t frame_count)
 	// Scene-specific logic
 	switch (current_scene) {
 	case SCENE_MATRIX_GLITCH:
+		// Determine time spent in the current scene
 		time_in_scene = frame_count % interval;
+
+		// Adjust text colour based on time in scene
+		if (time_in_scene == 0) {
+			TerminalSetTextColour(FG_BRIGHT_GREEN);
+		} else if (time_in_scene == 21) {
+			TerminalSetTextColour(FG_MEDIUM_GREEN);
+		} else if (time_in_scene == 141) {
+			TerminalSetTextColour(FG_DARK_GREEN);
+		}
+
 		// Full Brightness
 		if (time_in_scene < 20) {
-			TerminalSetTextColour(FG_BRIGHT_GREEN);
-
 			// Spawn random characters
-			MatrixCharacterNoise(frame_count, 10);
+			MatrixCharacterNoise(frame_count, 20);
 
 			// Occasional light dissolving to keep the screen from getting too crowded
 			if (frame_count % 3 == 0)
@@ -54,16 +63,12 @@ void SceneManager(uint32_t frame_count)
 		}
 		// Light Dimming
 		else if (time_in_scene < 140) {
-			TerminalSetTextColour(FG_MEDIUM_GREEN);
-
 			// Spawn fewer new characters, dissolve more existing ones
 			MatrixCharacterNoise(frame_count, 4);
 			MatrixCharacterDissolve(frame_count, 15);
 		}
 		// Deeper Fade
 		else {
-			TerminalSetTextColour(FG_DARK_GREEN);
-
 			// Very few new characters and keep dissolving
 			MatrixCharacterNoise(frame_count, 2);
 			MatrixCharacterDissolve(frame_count, 15);
@@ -87,9 +92,9 @@ void FPSDisplay(uint32_t fps_counter)
 {
 	// Current calculated FPS value
 	uint32_t fps = fps_counter;
-	
+
 	// Buffer for UART/Terminal debug strings
-	char debug_msg[64];          
+	char debug_msg[64];
 
 	// Output FPS info to the top-left of the terminal
 	TerminalSetTextColour(FG_BLACK);
