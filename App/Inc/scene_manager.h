@@ -40,12 +40,20 @@
 #define RG_DISSOLVE_INTERVAL 		3		// Every 3th frame of scene
 
 /* typedefs ------------------------------------------------------------------*/
-// Scene Configuration Structure
-typedef struct {
-	SceneID_t id;							// Scene identifier
-	uint32_t duration;						// Duration of the scene in frames
-    SceneTransition_t screen_transition;	// Type of screen transition effect
-} SceneConfig_t;
+// Scene Identifiers
+typedef enum {
+	SCENE_MATRIX_GLITCH,
+	SCENE_MATRIX_FALLING_GLITCH,
+	SCENE_MATRIX_FALLING,
+	SCENE_TOTAL_SCENES
+} SceneID_t;
+
+// Scene Transition Types
+typedef enum {
+    SCENE_TRANSITION_NONE,		// Instant switch with no visual effect
+    SCENE_TRANSITION_CLEAR,		// Clear the screen and buffer before next scene
+    SCENE_TOTAL_TRANSITIONS		// Total number of available transition types
+} SceneTransition_t;
 
 // Scene States
 typedef enum {
@@ -55,20 +63,13 @@ typedef enum {
     SCENE_TOTAL_STATES			// Total number of available states
 } SceneState_t;
 
-// Scene Transition Types
-typedef enum {
-    SCENE_TRANSITION_NONE,		// Instant switch with no visual effect
-    SCENE_TRANSITION_CLEAR,		// Clear the screen and buffer before next scene
-    SCENE_TOTAL_TRANSITIONS		// Total number of available transition types
-} SceneTransition_t;
+// Scene Configuration Structure
+typedef struct {
+	SceneID_t id;							// Scene identifier
+	uint32_t duration;						// Duration of the scene in frames
+    SceneTransition_t screen_transition;	// Type of screen transition effect
+} SceneConfig_t;
 
-// Scene Identifiers
-typedef enum {
-	SCENE_MATRIX_GLITCH,
-	SCENE_MATRIX_FALLING_GLITCH,
-	SCENE_MATRIX_FALLING,
-	SCENE_TOTAL_SCENES
-} SceneID_t;
 
 /* Function prototypes -------------------------------------------------------*/
 void SceneManager(uint32_t frame_count);
