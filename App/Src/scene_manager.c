@@ -17,7 +17,16 @@
 #include <stdio.h>
 
 /* Private Variables ---------------------------------------------------------*/
-SceneID_t current_scene = SCENE_MATRIX_FALLING;
+static const SceneConfig_t scene_playlist[] = {
+    {SCENE_MATRIX_GLITCH, 20, SCENE_TRANSITION_NONE},
+    {SCENE_MATRIX_FALLING_GLITCH, 10, SCENE_TRANSITION_NONE},
+    {SCENE_MATRIX_FALLING, 10, SCENE_TRANSITION_NONE},
+};
+
+static SceneState_t current_state = SCENE_STATE_START; // Starting state
+// SceneID_t current_scene_id = SCENE_MATRIX_GLITCH; 	// Starting scene
+static uint8_t playlist_index = 0;
+static uint32_t scene_frame_counter = 0; // Frame counter for the current scene
 
 /* Private Function Prototypes -----------------------------------------------*/
 void __RunActiveScene(SceneID_t id, uint32_t frame);
@@ -31,94 +40,20 @@ void __RunActiveScene(SceneID_t id, uint32_t frame);
  */
 void __RunActiveScene(SceneID_t id, uint32_t frame)
 {
-	uint16_t time_in_scene; // Time spent in the current scene
-
 	switch (id) {
 		/* Run the Matrix Glitch Scene */
 		case SCENE_MATRIX_GLITCH:
-			// Determine time spent in the current scene
-			time_in_scene = frame % SCENE_INTERVAL_FRAMES;
-
-			// Adjust text colour based on time in scene
-			if (time_in_scene == GLITCH_BRIGHTNESS_START) {
-				TerminalSetTextColour(FG_BRIGHT_GREEN);
-			} else if (time_in_scene == GLITCH_DIM_START) {
-				TerminalSetTextColour(FG_MEDIUM_GREEN);
-			} else if (time_in_scene == GLITCH_FADE_START) {
-				TerminalSetTextColour(FG_DARK_GREEN);
-			}
-
-			// Full Brightness
-			if (time_in_scene < GLITCH_DIM_START) {
-				// Spawn random characters
-				MatrixCharacterNoise(frame, GLITCH_NOISE_HIGH);
-
-				// Occasional light dissolving to keep the screen from getting too crowded
-				if (frame % GLITCH_DISSOLVE_INTERVAL == 0)
-					MatrixCharacterDissolve(frame, GLITCH_DISSOLVE_LIGHT);
-			}
-			// Light Dimming
-			else if (time_in_scene < GLITCH_FADE_START) {
-				// Spawn fewer new characters, dissolve more existing ones
-				MatrixCharacterNoise(frame, GLITCH_NOISE_MID);
-				MatrixCharacterDissolve(frame, GLITCH_DISSOLVE_HIGH);
-			}
-			// Deeper Fade
-			else {
-				// Very few new characters and keep dissolving
-				MatrixCharacterNoise(frame, GLITCH_NOISE_LOW);
-				MatrixCharacterDissolve(frame, GLITCH_DISSOLVE_HIGH);
-			}
+			// (Implementation of the scene logic goes here)
 			break;
 
 		/* Run the Falling Glitch Scene */
 		case SCENE_MATRIX_FALLING_GLITCH:
-			// Determine time spent in the current scene
-			time_in_scene = frame % SCENE_INTERVAL_FRAMES;
-
-			// Adjust text colour based on time in scene
-			if (time_in_scene < RG_COLOR_BRIGHT_LIMIT) {
-				TerminalSetTextColour(FG_BRIGHT_GREEN);
-			} else if (time_in_scene < RG_COLOR_MEDIUM_LIMIT) {
-				TerminalSetTextColour(FG_MEDIUM_GREEN);
-			} else if (time_in_scene < RG_COLOR_DARK_LIMIT) {
-				TerminalSetTextColour(FG_DARK_GREEN);
-			} else {
-				TerminalSetTextColour(FG_DARK_GREEN);
-			}
-
-			// Add a low density rain for the transition to the next scene
-			MatrixRainUpdate(frame, RAIN_DENSITY_LOW);
-
-			// Add glitch effects at intervals
-			if (time_in_scene % RG_DISSOLVE_INTERVAL == 0)
-				MatrixCharacterDissolve(frame, GLITCH_DISSOLVE_HIGH);
+			// (Implementation of the scene logic goes here)
 			break;
 
 		/* Run the Falling Scene */
 		case SCENE_MATRIX_FALLING:
-			// Determine time spent in the current scene
-			time_in_scene = frame % SCENE_INTERVAL_FRAMES;
-
-			// Cycle through density steps every 40 frames
-			int step = (time_in_scene / RAIN_DENSITY_STEPS) % 3;
-
-			switch (step) {
-				case 0: // High Density
-					TerminalSetTextColour(FG_BRIGHT_GREEN);
-					MatrixRainUpdate(frame, RAIN_DENSITY_HIGH);
-					break;
-
-				case 1: // Medium Density
-					TerminalSetTextColour(FG_MEDIUM_GREEN);
-					MatrixRainUpdate(frame, RAIN_DENSITY_MID);
-					break;
-
-				case 2: // Low Density
-					TerminalSetTextColour(FG_DARK_GREEN);
-					MatrixRainUpdate(frame, RAIN_DENSITY_LOW);
-					break;
-			}
+			// (Implementation of the scene logic goes here)
 			break;
 
 		default:
@@ -134,17 +69,53 @@ void __RunActiveScene(SceneID_t id, uint32_t frame)
  */
 void SceneManager(uint32_t frame_count)
 {
-	// Scene transition at the end of every interval
-	if (frame_count % SCENE_INTERVAL_FRAMES == 0) {
-		// Move to next scene index, wrapping back to 0 at the end of the list
-		current_scene = (SceneID_t)((current_scene + 1) % SCENE_TOTAL_SCENES);
+	// Get the currently active scene
+	SceneConfig_t active_scene = scene_playlist[playlist_index];
 
-		// Reset the terminal display for the new scene
-		// TerminalClearAndHome();
+	switch (current_state) {
+		/* Initialize scenes */
+		case SCENE_STATE_START:
+			// Reset the terminal display for the new scene
+			if (active_scene.screen_transition == SCENE_TRANSITION_CLEAR) {
+				TerminalClearAndHome();
+			}
+
+			// Reset scene frame counter and continue to RUN state
+			scene_frame_counter = 0;
+			current_state = SCENE_STATE_RUN;
+			break;
+
+		/* Run scene logic */
+		case SCENE_STATE_RUN:
+			// Run the active scene logic
+			__RunActiveScene(active_scene.id, scene_frame_counter);
+
+			// Check the duration of the scene to transition to EXIT state
+			if (scene_frame_counter >= active_scene.duration) {
+				current_state = SCENE_STATE_EXIT;
+			} else {
+				// Increment scene frame counter keeping up scene managment
+				scene_frame_counter++;
+			}
+
+			break;
+
+		/* Cleanup and transition to next scene */
+		case SCENE_STATE_EXIT:
+			// Reset terminal styling
+			TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+			// Move to next playlist index, wrapping back to 0 at the end of the list
+			playlist_index = (playlist_index + 1) % SCENE_PLAYLIST_SIZE;
+
+			// Move back to START state for the next scene
+			current_state = SCENE_STATE_START;
+			break;
+
+		/* Default case to catch unexpected states */
+		default:
+			break;
 	}
-
-	// Scene-specific logic
-	__RunActiveScene(current_scene, frame_count);
 }
 
 /**
