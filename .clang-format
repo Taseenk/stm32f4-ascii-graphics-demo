@@ -8,5 +8,8 @@ BasedOnStyle: Microsoft
 IndentWidth: 4
 UseTab: ForIndentation
 
+# Indent the "case" labels relative to the "switch" statement
+IndentCaseLabels: true
+
 # The indentation width used for wrapped lines (e.g., arguments split across multiple lines).
 ContinuationIndentWidth: 4
