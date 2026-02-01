@@ -141,10 +141,6 @@ void MatrixCharacterDissolve(uint32_t frame, uint8_t density_scale)
  */
 void MatrixRainUpdate(uint32_t frame, uint8_t density)
 {
-	// Early exit if there is no movement this frame, to save calculations
-	if (frame % MATRIX_FRAME_DIVIDER != FALSE)
-		return;
-
 	// Variables for coordinate tracking and character generation
 	char char_buffer[2] = {0, STRING_TERMINATOR};
 	uint16_t pos, erase_row;
