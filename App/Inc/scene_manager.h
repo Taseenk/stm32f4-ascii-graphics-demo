@@ -13,12 +13,15 @@
 #include "main.h"
 
 /* Defines -------------------------------------------------------------------*/
-#define SCENE_INTERVAL_FRAMES 		300		// Total duration of a scene in frames
+#define SCENE_DEFAULT_INTERVAL 		300		// Default duration of a scene in frames
+#define SCENE_PLAYLIST_SIZE			3		// Number of scenes in the playlist
 
 // Glitch Scene
+#define GLITCH_DURATION				150		// Duration of glitch scene in frames
 #define GLITCH_BRIGHTNESS_START 	0		// Frame index to start full brightness
 #define GLITCH_DIM_START 			21		// Frame index to start medium green
-#define GLITCH_FADE_START 			141		// Frame index to start dark green
+#define GLITCH_FADE_START 			95		// Frame index to start dark green
+
 #define GLITCH_NOISE_HIGH 			20		// Max character spawn rate (Full Brightness)
 #define GLITCH_NOISE_MID 			4		// Reduced character spawn rate (Dimming)
 #define GLITCH_NOISE_LOW 			2		// Minimum character spawn rate (Fade)
@@ -27,16 +30,18 @@
 #define GLITCH_DISSOLVE_INTERVAL 	3		// Every 3th frame of scene
 
 // Rain Scene
+#define RAIN_DURATION				400		// Duration of rain scene in frames
 #define RAIN_DENSITY_STEPS 			40		// Frames to wait before switching density levels
 #define RAIN_DENSITY_HIGH         	13    	// Most dense rain trail spawn rate
 #define RAIN_DENSITY_MID          	6     	// Medium rain trail spawn rate
 #define RAIN_DENSITY_LOW          	3     	// Sparse rain trail spawn rate
 
 // Combined rain and glitch
+#define RG_DURATION					300		// Duration of rain+glitch scene in frames
 #define RG_COLOR_BRIGHT_LIMIT     	40    	// Frame threshold for bright green
 #define RG_COLOR_MEDIUM_LIMIT     	80    	// Frame threshold for medium green
 #define RG_COLOR_DARK_LIMIT       	160   	// Frame threshold for dark green
-#define RG_RAIN_TRANSITION        	(SCENE_INTERVAL_FRAMES / 2) // Mid-point for density swap
+#define RG_RAIN_TRANSITION        	(RG_DURATION / 2) // Mid-point for density swap
 #define RG_DISSOLVE_INTERVAL 		3		// Every 3th frame of scene
 
 /* typedefs ------------------------------------------------------------------*/
