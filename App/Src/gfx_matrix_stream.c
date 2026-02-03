@@ -147,7 +147,7 @@ void MatrixRainUpdate(uint32_t frame, uint8_t density)
 	uint32_t rand_num = __GetRandomNumber();
 
 	// Iterate through every vertical column of the terminal
-	for (int i = 0; i <= TERMINAL_WIDTH; i++) {
+	for (int i = 0; i < TERMINAL_WIDTH; i++) {
 		// Update the random number using Xorshift algorithm
 		__XorshiftRandomNumber(&rand_num);
 
