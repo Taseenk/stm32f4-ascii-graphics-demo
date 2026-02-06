@@ -19,14 +19,14 @@
 /* Private Variables ---------------------------------------------------------*/
 // Playlist of scenes to cycle through
 static const SceneConfig_t scene_playlist[] = {
-    {SCENE_MATRIX_GLITCH, GLITCH_DURATION, SCENE_TRANSITION_CLEAR},
+    {SCENE_MATRIX_GLITCH, GLITCH_DURATION, SCENE_TRANSITION_NONE},
     {SCENE_MATRIX_FALLING_GLITCH, RG_DURATION, SCENE_TRANSITION_NONE},
     {SCENE_MATRIX_FALLING, RAIN_DURATION, SCENE_TRANSITION_NONE},
 };
 
-static SceneState_t current_state = SCENE_STATE_START;	// Initialize starting scene state
-static uint8_t playlist_index = 0;						// Current index in the scene playlist
-static uint32_t scene_frame_counter = 0; 				// Frame counter for the current scene
+static SceneState_t current_state = SCENE_STATE_START; // Initialize starting scene state
+static uint8_t playlist_index = 0;                     // Current index in the scene playlist
+static uint32_t scene_frame_counter = 0;               // Frame counter for the current scene
 
 /* Private Function Prototypes -----------------------------------------------*/
 void __RunActiveScene(SceneID_t id, uint32_t frame, uint32_t global_frame);

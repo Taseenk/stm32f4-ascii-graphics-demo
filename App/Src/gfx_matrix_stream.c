@@ -60,7 +60,7 @@ static void __XorshiftRandomNumber(uint32_t *rand_num)
 	*rand_num ^= *rand_num << XORSHIFT_S1;
 	*rand_num ^= *rand_num >> XORSHIFT_S2;
 	*rand_num ^= *rand_num << XORSHIFT_S3;
-} 
+}
 
 /* Public Functions ----------------------------------------------------------*/
 /**
@@ -90,7 +90,7 @@ void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale)
 		// Generate random row within terminal bounds
 		__XorshiftRandomNumber(&rand_num);
 		random_row = (rand_num % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
-		
+
 		// Update the random number using Xorshift algorithm
 		__XorshiftRandomNumber(&rand_num);
 		// Generate a random character using a bitwise mask
@@ -188,7 +188,7 @@ void MatrixRainUpdate(uint32_t frame, uint8_t density)
 
 		} else {
 			// Using bitwise mask determine probability for a new character based on the density
-			if (rand_num != FALSE && (rand_num & MATRIX_DENSITY_MASK) < density) {
+			if (rand_num != FALSE && (rand_num & MATRIX_RAIN_DENSITY_MASK) < density) {
 				// Start a new character at the top to create the raining effect
 				matrix_rain_active_col[i] = COORDINATE_OFFSET;
 			}

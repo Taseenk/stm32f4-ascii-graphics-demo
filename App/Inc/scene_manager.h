@@ -25,16 +25,10 @@
 #define GLITCH_NOISE_HIGH 			20		// Max character spawn rate (Full Brightness)
 #define GLITCH_NOISE_MID 			4		// Reduced character spawn rate (Dimming)
 #define GLITCH_NOISE_LOW 			2		// Minimum character spawn rate (Fade)
+
 #define GLITCH_DISSOLVE_LIGHT 		5		// Chars removed per frame (Subtle dissolve)
 #define GLITCH_DISSOLVE_HIGH 		15		// Chars removed per frame (Aggressive dissolve)
 #define GLITCH_DISSOLVE_INTERVAL 	3		// Every 3th frame of scene
-
-// Rain Scene
-#define RAIN_DURATION				400		// Duration of rain scene in frames
-#define RAIN_DENSITY_STEPS 			40		// Frames to wait before switching density levels
-#define RAIN_DENSITY_HIGH         	13    	// Most dense rain trail spawn rate
-#define RAIN_DENSITY_MID          	6     	// Medium rain trail spawn rate
-#define RAIN_DENSITY_LOW          	3     	// Sparse rain trail spawn rate
 
 // Combined rain and glitch
 #define RG_DURATION					300		// Duration of rain+glitch scene in frames
@@ -43,6 +37,13 @@
 #define RG_COLOR_DARK_LIMIT       	160   	// Frame threshold for dark green
 #define RG_RAIN_TRANSITION        	(RG_DURATION / 2) // Mid-point for density swap
 #define RG_DISSOLVE_INTERVAL 		3		// Every 3th frame of scene
+
+// Rain Scene
+#define RAIN_DURATION				400		// Duration of rain scene in frames
+#define RAIN_DENSITY_STEPS 			40		// Frames to wait before switching density levels
+#define RAIN_DENSITY_HIGH         	13    	// Most dense rain trail spawn rate
+#define RAIN_DENSITY_MID          	6     	// Medium rain trail spawn rate
+#define RAIN_DENSITY_LOW          	3     	// Sparse rain trail spawn rate
 
 /* typedefs ------------------------------------------------------------------*/
 // Scene Identifiers
