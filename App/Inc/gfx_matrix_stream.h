@@ -20,11 +20,6 @@
 #define MATRIX_RAIN_DENSITY_MASK        0x3FF   // Mask to normalize RNG for density comparison (0-1023) in matrix rain
 #define COLUMN_INACTIVE                 0       // Indicator for inactive column
 
-// Xorshift RNG Constants
-#define XORSHIFT_S1                     13     // Shift constant 1
-#define XORSHIFT_S2                     17     // Shift constant 2
-#define XORSHIFT_S3                     5      // Shift constant 3
-
 // Random Character Set Configuration
 #define ASCII_PRINTABLE_START           33      // The '!' character
 #define ASCII_CHAR_MASK                 0x3F    // Mask to get 64 printable ASCII characters

@@ -10,6 +10,7 @@
 #include "gfx_matrix_stream.h"
 #include "serial_hw.h"
 #include "terminal.h"
+#include "rng_util.h"
 
 // STM32 libraries
 #include "main.h"
@@ -18,49 +19,13 @@
 #include <stdint.h>
 
 /* Private Variables ---------------------------------------------------------*/
-extern RNG_HandleTypeDef hrng;                                // RNG handle defined in rng.c
 static uint16_t matrix_rain_active_col[TERMINAL_WIDTH] = {0}; // Track active character positions for each column
 
 /* Private Function Prototypes -----------------------------------------------*/
-static uint32_t __GetRandomNumber(void);
-static void __XorshiftRandomNumber(uint32_t *rand_num);
+
 
 /* Private Functions ---------------------------------------------------------*/
-/**
- * @fn static uint32_t __GetRandomNumber(void)
- * @brief Generates a random number using the HAL RNG peripheral.
- * @return The generated random number, or FALSE if generation failed.
- */
-static uint32_t __GetRandomNumber(void)
-{
-	// Generate a random number using the HAL RNG peripheral
-	uint32_t value;
 
-	// Poll the hardware RNG peripheral to Generate a random number
-	// Will return the status of HAL RNG GenerateRandomNumber
-	HAL_StatusTypeDef status = HAL_RNG_GenerateRandomNumber(&hrng, &value);
-
-	// Check if the random number generation was successful
-	if (status != HAL_OK) {
-		return FALSE;
-	}
-
-	// Return the generated random number
-	return value;
-}
-
-/**
- * @fn static void __XorshiftRandomNumber(uint32_t *rand_num)
- * @brief Updates the provided random number using the Xorshift algorithm.
- * @param rand_num Pointer to the random number to be updated.
- */
-static void __XorshiftRandomNumber(uint32_t *rand_num)
-{
-	// Xorshift algorithm to update the random number
-	*rand_num ^= *rand_num << XORSHIFT_S1;
-	*rand_num ^= *rand_num >> XORSHIFT_S2;
-	*rand_num ^= *rand_num << XORSHIFT_S3;
-}
 
 /* Public Functions ----------------------------------------------------------*/
 /**
@@ -76,7 +41,7 @@ void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t noise_m
 	// Variables for coordinate tracking and character generation
 	uint16_t random_col, random_row;
 	char char_buffer[2] = {0, STRING_TERMINATOR};
-	uint32_t rand_num = __GetRandomNumber();
+	uint32_t rand_num = GetRandomNumber();
 
 	// Determine density based on frame count
 	uint32_t spawn_count = (frame % density_scale) + COORDINATE_OFFSET;
@@ -84,16 +49,16 @@ void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t noise_m
 	for (int i = 0; i < spawn_count; i++) {
 		// Update the random number using Xorshift algorithm
 		// Generate random column within terminal bounds
-		__XorshiftRandomNumber(&rand_num);
+		XorshiftRandomNumber(&rand_num);
 		random_col = (rand_num % TERMINAL_WIDTH) + COORDINATE_OFFSET;
 
 		// Update the random number using Xorshift algorithm
 		// Generate random row within terminal bounds
-		__XorshiftRandomNumber(&rand_num);
+		XorshiftRandomNumber(&rand_num);
 		random_row = (rand_num % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
 
 		// Update the random number using Xorshift algorithm
-		__XorshiftRandomNumber(&rand_num);
+		XorshiftRandomNumber(&rand_num);
 
 		// Determine the character to draw based on the noise mode
 		if (noise_mode == CHARACTER_ASCII_NOISE) {
@@ -120,7 +85,7 @@ void MatrixCharacterDissolve(uint32_t frame, uint8_t density_scale)
 {
 	// Variables for coordinate tracking and character generation
 	uint16_t random_col, random_row;
-	uint32_t rand_num = __GetRandomNumber();
+	uint32_t rand_num = GetRandomNumber();
 
 	// Determine density based on frame count
 	uint32_t spawn_count = (frame % density_scale) + COORDINATE_OFFSET;
@@ -128,12 +93,12 @@ void MatrixCharacterDissolve(uint32_t frame, uint8_t density_scale)
 	for (int i = 0; i < spawn_count; i++) {
 		// Update the random number using Xorshift algorithm
 		// Generate random column within terminal bounds
-		__XorshiftRandomNumber(&rand_num);
+		XorshiftRandomNumber(&rand_num);
 		random_col = (rand_num % TERMINAL_WIDTH) + COORDINATE_OFFSET;
 
 		// Update the random number using Xorshift algorithm
 		// Generate random row within terminal bounds
-		__XorshiftRandomNumber(&rand_num);
+		XorshiftRandomNumber(&rand_num);
 		random_row = (rand_num % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
 
 		// Move cursor and erase the character on the terminal
@@ -152,12 +117,12 @@ void MatrixRainUpdate(uint8_t density, uint8_t speed)
 	// Variables for coordinate tracking and character generation
 	char char_buffer[2] = {0, STRING_TERMINATOR};
 	uint16_t pos, erase_row;
-	uint32_t rand_num = __GetRandomNumber();
+	uint32_t rand_num = GetRandomNumber();
 
 	// Iterate through every vertical column of the terminal
 	for (int i = 0; i < TERMINAL_WIDTH; i++) {
 		// Update the random number using Xorshift algorithm
-		__XorshiftRandomNumber(&rand_num);
+		XorshiftRandomNumber(&rand_num);
 
 		// Get the current position of the active character in this column
 		pos = matrix_rain_active_col[i];
