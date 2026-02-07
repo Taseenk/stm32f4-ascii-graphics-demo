@@ -57,7 +57,7 @@ void __RunActiveScene(SceneID_t id, uint32_t frame, uint32_t global_frame)
 			// Full Brightness
 			if (frame < GLITCH_DIM_START) {
 				// Spawn random characters
-				MatrixCharacterNoise(global_frame, GLITCH_NOISE_HIGH);
+				MatrixCharacterNoise(global_frame, GLITCH_NOISE_HIGH, CHARACTER_ASCII_NOISE);
 
 				// Occasional light dissolving to keep the screen from getting too crowded
 				if (global_frame % GLITCH_DISSOLVE_INTERVAL == 0)
@@ -66,13 +66,13 @@ void __RunActiveScene(SceneID_t id, uint32_t frame, uint32_t global_frame)
 			// Light Dimming
 			else if (frame < GLITCH_FADE_START) {
 				// Spawn fewer new characters, dissolve more existing ones
-				MatrixCharacterNoise(global_frame, GLITCH_NOISE_MID);
+				MatrixCharacterNoise(global_frame, GLITCH_NOISE_MID, CHARACTER_ASCII_NOISE);
 				MatrixCharacterDissolve(global_frame, GLITCH_DISSOLVE_HIGH);
 			}
 			// Deeper Fade
 			else {
 				// Very few new characters and keep dissolving
-				MatrixCharacterNoise(global_frame, GLITCH_NOISE_LOW);
+				MatrixCharacterNoise(global_frame, GLITCH_NOISE_LOW, CHARACTER_ASCII_NOISE);
 				MatrixCharacterDissolve(global_frame, GLITCH_DISSOLVE_HIGH);
 			}
 

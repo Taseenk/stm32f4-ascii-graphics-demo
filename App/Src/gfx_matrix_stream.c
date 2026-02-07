@@ -69,8 +69,9 @@ static void __XorshiftRandomNumber(uint32_t *rand_num)
  * digital rain effect.
  * @param frame The current frame count used for determining density.
  * @param density_scale The scale factor to adjust the density of characters drawn.
+ * @param noise_mode The mode to determine the type of characters drawn (ASCII or Binary).
  */
-void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale)
+void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t noise_mode)
 {
 	// Variables for coordinate tracking and character generation
 	uint16_t random_col, random_row;
@@ -93,9 +94,16 @@ void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale)
 
 		// Update the random number using Xorshift algorithm
 		__XorshiftRandomNumber(&rand_num);
-		// Generate a random character using a bitwise mask
-		// Using 0x3F and adding 33 to stay between a range of printable ASCII character
-		char_buffer[0] = (rand_num & ASCII_CHAR_MASK) + ASCII_PRINTABLE_START;
+
+		// Determine the character to draw based on the noise mode
+		if (noise_mode == CHARACTER_ASCII_NOISE) {
+			// Generate a random character using a bitwise mask
+			// Using 0x3F and adding 33 to stay between a range of printable ASCII character
+			char_buffer[0] = (rand_num & ASCII_CHAR_MASK) + ASCII_PRINTABLE_START;
+		} else if (noise_mode == CHARACTER_BINARY_NOISE) {
+			// Generate a random binary character (0 or 1) using a bitwise mask
+			char_buffer[0] = (rand_num & BINARY_MASK) + ASCII_ZERO_OFFSET;
+		}
 
 		// Move cursor and draw the character on the terminal
 		TerminalSerialPrintString(char_buffer, random_col, random_row);
