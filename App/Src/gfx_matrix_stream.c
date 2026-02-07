@@ -136,10 +136,10 @@ void MatrixCharacterDissolve(uint32_t frame, uint8_t density_scale)
 /**
  * @fn void MatrixRainUpdate(uint32_t frame, uint8_t speed, uint8_t density)
  * @brief Updates the "Matrix" rain effect by moving characters down the screen.
- * @param frame The current frame count used for timing the updates.
  * @param density The density factor determining how frequently new characters spawn.
+ * @param speed The speed factor determining how many rows characters move per update.
  */
-void MatrixRainUpdate(uint32_t frame, uint8_t density)
+void MatrixRainUpdate(uint8_t density, uint8_t speed)
 {
 	// Variables for coordinate tracking and character generation
 	char char_buffer[2] = {0, STRING_TERMINATOR};
@@ -156,9 +156,10 @@ void MatrixRainUpdate(uint32_t frame, uint8_t density)
 
 		// Column is currently active (has a charachter)
 		if (pos > COLUMN_INACTIVE) {
-			if (pos > TRAIL_LENGTH) {
+			// Iterate through the length of trail and erase characters as they move down
+			for (uint8_t s = 0; s < speed; s++) {
 				// Remove the last charachter of the trail if the position is on the terminal
-				erase_row = pos - TRAIL_LENGTH;
+				erase_row = (pos + s) - TRAIL_LENGTH;
 
 				// Only erase if the tail is actually on the screen
 				if (erase_row >= COORDINATE_OFFSET && erase_row <= TERMINAL_HEIGHT) {
@@ -166,18 +167,24 @@ void MatrixRainUpdate(uint32_t frame, uint8_t density)
 				}
 			}
 
-			// Draw the character at current position if the position is on the terminal
-			if (pos <= TERMINAL_HEIGHT) {
-				// Generate a random character using a bitwisem mask
-				// Using 0x3F and adding 33 to stay between a range of printable ASCII character
-				char_buffer[0] = (rand_num & ASCII_CHAR_MASK) + ASCII_PRINTABLE_START;
+			// Iterate through the length of the trail and draw characters as they move down
+			for (uint8_t s = 0; s < speed; s++) {
+				// Add a character at the current position if it's on the terminal
+				uint16_t draw_row = pos + s;
 
-				// Move cursor and draw the character on the terminal
-				TerminalSerialPrintString(char_buffer, i, pos);
+				// Only Add if the position is actually on the screen
+				if (draw_row <= TERMINAL_HEIGHT) {
+					// Generate a random character using a bitwisem mask
+					// Using 0x3F and adding 33 to stay between a range of printable ASCII character
+					char_buffer[0] = (rand_num & ASCII_CHAR_MASK) + ASCII_PRINTABLE_START;
+
+					// Move cursor and draw the character on the terminal
+					TerminalSerialPrintString(char_buffer, i, draw_row);
+				}
 			}
 
 			// Increment position for the next frame
-			pos++;
+			pos += speed;
 
 			// Set column to inactive if character trail has cleared the screen
 			if (pos > TERMINAL_HEIGHT + TRAIL_LENGTH) {

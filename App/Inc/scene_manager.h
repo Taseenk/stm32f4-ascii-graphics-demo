@@ -39,11 +39,15 @@
 #define RG_DISSOLVE_INTERVAL 		3		// Every 3th frame of scene
 
 // Rain Scene
-#define RAIN_DURATION				400		// Duration of rain scene in frames
+#define RAIN_DURATION				500		// Duration of rain scene in frames
 #define RAIN_DENSITY_STEPS 			40		// Frames to wait before switching density levels
 #define RAIN_DENSITY_HIGH         	13    	// Most dense rain trail spawn rate
 #define RAIN_DENSITY_MID          	6     	// Medium rain trail spawn rate
 #define RAIN_DENSITY_LOW          	3     	// Sparse rain trail spawn rate
+
+#define RAIN_SPEED_HIGH				4		// Number of rows characters move per update at high speed
+#define RAIN_SPEED_MID				2		// Number of rows characters move per update at medium speed
+#define RAIN_SPEED_LOW				1		// Number of rows characters move per update at low speed
 
 /* typedefs ------------------------------------------------------------------*/
 // Scene Identifiers

@@ -93,7 +93,7 @@ void __RunActiveScene(SceneID_t id, uint32_t frame, uint32_t global_frame)
 			}
 
 			// Add a low density rain for the transition to the next scene
-			MatrixRainUpdate(global_frame, RAIN_DENSITY_LOW);
+			MatrixRainUpdate(RAIN_DENSITY_LOW, RAIN_SPEED_LOW);
 
 			// Disolving charachters at intervals
 			if (frame % RG_DISSOLVE_INTERVAL == 0)
@@ -110,20 +110,19 @@ void __RunActiveScene(SceneID_t id, uint32_t frame, uint32_t global_frame)
 			switch (step) {
 				case 0: // High Density
 					TerminalSetTextColour(FG_BRIGHT_GREEN);
-					MatrixRainUpdate(global_frame, RAIN_DENSITY_HIGH);
+					MatrixRainUpdate(RAIN_DENSITY_HIGH, RAIN_SPEED_MID);
 					break;
 
 				case 1: // Medium Density
 					TerminalSetTextColour(FG_MEDIUM_GREEN);
-					MatrixRainUpdate(global_frame, RAIN_DENSITY_MID);
+					MatrixRainUpdate(RAIN_DENSITY_MID, RAIN_SPEED_MID);
 					break;
 
 				case 2: // Low Density
 					TerminalSetTextColour(FG_DARK_GREEN);
-					MatrixRainUpdate(global_frame, RAIN_DENSITY_LOW);
+					MatrixRainUpdate(RAIN_DENSITY_LOW, RAIN_SPEED_LOW);
 					break;
 			}
-			break;
 
 			// break out of the switch
 			break;
