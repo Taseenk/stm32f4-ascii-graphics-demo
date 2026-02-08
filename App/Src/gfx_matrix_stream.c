@@ -21,12 +21,6 @@
 /* Private Variables ---------------------------------------------------------*/
 static uint16_t matrix_rain_active_col[TERMINAL_WIDTH] = {0}; // Track active character positions for each column
 
-/* Private Function Prototypes -----------------------------------------------*/
-
-
-/* Private Functions ---------------------------------------------------------*/
-
-
 /* Public Functions ----------------------------------------------------------*/
 /**
  * @fn void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale)

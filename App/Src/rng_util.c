@@ -14,11 +14,11 @@ extern RNG_HandleTypeDef hrng;      // RNG handle defined in rng.c
 
 /* Public Functions ----------------------------------------------------------*/
 /**
- * @fn static uint32_t __GetRandomNumber(void)
+ * @fn static uint32_t GetRandomNumber(void)
  * @brief Generates a random number using the HAL RNG peripheral.
  * @return The generated random number, or FALSE if generation failed.
  */
-uint32_t __GetRandomNumber(void)
+uint32_t GetRandomNumber(void)
 {
 	// Generate a random number using the HAL RNG peripheral
 	uint32_t value;
@@ -37,11 +37,11 @@ uint32_t __GetRandomNumber(void)
 }
 
 /**
- * @fn static void __XorshiftRandomNumber(uint32_t *rand_num)
+ * @fn static void XorshiftRandomNumber(uint32_t *rand_num)
  * @brief Updates the provided random number using the Xorshift algorithm.
  * @param rand_num Pointer to the random number to be updated.
  */
-void __XorshiftRandomNumber(uint32_t *rand_num)
+void XorshiftRandomNumber(uint32_t *rand_num)
 {
 	// Xorshift algorithm to update the random number
 	*rand_num ^= *rand_num << XORSHIFT_S1;
