@@ -13,49 +13,58 @@
 #include "main.h"
 
 /* Defines -------------------------------------------------------------------*/
-#define SCENE_DEFAULT_INTERVAL 		300		// Default duration of a scene in frames
-#define SCENE_PLAYLIST_SIZE			3		// Number of scenes in the playlist
+// Scene Durations (in frames)
+#define SCENE_DEFAULT_DURATION 			300
+#define ASCII_GLITCH_NOISE_DURATION		150
+#define RAIN_FADE_IN_DURATION			300
+#define MATRIX_RAIN_DURATION			350
+#define RAIN_HACKED_DURATION			350
+#define BINARY_GLITCH_NOISE_DURATION	150
 
-// Glitch Scene
-#define GLITCH_DURATION				150		// Duration of glitch scene in frames
-#define GLITCH_BRIGHTNESS_START 	0		// Frame index to start full brightness
-#define GLITCH_DIM_START 			21		// Frame index to start medium green
-#define GLITCH_FADE_START 			95		// Frame index to start dark green
+// Dissolve Settings
+#define DISSOLVE_INTERVAL_MASK 		0x04	// Used for bitwise frame frequency (frame & 4)
+#define DISSOLVE_STRENGTH_LOW	    5		// Characters removed per frame (Subtle dissolve)
+#define DISSOLVE_STRENGTH_HIGH 		15		// Characters removed per frame (Aggressive dissolve)
 
-#define GLITCH_NOISE_HIGH 			20		// Max character spawn rate (Full Brightness)
-#define GLITCH_NOISE_MID 			4		// Reduced character spawn rate (Dimming)
-#define GLITCH_NOISE_LOW 			2		// Minimum character spawn rate (Fade)
+// Charachter/Binary random glitch
+#define GLITCH_SCENE_START			0		// Scene frame index to start full brightness
+#define GLITCH_SCENE_BRIGHT			21		// Scene frame index to start medium green
+#define GLITCH_SCENE_DIM			75		// Scene frame index to start dark green
 
-#define GLITCH_DISSOLVE_LIGHT 		5		// Chars removed per frame (Subtle dissolve)
-#define GLITCH_DISSOLVE_HIGH 		15		// Chars removed per frame (Aggressive dissolve)
-#define GLITCH_DISSOLVE_INTERVAL 	3		// Every 3th frame of scene
+#define GLITCH_DENSITY_HIGH   		20		// Max character spawn rate
+#define GLITCH_DENSITY_MEDIUM 		4		// Reduced character spawn rate
+#define GLITCH_DENSITY_LOW    		2		// Low character spawn rate
 
-// Combined rain and glitch
-#define RG_DURATION					300		// Duration of rain+glitch scene in frames
-#define RG_COLOR_BRIGHT_LIMIT     	40    	// Frame threshold for bright green
-#define RG_COLOR_MEDIUM_LIMIT     	80    	// Frame threshold for medium green
-#define RG_COLOR_DARK_LIMIT       	160   	// Frame threshold for dark green
-#define RG_RAIN_TRANSITION        	(RG_DURATION / 2) // Mid-point for density swap
-#define RG_DISSOLVE_INTERVAL 		3		// Every 3th frame of scene
-
-// Rain Scene
-#define RAIN_DURATION				500		// Duration of rain scene in frames
-#define RAIN_DENSITY_STEPS 			40		// Frames to wait before switching density levels
+// Matrix falling Rain Scene
+#define RAIN_COLOR_STAGES      		3		// Number of color stages for a dynamic visual effect
 #define RAIN_DENSITY_HIGH         	13    	// Most dense rain trail spawn rate
 #define RAIN_DENSITY_MID          	6     	// Medium rain trail spawn rate
 #define RAIN_DENSITY_LOW          	3     	// Sparse rain trail spawn rate
 
-#define RAIN_SPEED_HIGH				4		// Number of rows characters move per update at high speed
-#define RAIN_SPEED_MID				2		// Number of rows characters move per update at medium speed
-#define RAIN_SPEED_LOW				1		// Number of rows characters move per update at low speed
+#define RAIN_SPEED_DEFAULT			1		// Number of rows characters move per update at low speed
+
+// Hacked Falling rain scene
+#define RAIN_HACKED_CORRUPTED       265     // Scene frame index when the "hack" takes full effect and characters become red
+#define RAIN_HACKED_CORRUPT_MASK    0x3ff   // Bitwise mask to create a small chance of red characters appearing (getting hacked)
+
+// Rain Fade-In Scene
+#define RAIN_FADE_IN_SCENE_BRIGHT    40
+#define RAIN_FADE_IN_SCENE_MEDIUM    80
+#define RAIN_FADE_IN_SCENE_DARK      160
+
+#define RAIN_FADE_IN_MIDPOINT      	(RAIN_FADE_IN_DURATION / 2) // Mid-point for density swap
 
 /* typedefs ------------------------------------------------------------------*/
 // Scene Identifiers
 typedef enum {
-	SCENE_MATRIX_GLITCH,
-	SCENE_MATRIX_FALLING_GLITCH,
-	SCENE_MATRIX_FALLING,
-	SCENE_TOTAL_SCENES
+    SCENE_INTRO_SCROLL,         // Intro screen with scrolling text
+    SCENE_VISUAL_DEMO,          // Terminal capabilities (styles & graphics)
+	SCENE_ASCII_GLITCH_NOISE,   // Random ASCII sporadic glitch
+	SCENE_RAIN_FADE_IN,			// Transitional scene to Matrix falling rain effect
+    SCENE_MATRIX_RAIN,          // Matrix falling rain effect
+    SCENE_MATRIX_RAIN_HACKED,   // Matrix falling rain effect with data corruption (hacked)
+    SCENE_BINARY_GLITCH_NOISE,	// Random binary (0/1) sporadic glitch
+    SCENE_TOTAL_SCENES			// Total number of scenes in the playlist
 } SceneID_t;
 
 // Scene Transition Types

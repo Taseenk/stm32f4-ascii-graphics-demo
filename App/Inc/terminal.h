@@ -65,7 +65,10 @@ typedef enum {
 	// Extended Colors (Offset by 256)
 	FG_DARK_GREEN = EXTENDED_COLOURS_OFFSET + 22,
 	FG_MEDIUM_GREEN = EXTENDED_COLOURS_OFFSET + 34,
-	FG_BRIGHT_GREEN = EXTENDED_COLOURS_OFFSET + 82
+	FG_BRIGHT_GREEN = EXTENDED_COLOURS_OFFSET + 82,
+	FG_DARK_RED     = EXTENDED_COLOURS_OFFSET + 88,
+    FG_MEDIUM_RED   = EXTENDED_COLOURS_OFFSET + 124,
+    FG_BRIGHT_RED   = EXTENDED_COLOURS_OFFSET + 196 
 } ForegroundColour_t;
 
 /* Function prototypes -------------------------------------------------------*/
