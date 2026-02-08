@@ -366,8 +366,8 @@ void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row)
 	if (!__IsValidPos(col, row))
 		return;
 
-	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H)
-	char buffer[16];
+	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H) and a string for the whole terminal width
+	char buffer[TERMINAL_WIDTH + 16];
 
 	// Format the escape sequence to move the cursor and return the length
 	// The length here is without the string terminator (\0)
