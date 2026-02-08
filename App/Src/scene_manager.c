@@ -23,14 +23,14 @@ static const SceneConfig_t scene_playlist[] = {
     {SCENE_INTRO_SCROLL, 300, SCENE_TRANSITION_CLEAR},
     {SCENE_VISUAL_DEMO, 240, SCENE_TRANSITION_CLEAR},
     {SCENE_ASCII_GLITCH_NOISE, ASCII_GLITCH_NOISE_DURATION, SCENE_TRANSITION_CLEAR},
-    {SCENE_RAIN_FADE_IN, RAIN_FADE_IN_DURATION, SCENE_TRANSITION_CLEAR},
-    {SCENE_MATRIX_RAIN, MATRIX_RAIN_DURATION, SCENE_TRANSITION_CLEAR},
+    {SCENE_RAIN_FADE_IN, RAIN_FADE_IN_DURATION, SCENE_TRANSITION_NONE},
+    {SCENE_MATRIX_RAIN, MATRIX_RAIN_DURATION, SCENE_TRANSITION_NONE},
     {SCENE_MATRIX_RAIN_HACKED, RAIN_HACKED_DURATION, SCENE_TRANSITION_CLEAR},
     {SCENE_BINARY_GLITCH_NOISE, BINARY_GLITCH_NOISE_DURATION, SCENE_TRANSITION_CLEAR},
 };
 
 static SceneState_t current_state = SCENE_STATE_START; // Initialize starting scene state
-static uint8_t playlist_index = 5;                     // Current index in the scene playlist
+static uint8_t playlist_index = 0;                     // Current index in the scene playlist
 static uint32_t scene_frame_counter = 0;               // Frame counter for the current scene
 
 /* Private Function Prototypes -----------------------------------------------*/
