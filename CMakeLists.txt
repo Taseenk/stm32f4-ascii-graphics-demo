@@ -50,6 +50,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     App/Src/gfx_matrix_stream.c
     App/Src/scene_manager.c
     App/Src/rng_util.c
+    App/Src/dashboard.c
 )
 
 # Add include paths
