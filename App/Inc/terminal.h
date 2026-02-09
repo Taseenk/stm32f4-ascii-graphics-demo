@@ -2,7 +2,7 @@
  ******************************************************************************
  * @file           : terminal.h
  * @brief          : Header for ANSI/VT100 Terminal Graphics & Control Driver.
- * @details        : This file defines the commands, colors, and functions 
+ * @details        : This file defines the commands, colors, and functions
  * available to the rest of the application for:
  * - Setting screen dimensions and buffer sizes.
  * - Using ANSI escape codes for cursor and color control.
@@ -21,6 +21,7 @@
 #define TERMINAL_WIDTH 80                                       // Width of the terminal in characters
 #define TERMINAL_HEIGHT 24                                      // Height of the terminal in characters
 #define TERMINAL_BUFFER_SIZE (TERMINAL_WIDTH * TERMINAL_HEIGHT) // Total size of the terminal buffer
+#define EXTENDED_COLOURS_OFFSET 256                             // Offset number of extended ANSI colours supported
 
 #define SPACE_CHAR ' ' // Space character used for clearing the terminal buffer
 
@@ -38,28 +39,36 @@
 
 /* typedefs ------------------------------------------------------------------*/
 typedef enum {
-    BG_BLACK = 40,
-    BG_RED,
-    BG_GREEN,
-    BG_YELLOW,
-    BG_BLUE,
-    BG_MAGENTA,
-    BG_CYAN,
-    BG_WHITE,
-    BG_DEFAULT = 49
+	BG_BLACK = 40,
+	BG_RED,
+	BG_GREEN,
+	BG_YELLOW,
+	BG_BLUE,
+	BG_MAGENTA,
+	BG_CYAN,
+	BG_WHITE,
+	BG_DEFAULT = 49
 } BackgroundColour_t;
 
-typedef enum
-{
-    FG_BLACK = 30,
-    FG_RED,
-    FG_GREEN,
-    FG_YELLOW,
-    FG_BLUE,
-    FG_MAGENTA,
-    FG_CYAN,
-    FG_WHITE,
-    FG_DEFAULT = 39
+typedef enum {
+	// Standard Colors (30-39)
+	FG_BLACK = 30,
+	FG_RED,
+	FG_GREEN,
+	FG_YELLOW,
+	FG_BLUE,
+	FG_MAGENTA,
+	FG_CYAN,
+	FG_WHITE,
+	FG_DEFAULT = 39,
+
+	// Extended Colors (Offset by 256)
+	FG_DARK_GREEN = EXTENDED_COLOURS_OFFSET + 22,
+	FG_MEDIUM_GREEN = EXTENDED_COLOURS_OFFSET + 34,
+	FG_BRIGHT_GREEN = EXTENDED_COLOURS_OFFSET + 82,
+	FG_DARK_RED     = EXTENDED_COLOURS_OFFSET + 88,
+    FG_MEDIUM_RED   = EXTENDED_COLOURS_OFFSET + 124,
+    FG_BRIGHT_RED   = EXTENDED_COLOURS_OFFSET + 196 
 } ForegroundColour_t;
 
 /* Function prototypes -------------------------------------------------------*/
@@ -74,6 +83,7 @@ void TerminalClearAndHome(void);
 void TerminalInvisibleCursor(void);
 void TerminalVisibleCursor(void);
 void TerminalSetCursorPos(uint16_t col, uint16_t row);
+void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row);
 void TerminalSetColour(ForegroundColour_t text_colour, BackgroundColour_t background_colour);
 void TerminalSetTextColour(ForegroundColour_t text_colour);
 

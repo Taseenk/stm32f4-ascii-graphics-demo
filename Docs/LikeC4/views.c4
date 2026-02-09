@@ -1,0 +1,109 @@
+views {
+    deployment view index {
+        title "Physical Deployment"
+        include stm32f4, host_pc
+        autoLayout LeftRight
+    }
+
+    view systemView of terminal_system {
+        title "System Overview"
+        include *
+        // Show external incoming and outgoing relationships
+        include user, firmware
+        autoLayout BottomTop
+    }
+
+    view architectureView of firmware {
+        title "3-Tier Firmware Architecture"
+        include *, user
+        // Show external incoming and outgoing relationships
+        include terminal_system.terminal
+        style application_layer {
+            color blue
+        }
+        style presentation_layer {
+            color red
+        }
+        style hardware_layer {
+            color green
+        }
+        autoLayout BottomTop
+    }
+}
+
+views '3-Tier Layer / Application Layer' {
+    view applicationView of firmware.application_layer {
+        title "Application Layer"
+        include *, firmware
+        // Show external incoming and outgoing relationships
+        include firmware.presentation_layer
+        include firmware.hardware_layer.peripheral_config.rng_util_module
+        style firmware.application_layer {
+            color blue
+        }
+        autoLayout TopBottom
+    }
+}
+
+views '3-Tier Layer / Presentation Layer' {
+    view presentationView of firmware.presentation_layer {
+        title "Presentation Layer"
+        include *, firmware
+        // Show external incoming and outgoing relationships
+        include firmware.application_layer
+        include firmware.hardware_layer
+        style presentation_layer {
+            color red
+            opacity 50%
+        }
+        autoLayout TopBottom
+    }
+}
+
+views '3-Tier Layer / Hardware Layer' {
+    view hardwareView of firmware.hardware_layer {
+        title "Hardware Layer"
+        include *, firmware
+        // Show external incoming and outgoing relationships
+        include terminal_system
+        style firmware.hardware_layer {
+            color green
+            opacity 50%
+        }
+        autoLayout TopBottom
+    }
+
+    view ConfigurationView of firmware.hardware_layer.peripheral_config {
+        include *, firmware.hardware_layer, terminal_system
+        // Show external incoming and outgoing relationships
+        include firmware.hardware_layer.main_module
+        include firmware.hardware_layer.hal_library.*
+        style firmware.hardware_layer {
+            color green
+        }
+        autoLayout LeftRight
+    }
+
+    view hal_libraryView of firmware.hardware_layer.hal_library {
+        include *, firmware.hardware_layer, terminal_system
+        // Show external incoming and outgoing relationships
+        include firmware.hardware_layer.main_module
+        include firmware.hardware_layer.peripheral_config.*
+        style firmware.hardware_layer {
+            color green
+        }
+        autoLayout LeftRight
+    }
+}
+
+views 'Data Flows' {
+    dynamic view rngFlowView {
+        title "Hardware to Animation"
+        
+        firmware.application_layer.gfx_matrix_stream_module -> firmware.hardware_layer.peripheral_config.rng_util_module "Requests random seed"
+        firmware.hardware_layer.peripheral_config.rng_util_module -> firmware.hardware_layer.peripheral_config.rng_module "Fetches raw value"
+        firmware.hardware_layer.peripheral_config.rng_module -> firmware.hardware_layer.hal_library.hal_rng "Polls DR register"
+        
+        autoLayout LeftRight
+    }
+}
