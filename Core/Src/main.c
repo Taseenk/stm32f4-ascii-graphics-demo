@@ -116,7 +116,7 @@ int main(void)
 
 	// Timing and Frame Rate Control
 	uint32_t last_heartbeat = HAL_GetTick(); // Tracks the last time a frame was processed
-	static uint32_t frame_interval = 33;            // Target ~30 FPS (1000ms / 30 ≈ 33ms)
+	static uint32_t frame_interval = 33;     // Target ~30 FPS (1s/f = 1s/30fps = 1000ms / 30 ≈ 33ms)
 	uint32_t frame_counter = 0;              // Incremental count of elapsed frames
 
 	// FPS Calculation Variables
@@ -139,7 +139,6 @@ int main(void)
 
 		// Check if one second has passed to update the FPS display
 		if (current_time - last_fps >= seconds_time) {
-			
 			FPSDisplay(fps_counter);
 			fps_counter = 0;
 			last_fps = current_time;
