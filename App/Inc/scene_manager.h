@@ -92,6 +92,5 @@ typedef struct {
 
 /* Function prototypes -------------------------------------------------------*/
 void SceneManager(uint32_t frame_count);
-void FPSDisplay(uint32_t fps_counter);
 
 #endif /* __SCENE_MANAGER_H */
