@@ -31,6 +31,7 @@
 /* USER CODE BEGIN Includes */
 // Project libraries
 #include "scene_manager.h"
+#include "dashboard.h"
 #include "serial_hw.h"
 #include "terminal.h"
 
@@ -139,7 +140,7 @@ int main(void)
 
 		// Check if one second has passed to update the FPS display
 		if (current_time - last_fps >= seconds_time) {
-			FPSDisplay(fps_counter);
+			DashboardStatusBar(fps_counter);
 			fps_counter = 0;
 			last_fps = current_time;
 		}
