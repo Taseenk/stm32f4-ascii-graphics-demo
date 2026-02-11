@@ -22,6 +22,22 @@
 
 /* Public Functions ----------------------------------------------------------*/
 /**
+ * @fn void DashboardInit(void)
+ * @brief Initializes the dashboard by rendering the status bar and setting up
+ * any necessary state for the dashboard pages.
+ * @param void This function does not take any parameters.
+ */
+void DashboardInit(void)
+{
+	// Render the dashboard top status bar with system information and page title
+	DashboardStatusBar();
+
+	// Render the main body of the dashboard with the available options
+	DashboardMainBody();
+}
+
+
+/**
  * @fn void DashboardFPSUpdater(uint32_t fps_counter)
  * @brief Updates the FPS display in the dashboard status bar with the current
  * frames per second count.
@@ -83,13 +99,16 @@ void DashboardStatusBar(void)
 }
 
 /**
- * @fn void DashboardInit(void)
- * @brief Initializes the dashboard by rendering the status bar and setting up
- * any necessary state for the dashboard pages.
+ * @fn void DashboardMainBody(void)
+ * @brief Renders the main body of the dashboard, displaying the available options
+ * for the user to interact with.
  * @param void This function does not take any parameters.
  */
-void DashboardInit(void)
+void DashboardMainBody(void)
 {
-	// Initialize the dashboard status bar items and style
-	DashboardStatusBar();
+	TerminalSerialPrintString(HELP_TEXT, OPTIONS_COL_POSITION, HELP_ROW_POSITION);
+	TerminalSerialPrintString(SELECT_TEXT, OPTIONS_COL_POSITION, SELECT_ROW_POSITION);
+	TerminalSerialPrintString(AUTO_TEXT, OPTIONS_COL_POSITION, AUTO_ROW_POSITION);
+	TerminalSerialPrintString(INFO_TEXT, OPTIONS_COL_POSITION, INFO_ROW_POSITION);
+	TerminalSerialPrintString(QUIT_TEXT, OPTIONS_COL_POSITION, QUIT_ROW_POSITION);
 }
