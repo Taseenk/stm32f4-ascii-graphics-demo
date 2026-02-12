@@ -18,8 +18,6 @@
 #include <stdio.h>
 #include <string.h>
 
-/* Private Variables ---------------------------------------------------------*/
-
 /* Public Functions ----------------------------------------------------------*/
 /**
  * @fn void DashboardInit(void)
@@ -36,7 +34,6 @@ void DashboardInit(void)
 	DashboardMainBody();
 }
 
-
 /**
  * @fn void DashboardFPSUpdater(uint32_t fps_counter)
  * @brief Updates the FPS display in the dashboard status bar with the current
@@ -46,25 +43,19 @@ void DashboardInit(void)
 void DashboardFPSUpdater(uint32_t fps_counter)
 {
 	// Buffer to hold the formatted FPS value
-	char fps_value_buffer[10];
+	char fps_value_buffer[42];
 
 	// Format the escape sequence to move the cursor and return the length
 	// The length here is without the string terminator (\0)
 	int fps_value_len =
-	    snprintf(fps_value_buffer, sizeof(fps_value_buffer), "%-2lu", (unsigned long)fps_counter);
+	    snprintf(fps_value_buffer, sizeof(fps_value_buffer), ANSI_REVERSE_MODE "%-2lu" ANSI_RESET_STYLE, (unsigned long)fps_counter);
 
-	// Check if sprintf failed (len < 0) or if the formatted string exceeded the buffer size
+	// Check if snprintf failed (len < 0) or if the formatted string exceeded the buffer size
 	if (fps_value_len <= 0 || (size_t)fps_value_len >= sizeof(fps_value_buffer))
 		return;
 
-	// Set contrasting colours for the status bar
-	TerminalSetColour(FG_BLACK, BG_WHITE);
-
-	// Output the entire status bar as a single string
-	TerminalSerialPrintString(fps_value_buffer, 77, 1);
-
-	// Reset terminal colours for the rest of the screen
-	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+	// Print the formatted FPS value at the correct position in the status bar
+	TerminalSerialPrintString(fps_value_buffer, FPS_VALUE_POSITION, 1);
 }
 
 /**
@@ -75,37 +66,47 @@ void DashboardFPSUpdater(uint32_t fps_counter)
  */
 void DashboardStatusBar(void)
 {
-	// Initialize the status bar buffer with spaces and null-terminate it
-	char status_bar_buffer[TERMINAL_WIDTH + 1];
-	memset(status_bar_buffer, ' ', TERMINAL_WIDTH);
-	status_bar_buffer[TERMINAL_WIDTH] = NULL_TERMINATOR;
-
-	// Calculate the starting column for the dashboard page text to center it
-	const uint16_t dashboard_page_col = (TERMINAL_WIDTH / 2) - (MAIN_PAGE_TEXT_LEN);
+	// Buffer to hold the entire status bar buffer, including ANSI escape codes and null terminator
+	char status_bar_buffer[STATUS_BAR_BUFFER_SIZE];
+	
+	// Initialize the data text buffer with spaces and null-terminate it
+	char data_buffer[TERMINAL_WIDTH + 1];
+	memset(data_buffer, SPACE_CHAR, TERMINAL_WIDTH);
+	data_buffer[TERMINAL_WIDTH] = NULL_TERMINATOR;
 
 	// Copy the individual text into the status bar buffer at their respective positions
-	memcpy(&status_bar_buffer[SYSTEM_TEXT_POSITION], SYSTEM_TEXT, SYSTEM_TEXT_LEN);
-	memcpy(&status_bar_buffer[dashboard_page_col], MAIN_PAGE_TEXT, MAIN_PAGE_TEXT_LEN);
-	memcpy(&status_bar_buffer[FPS_TEXT_POSITION], FPS_TEXT, FPS_TEXT_LEN);
+	memcpy(&data_buffer[SYSTEM_TEXT_POSITION], SYSTEM_TEXT, SYSTEM_TEXT_LEN);
+	memcpy(&data_buffer[MAIN_PAGE_TEXT_POSITION], MAIN_PAGE_TEXT, MAIN_PAGE_TEXT_LEN);
+	memcpy(&data_buffer[FPS_TEXT_POSITION], FPS_TEXT, FPS_TEXT_LEN);
 
-	// Set contrasting colours for the status bar
-	TerminalSetColour(FG_BLACK, BG_WHITE);
+	// Format the escape sequence to move the cursor and return the length
+	// The length here is without the string terminator (\0)
+	int status_bar_len =
+	    snprintf(status_bar_buffer, sizeof(status_bar_buffer), ANSI_REVERSE_MODE "%s" ANSI_RESET_STYLE, data_buffer);
+
+	// Check if snprintf failed (len < 0) or if the formatted string exceeded the buffer size
+	if (status_bar_len <= 0 || (size_t)status_bar_len >= sizeof(status_bar_buffer)) {
+		// If formatting failed, print a fallback status bar without styling to ensure the dashboard is still usable
+		TerminalSerialPrintString(data_buffer, 1, 1);
+		return;
+	}
 
 	// Output the entire status bar as a single string
 	TerminalSerialPrintString(status_bar_buffer, 1, 1);
-
-	// Reset terminal colours for the rest of the screen
-	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 }
-
+ 
 /**
  * @fn void DashboardMainBody(void)
- * @brief Renders the main body of the dashboard, displaying the available options
- * for the user to interact with.
+ * @brief Renders the main body of the dashboard, displaying the available mock
+ * options for the user to interact with.
  * @param void This function does not take any parameters.
  */
 void DashboardMainBody(void)
 {
+	// Set default colours for the main body text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	// Print each dashboard option text at its respective position
 	TerminalSerialPrintString(HELP_TEXT, OPTIONS_COL_POSITION, HELP_ROW_POSITION);
 	TerminalSerialPrintString(SELECT_TEXT, OPTIONS_COL_POSITION, SELECT_ROW_POSITION);
 	TerminalSerialPrintString(AUTO_TEXT, OPTIONS_COL_POSITION, AUTO_ROW_POSITION);
