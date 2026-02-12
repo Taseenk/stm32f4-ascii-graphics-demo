@@ -18,20 +18,22 @@
 #include "main.h"
 
 /* Defines -------------------------------------------------------------------*/
-#define TERMINAL_WIDTH 80                                       // Width of the terminal in characters
-#define TERMINAL_HEIGHT 24                                      // Height of the terminal in characters
-#define TERMINAL_BUFFER_SIZE (TERMINAL_WIDTH * TERMINAL_HEIGHT) // Total size of the terminal buffer
-#define EXTENDED_COLOURS_OFFSET 256                             // Offset number of extended ANSI colours supported
+#define TERMINAL_WIDTH 				80                                      // Width of the terminal in characters
+#define TERMINAL_HEIGHT 			24                                      // Height of the terminal in characters
+#define TERMINAL_BUFFER_SIZE 		(TERMINAL_WIDTH * TERMINAL_HEIGHT)		// Total size of the terminal buffer
+#define EXTENDED_COLOURS_OFFSET 	256                             		// Offset number of extended ANSI colours supported
 
-#define SPACE_CHAR ' ' // Space character used for clearing the terminal buffer
+#define SPACE_CHAR 					' ' 		// Space character used for clearing the terminal buffer
 
 // Standard ANSI terminal control codes
-#define ANSI_ESC "\x1b["                      // The standard ANSI Escape sequence initiator
-#define ANSI_CURSOR_HOME ANSI_ESC "H"         // Move cursor to home (1,1): ESC [ H
-#define ANSI_CLEAR_SCREEN ANSI_ESC "2J"       // Clear the entire screen: ESC [ 2 J
-#define ANSI_CLEAR_LINE ANSI_ESC "2K"         // Clear the entire current line: ESC [ 2 K
-#define ANSI_CURSOR_INVISIBLE ANSI_ESC "?25l" // Hide the cursor: ESC [ ? 25 l
-#define ANSI_CURSOR_VISIBLE ANSI_ESC "?25h"   // Show the cursor: ESC [ ? 25 h
+#define ANSI_ESC 				"\x1b["				// The standard ANSI Escape sequence initiator
+#define ANSI_CURSOR_HOME 		ANSI_ESC "H"		// Move cursor to home (1,1): ESC [ H
+#define ANSI_CLEAR_SCREEN 		ANSI_ESC "2J"       // Clear the entire screen: ESC [ 2 J
+#define ANSI_CLEAR_LINE 		ANSI_ESC "2K"		// Clear the entire current line: ESC [ 2 K
+#define ANSI_CURSOR_INVISIBLE 	ANSI_ESC "?25l" 	// Hide the cursor: ESC [ ? 25 l
+#define ANSI_CURSOR_VISIBLE 	ANSI_ESC "?25h"   	// Show the cursor: ESC [ ? 25 h
+#define ANSI_RESET_STYLE 		ANSI_ESC "0m"		// Reset all text formatting and colors: ESC [ 0 m
+#define ANSI_REVERSE_MODE 		ANSI_ESC "7m"		// Enable reverse mode (swap foreground and background colors): ESC [ 7 m
 
 // ANSI Common combination control codes
 #define ANSI_CLS_HOME ANSI_CLEAR_SCREEN ANSI_CURSOR_HOME
