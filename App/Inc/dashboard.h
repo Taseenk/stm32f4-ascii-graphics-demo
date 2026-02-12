@@ -48,13 +48,20 @@
 #define INFO_ROW_POSITION           (AUTO_ROW_POSITION + OPTIONS_ROW_OFFSET)
 #define QUIT_ROW_POSITION           (INFO_ROW_POSITION + OPTIONS_ROW_OFFSET)
 
+// Dashboard Footer Texts
+#define FOOTER_TEXT     "[ENTER] Select   [W/S] Navigate   [ESC] Back   (C) 2026 Taseen"
+
+#define FOOTER_ROW_POSITION         23      // Row position for the dashboard footer
+#define FOOTER_COL_POSITION         8       // Starting column for the dashboard footer
+
 /* Function prototypes -------------------------------------------------------*/
-void DashboardInit(void);
+void MainPageInit(void);
 
 // Functions to render different parts of the dashboard
-void DashboardStatusBar(void);
-void DashboardMainBody(void);
+void DashboardHeader(void);
+void DashboardMenuList(void);
+void DashboardFooter(void);
 
-void DashboardFPSUpdater(uint32_t fps_counter);
+void DashboardFPSRefresh(uint32_t fps_counter);
 
 #endif /* __DASHBOARD_H */

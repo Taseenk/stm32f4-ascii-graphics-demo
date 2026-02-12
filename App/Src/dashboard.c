@@ -20,35 +20,38 @@
 
 /* Public Functions ----------------------------------------------------------*/
 /**
- * @fn void DashboardInit(void)
+ * @fn void MainPageInit(void)
  * @brief Initializes the dashboard by rendering the status bar and setting up
  * any necessary state for the dashboard pages.
  * @param void This function does not take any parameters.
  */
-void DashboardInit(void)
+void MainPageInit(void)
 {
 	// Render the dashboard top status bar with system information and page title
-	DashboardStatusBar();
+	DashboardHeader();
 
 	// Render the main body of the dashboard with the available options
-	DashboardMainBody();
+	DashboardMenuList();
+
+	// Render the dashboard footer with mock navigation instructions and credits
+	DashboardFooter();
 }
 
 /**
- * @fn void DashboardFPSUpdater(uint32_t fps_counter)
+ * @fn void DashboardFPSRefresh(uint32_t fps_counter)
  * @brief Updates the FPS display in the dashboard status bar with the current
  * frames per second count.
  * @param fps_counter The number of frames rendered in the last second to display as FPS.
  */
-void DashboardFPSUpdater(uint32_t fps_counter)
+void DashboardFPSRefresh(uint32_t fps_counter)
 {
 	// Buffer to hold the formatted FPS value
 	char fps_value_buffer[42];
 
 	// Format the escape sequence to move the cursor and return the length
 	// The length here is without the string terminator (\0)
-	int fps_value_len =
-	    snprintf(fps_value_buffer, sizeof(fps_value_buffer), ANSI_REVERSE_MODE "%-2lu" ANSI_RESET_STYLE, (unsigned long)fps_counter);
+	int fps_value_len = snprintf(fps_value_buffer, sizeof(fps_value_buffer), ANSI_REVERSE_MODE "%-2lu" ANSI_RESET_STYLE,
+	                             (unsigned long)fps_counter);
 
 	// Check if snprintf failed (len < 0) or if the formatted string exceeded the buffer size
 	if (fps_value_len <= 0 || (size_t)fps_value_len >= sizeof(fps_value_buffer))
@@ -59,16 +62,16 @@ void DashboardFPSUpdater(uint32_t fps_counter)
 }
 
 /**
- * @fn void DashboardStatusBar(void)
- * @brief Renders a static dashboard status bar at the top of the terminal, 
+ * @fn void DashboardHeader(void)
+ * @brief Renders a static dashboard status bar at the top of the terminal,
  * displaying system information, the current page, and a placeholder for FPS.
  * @param void This function does not take any parameters.
  */
-void DashboardStatusBar(void)
+void DashboardHeader(void)
 {
 	// Buffer to hold the entire status bar buffer, including ANSI escape codes and null terminator
 	char status_bar_buffer[STATUS_BAR_BUFFER_SIZE];
-	
+
 	// Initialize the data text buffer with spaces and null-terminate it
 	char data_buffer[TERMINAL_WIDTH + 1];
 	memset(data_buffer, SPACE_CHAR, TERMINAL_WIDTH);
@@ -94,14 +97,14 @@ void DashboardStatusBar(void)
 	// Output the entire status bar as a single string
 	TerminalSerialPrintString(status_bar_buffer, 1, 1);
 }
- 
+
 /**
- * @fn void DashboardMainBody(void)
+ * @fn void DashboardMenuList(void)
  * @brief Renders the main body of the dashboard, displaying the available mock
  * options for the user to interact with.
  * @param void This function does not take any parameters.
  */
-void DashboardMainBody(void)
+void DashboardMenuList(void)
 {
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
@@ -112,4 +115,19 @@ void DashboardMainBody(void)
 	TerminalSerialPrintString(AUTO_TEXT, OPTIONS_COL_POSITION, AUTO_ROW_POSITION);
 	TerminalSerialPrintString(INFO_TEXT, OPTIONS_COL_POSITION, INFO_ROW_POSITION);
 	TerminalSerialPrintString(QUIT_TEXT, OPTIONS_COL_POSITION, QUIT_ROW_POSITION);
+}
+
+/**
+ * @fn void DashboardFooter(void)
+ * @brief Renders the dashboard footer at the bottom of the terminal, displaying
+ * mock navigation instructions and credits.
+ * @param void This function does not take any parameters.
+ */
+void DashboardFooter(void)
+{
+	// Set default colours
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	// Output the entire footer as a single string
+	TerminalSerialPrintString(FOOTER_TEXT, FOOTER_COL_POSITION, FOOTER_ROW_POSITION);
 }
