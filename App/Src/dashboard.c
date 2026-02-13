@@ -20,6 +20,51 @@
 
 /* Public Functions ----------------------------------------------------------*/
 /**
+ * @fn void DashboardShellInit(void)
+ * @brief Initializes the dashboard shell by rendering the initial 
+ * boot sequence with system information and a prompt for user input.
+ * @param void This function does not take any parameters.
+ */
+void DashboardShellInit(void)
+{
+	// Set default colours for the main body text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	// Render the system header
+	TerminalSerialPrintString(NAME_TEXT, SHELL_COL_POSITION, NAME_ROW_POSITION);
+	TerminalSerialPrintString(COPYRIGHT_TEXT, SHELL_COL_POSITION, COPYRIGHT_ROW_POSITION);
+	HAL_Delay(150);
+
+	// Render the hardware specs with delays to simulate a boot sequence
+	TerminalSerialPrintString(CPU_TEXT, SHELL_COL_POSITION, CPU_ROW_POSITION);
+	HAL_Delay(300);
+	TerminalSerialPrintString(SRAM_TEXT, SHELL_COL_POSITION, SRAM_ROW_POSITION);
+	HAL_Delay(1000);
+	TerminalSerialPrintString(FLASH_TEXT, SHELL_COL_POSITION, FLASH_ROW_POSITION);
+	HAL_Delay(300);
+
+	// Render the peripheral checks with delays to simulate a boot sequence
+	TerminalSerialPrintString(DMA_TEXT, SHELL_COL_POSITION, DMA_ROW_POSITION);
+	HAL_Delay(450);
+	TerminalSerialPrintString(UART_TEXT, SHELL_COL_POSITION, UART_ROW_POSITION);
+	HAL_Delay(300);
+	TerminalSerialPrintString(TERMINAL_TEXT, SHELL_COL_POSITION, TERMINAL_ROW_POSITION);
+	HAL_Delay(1000);
+
+	// Render the system ready message
+	TerminalSerialPrintString(READY_TEXT, SHELL_COL_POSITION, READY_ROW_POSITION);
+
+	// Render the interaction prompt
+	TerminalSerialPrintString(HINT_TEXT, SHELL_COL_POSITION, HINT_ROW_POSITION);
+    HAL_Delay(200);
+	TerminalSerialPrintString(INPUT_TEXT, SHELL_COL_POSITION, INPUT_ROW_POSITION);
+
+	// Move the cursor to the input position and enable it for user input
+	TerminalSetCursorPos(6, INPUT_ROW_POSITION);
+	TerminalVisibleCursor();
+}
+
+/**
  * @fn void MainPageInit(void)
  * @brief Initializes the dashboard by rendering the status bar and setting up
  * any necessary state for the dashboard pages.

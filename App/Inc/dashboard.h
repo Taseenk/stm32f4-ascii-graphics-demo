@@ -13,6 +13,41 @@
 #include "main.h"
 
 /* Defines -------------------------------------------------------------------*/
+// Shell Initialization Texts
+#define NAME_TEXT           "STM32F407VG BIOS v1.0.4"
+#define COPYRIGHT_TEXT      "(C) 2026 Taseen ASCII Graphics Demo"
+
+#define CPU_TEXT            "CPU: ARM Cortex-M4 @ 168MHz (PLL_LOCKED)"
+#define SRAM_TEXT           "SRAM: 128KB OK"
+#define FLASH_TEXT          "FLASH: 1024KB OK"
+
+#define DMA_TEXT            "DMA Controller... Initialized"
+#define UART_TEXT           "UART2 Terminal... Connected at 115200bps"
+#define TERMINAL_TEXT       "Display Mode... 80x24 ANSI Color"
+
+#define READY_TEXT          "System is ready..."
+
+#define HINT_TEXT           "Type 'demo.exe --help'"
+#define INPUT_TEXT          "C:/>"
+
+// Row and column positions for each shell Text
+#define SHELL_COL_POSITION          1       // Starting column for the shell texts
+#define NAME_ROW_POSITION           1       // Starting row for the system name text
+#define COPYRIGHT_ROW_POSITION      (NAME_ROW_POSITION + 1)
+
+#define CPU_ROW_POSITION            (COPYRIGHT_ROW_POSITION + 2)
+#define SRAM_ROW_POSITION           (CPU_ROW_POSITION + 1)
+#define FLASH_ROW_POSITION          (SRAM_ROW_POSITION + 1)
+
+#define DMA_ROW_POSITION            (FLASH_ROW_POSITION + 2)
+#define UART_ROW_POSITION           (DMA_ROW_POSITION + 1)
+#define TERMINAL_ROW_POSITION       (UART_ROW_POSITION + 1)
+
+#define READY_ROW_POSITION          (TERMINAL_ROW_POSITION + 2)
+
+#define HINT_ROW_POSITION           (READY_ROW_POSITION + 2)
+#define INPUT_ROW_POSITION          (HINT_ROW_POSITION + 2)
+
 // Dashboard Status Bar Text
 #define SYSTEM_TEXT         "[SYSTEM: STM32F407VG]"     // Text to display for system information
 #define MAIN_PAGE_TEXT      "[MAIN MENU]"               // Text to display for the dashboard page
@@ -55,6 +90,7 @@
 #define FOOTER_COL_POSITION         8       // Starting column for the dashboard footer
 
 /* Function prototypes -------------------------------------------------------*/
+void DashboardShellInit(void);
 void MainPageInit(void);
 
 // Functions to render different parts of the dashboard
