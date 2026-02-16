@@ -12,10 +12,12 @@
 #include "main.h"
 
 /* Defines -------------------------------------------------------------------*/
-#define UART_BUFFER_SIZE 128 // Size of the buffer for UART Rx/Tx (in bytes)
-#define TERMINAL_EOL "\r\n"  // End of line characters for the terminal
-#define CARRIAGE_RETURN '\r' // Delimiter character to signify the end of a message
-#define NULL_TERMINATOR '\0' // String termination character
+#define UART_BUFFER_SIZE	128			// Size of the buffer for UART Rx/Tx (in bytes)
+#define TERMINAL_EOL		"\r\n"  	// End of line characters for the terminal
+#define CARRIAGE_RETURN		'\r'		// Delimiter character to signify the end of a message
+#define NULL_TERMINATOR		'\0'		// String termination character
+#define BACKSPACE			'\b'		// Backspace character for handling user input corrections
+#define SPACE_CHAR			' '			// Space character for handling leading spaces in user input
 
 /* typedefs ------------------------------------------------------------------*/
 typedef struct {
