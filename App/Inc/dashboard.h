@@ -48,6 +48,23 @@
 #define HINT_ROW_POSITION           (READY_ROW_POSITION + 2)
 #define INPUT_ROW_POSITION          (HINT_ROW_POSITION + 2)
 
+// Shell Command Parsing
+#define COMMAND_TEXT            "demo.exe"      // Expected command text to trigger the demo command parsing logic
+#define COMMAND_TEXT_LEN        8               // Length of the command text without null terminator
+
+#define ARGUMENT_DELIMITER      " "             // Delimiter used to separate command arguments in the input buffer
+#define ARG_HELP_TEXT           "--help"        // Argument text for displaying help information about the command
+#define ARG_AUTO_TEXT           "--auto"        // Argument text for automatically cycling through scenes
+#define ARG_SELECT_TEXT         "--select"      // Argument text for selecting a specific scene to load
+
+#define ARG_SHORT_HELP_TEXT     "-h"            // Short argument text for help
+#define ARG_SHORT_AUTO_TEXT     "-a"            // Short argument text for auto
+#define ARG_SHORT_SELECT_TEXT   "-s"            // Short argument text for select
+
+#define UPPERCASE_A         'A'     // ASCII value for uppercase 'A'
+#define UPPERCASE_Z         'Z'     // ASCII value for uppercase 'Z'
+#define LOWERCASE_OFFSET    32      // Offset to convert uppercase letters to lowercase in ASCII
+
 // Dashboard Status Bar Text
 #define SYSTEM_TEXT         "[SYSTEM: STM32F407VG]"     // Text to display for system information
 #define MAIN_PAGE_TEXT      "[MAIN MENU]"               // Text to display for the dashboard page
@@ -92,6 +109,8 @@
 /* Function prototypes -------------------------------------------------------*/
 void DashboardShellInit(void);
 void MainPageInit(void);
+
+void DashboardShellCommandParser(char *rx_buffer);
 
 // Functions to render different parts of the dashboard
 void DashboardHeader(void);

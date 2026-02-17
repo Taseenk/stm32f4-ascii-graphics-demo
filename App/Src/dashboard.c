@@ -21,7 +21,7 @@
 /* Public Functions ----------------------------------------------------------*/
 /**
  * @fn void DashboardShellInit(void)
- * @brief Initializes the dashboard shell by rendering the initial 
+ * @brief Initializes the dashboard shell by rendering the initial
  * boot sequence with system information and a prompt for user input.
  * @param void This function does not take any parameters.
  */
@@ -80,6 +80,64 @@ void MainPageInit(void)
 
 	// Render the dashboard footer with mock navigation instructions and credits
 	DashboardFooter();
+}
+
+/**
+ * @fn void DashboardShellCommandParser(char *rx_buffer)
+ * @brief Parses the user input from the dashboard shell, extracting the command
+ * and its arguments to determine which action to take based on the input.
+ * @param rx_buffer The buffer containing the user input string to parse.
+ */
+void DashboardShellCommandParser(char *rx_buffer)
+{
+	// Calculate the length of the received buffer
+	size_t buffer_len = strlen(rx_buffer);
+
+	// Early exit if buffer is null or invalid (e.g., empty string)
+	if (rx_buffer == NULL)
+		return;
+
+	// Convert the received buffer to lowercase for comparison
+	for (size_t i = 0; i < buffer_len; i++) {
+		if (rx_buffer[i] >= UPPERCASE_A && rx_buffer[i] <= UPPERCASE_Z) {
+			rx_buffer[i] += LOWERCASE_OFFSET;
+		}
+	}
+
+	// Check if the received command starts with the expected command text
+	if (strncmp(rx_buffer, COMMAND_TEXT, COMMAND_TEXT_LEN) != 0) {
+		// TODO: Implement error flow when command is not recognized
+		return;
+	}
+
+	// Extract the arguments from the buffer after the command and parse them
+	char *arg = strtok(rx_buffer + COMMAND_TEXT_LEN, ARGUMENT_DELIMITER);
+
+	// If there are no arguments provided, go to the default scene
+	if (arg == NULL) {
+		// TODO: Implement default scene loading when no arguments are provided
+		return;
+	}
+
+	// Parse the arguments and go to the appropriate scene based on the provided flag
+	while (arg != NULL) {
+		if (strcmp(arg, ARG_HELP_TEXT) == 0 || strcmp(arg, ARG_SHORT_HELP_TEXT) == 0) {
+			// TODO: Implement help text when the '--help or '-h' flag gets used
+			return;
+		} else if (strcmp(arg, ARG_AUTO_TEXT) == 0 || strcmp(arg, ARG_SHORT_AUTO_TEXT) == 0) {
+			// TODO: Implement auto scene loading when the '--auto or '-a' flag gets used
+			return;
+		} else if (strcmp(arg, ARG_SELECT_TEXT) == 0 || strcmp(arg, ARG_SHORT_SELECT_TEXT) == 0) {
+			// TODO: Implement select scene loading when the '--select or '-s' flag gets used
+			return;
+		} else {
+			// TODO: Implement error flow when an unrecognized argument is provided
+			return;
+		}
+
+		// Move to the next argument in the buffer
+		arg = strtok(NULL, ARGUMENT_DELIMITER);
+	}
 }
 
 /**
