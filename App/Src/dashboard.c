@@ -24,6 +24,7 @@ static uint16_t input_row = 16;
 /* Private Function Prototypes -----------------------------------------------*/
 static void __RowOverflow(uint8_t required_space);
 static void __InputCommand(uint16_t row);
+static void __CommandError(char *input_buffer, ShellError_t error_type);
 static void __HelpCommand(void);
 
 /* Private Functions ---------------------------------------------------------*/
@@ -53,11 +54,63 @@ static void __RowOverflow(uint8_t required_space)
  */
 static void __InputCommand(uint16_t row)
 {
+	// Print the input prompt at the current input row
 	TerminalSerialPrintString(INPUT_TEXT, SHELL_COL_POSITION, row);
 
 	// Move the cursor to the input position and enable it for user input
 	TerminalSetCursorPos(INPUT_COL_POSITION, row);
 	TerminalVisibleCursor();
+}
+
+/**
+ * @fn void __CommandError(char *input_buffer, ShellError_t error_type)
+ * @brief Handles the logic for displaying error messages in the dashboard shell
+ * when the user inputs an unrecognized command or invalid parameters.
+ * @param input_buffer The buffer containing the user input string that caused the error.
+ * @param error_type An integer representing the type of error (e.g., 1 for unrecognized command, 2 for invalid
+ * parameters).
+ */
+static void __CommandError(char *input_buffer, ShellError_t error_type)
+{
+	// Check if there is enough space to print the error message and helper text
+	// if not clear the screen and reset the input row
+	__RowOverflow(4);
+
+	// Set red text colour for error messages
+	TerminalSetColour(FG_RED, BG_DEFAULT);
+
+	// Print the appropriate error message based on the error type
+	TerminalSetCursorPos(SHELL_COL_POSITION, input_row);
+	switch (error_type) {
+		case SHELL_ERROR_BAD_COMMAND:
+			SerialPrint("'");
+			SerialPrint(input_buffer);
+			SerialPrintLn("' is not recognized as a command.");
+			// break out of the switch
+			break;
+
+		case SHELL_ERROR_INVALID_PARAM:
+			SerialPrint("Invalid parameter: ");
+			SerialPrintLn(input_buffer);
+			// break out of the switch
+			break;
+
+		default:
+			SerialPrintLn("An unknown error occurred.");
+			// break out of the switch
+			break;
+	}
+
+	// Set default colours for helper text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	input_row += 2;
+	TerminalSetCursorPos(SHELL_COL_POSITION, input_row);
+	SerialPrintLn("Type 'demo.exe --help' for options.");
+
+	// Increment the input row and prompt the user for the next command
+	input_row += 2;
+	__InputCommand(input_row);
 }
 
 /**
@@ -69,9 +122,7 @@ static void __InputCommand(uint16_t row)
 static void __HelpCommand(void)
 {
 	// List of available flags and their descriptions to print when the user types "demo.exe --help"
-	const char* flags[] = { "  --help   :\tShow help", 
-                            "  --auto   :\tAuto Mode", 
-                            "  --select :\tSelect Mode" };
+	const char *flags[] = {"  --help   :\tShow help", "  --auto   :\tAuto Mode", "  --select :\tSelect Mode"};
 
 	const uint8_t flags_count = sizeof(flags) / sizeof(flags[0]);
 
@@ -87,10 +138,10 @@ static void __HelpCommand(void)
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
 	// Print each flag and its description at its respective position
-	for(int i = 0; i < flags_count; i++) {
-        input_row++;
+	for (int i = 0; i < flags_count; i++) {
+		input_row++;
 		TerminalSerialPrintString(flags[i], SHELL_COL_POSITION, input_row);
-    }
+	}
 
 	// Increment the input row and prompt the user for the next command
 	input_row++;
@@ -135,7 +186,7 @@ void DashboardShellInit(void)
 
 	// Render the interaction prompt
 	TerminalSerialPrintString(HINT_TEXT, SHELL_COL_POSITION, HINT_ROW_POSITION);
-    HAL_Delay(200);
+	HAL_Delay(200);
 	__InputCommand(INPUT_ROW_POSITION);
 }
 
@@ -181,7 +232,8 @@ void DashboardShellCommandParser(char *rx_buffer)
 
 	// Check if the received command starts with the expected command text
 	if (strncmp(rx_buffer, COMMAND_TEXT, COMMAND_TEXT_LEN) != 0) {
-		// TODO: Implement error flow when command is not recognized
+		// Command does not match, display an error message
+		__CommandError(rx_buffer, SHELL_ERROR_BAD_COMMAND);
 		return;
 	}
 
@@ -207,7 +259,8 @@ void DashboardShellCommandParser(char *rx_buffer)
 			// TODO: Implement select scene loading when the '--select or '-s' flag gets used
 			return;
 		} else {
-			// TODO: Implement error flow when an unrecognized argument is provided
+			// Argument does not match, display an error message
+			__CommandError(arg, SHELL_ERROR_INVALID_PARAM);
 			return;
 		}
 

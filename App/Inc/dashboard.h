@@ -107,6 +107,14 @@
 #define FOOTER_ROW_POSITION         23      // Row position for the dashboard footer
 #define FOOTER_COL_POSITION         8       // Starting column for the dashboard footer
 
+/* typedefs ------------------------------------------------------------------*/
+// Shell error types for handling different error scenarios in the command parser
+typedef enum {
+    SHELL_ERROR_NONE = 0,           // No error occurred
+    SHELL_ERROR_BAD_COMMAND,        // Command not recognized (e.g., "unknown.exe")
+    SHELL_ERROR_INVALID_PARAM,      // Flag not recognized (e.g., "--wrong")
+} ShellError_t;
+
 /* Function prototypes -------------------------------------------------------*/
 void DashboardShellInit(void);
 void MainPageInit(void);
