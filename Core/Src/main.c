@@ -30,8 +30,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 // Project libraries
-#include "scene_manager.h"
 #include "dashboard.h"
+#include "scene_manager.h"
 #include "serial_hw.h"
 #include "terminal.h"
 
@@ -55,6 +55,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+SystemMode_t g_system_mode = SYSTEM_STATE_USER_INPUT; // Initialize the system mode to user input by default
 
 /* USER CODE END PV */
 
@@ -107,13 +108,13 @@ int main(void)
 	MX_USB_HOST_Init();
 	MX_USART2_UART_Init();
 	MX_RNG_Init();
+
 	/* USER CODE BEGIN 2 */
-
 	// Initialize all user modules
-	TerminalInit(FALSE); // Initialize terminal (disable cursor to prevent flickering)
-	SerialReceiveInit(); // Begin UART data reception using DMA
-
-	TerminalClearScreen(); // Clear the terminal to start of clean
+	TerminalInit(FALSE);	// Initialize terminal (disable cursor blinking)
+	SerialReceiveInit();			// Begin UART data reception using DMA
+	TerminalClearScreen();			// Clear the terminal
+	DashboardShellInit();			// Initialize the dashboard shell interface
 
 	// Timing and Frame Rate Control
 	uint32_t last_heartbeat = HAL_GetTick(); // Tracks the last time a frame was processed
@@ -137,18 +138,26 @@ int main(void)
 		MX_USB_HOST_Process();
 
 		/* USER CODE BEGIN 3 */
+		// Process incoming serial data if the system is in user input mode
+		if (g_system_mode == SYSTEM_STATE_USER_INPUT) {
+			SerialProcessData();
+		} 
 
-		// Check if one second has passed to update the FPS display
-		if (current_time - last_fps >= seconds_time) {
-			DashboardStatusBar(fps_counter);
+		// While in dashboard mode, check if one second has passed to update the FPS display
+		if (g_system_mode == SYSTEM_STATE_DASHBOARD && (current_time - last_fps >= seconds_time)) {
+			DashboardFPSRefresh(fps_counter);
+
+			// Increment the FPS counter and reset the timer for the next second
 			fps_counter = 0;
 			last_fps = current_time;
 		}
 
-		// Check if it's time to process the next frame
+		// Check if it's time to process the next frame based on the target frame interval
 		if (current_time - last_heartbeat >= frame_interval) {
-			// Let SceneManager Handle scene logic based on the current frame
-			SceneManager(frame_counter);
+			// While in playlist mode, Let SceneManager Handle scene logic based on the current frame
+			if (g_system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
+				SceneManager(frame_counter);
+			}
 
 			// Increment trackers and maintain a consistent time for the next frame
 			last_heartbeat += frame_interval;
