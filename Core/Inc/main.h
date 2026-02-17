@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.h
-  * @brief          : Header for main.c file.
-  *                   This file contains the common defines of the application.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.h
+ * @brief          : Header for main.c file.
+ *                   This file contains the common defines of the application.
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -31,13 +31,20 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#define TRUE    1   // Boolean True
-#define FALSE   0   // Boolean False
 
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef enum {
+	SYSTEM_STATE_USER_INPUT,		// System is waiting for user input in the dashboard shell
+	SYSTEM_STATE_DASHBOARD,			// System is displaying the dashboard menu and options
+	SYSTEM_STATE_PLAYLIST_SCENE,	// System is displaying the playlist scene (Currated list of scenes played back to back)
+	SYSTEM_STATE_AUTO_SCENE,		// Displays every scene in the system one after another at a set interval
+	SYSTEM_TOTAL_STATES				// Total number of system states (used for bounds checking)
+} SystemMode_t;
+
+extern SystemMode_t g_system_mode;		// Global variable to track the current system mode (e.g., user input, scene display, etc.)
 
 /* USER CODE END ET */
 
@@ -127,6 +134,8 @@ void Error_Handler(void);
 #define MEMS_INT2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
+#define TRUE 1  // Boolean True
+#define FALSE 0 // Boolean False
 
 /* USER CODE END Private defines */
 
