@@ -32,6 +32,7 @@
 
 // Row and column positions for each shell Text
 #define SHELL_COL_POSITION          1       // Starting column for the shell texts
+#define INPUT_COL_POSITION          6       // Starting column for the user input text (after the prompt)
 #define NAME_ROW_POSITION           1       // Starting row for the system name text
 #define COPYRIGHT_ROW_POSITION      (NAME_ROW_POSITION + 1)
 

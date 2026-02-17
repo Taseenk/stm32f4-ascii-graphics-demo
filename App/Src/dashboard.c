@@ -18,6 +18,85 @@
 #include <stdio.h>
 #include <string.h>
 
+/* Private Variables ---------------------------------------------------------*/
+static uint16_t input_row = 16;
+
+/* Private Function Prototypes -----------------------------------------------*/
+static void __RowOverflow(uint8_t required_space);
+static void __InputCommand(uint16_t row);
+static void __HelpCommand(void);
+
+/* Private Functions ---------------------------------------------------------*/
+/**
+ * @fn void __RowOverflow(uint8_t required_space)
+ * @brief Checks if there is enough space left in the terminal to print a new
+ * message without overflowing the bottom of the screen. If there is not enough
+ * space, it clears the terminal and resets the input row to prevent overflow.
+ * @param required_space The number of rows required to print the new message and any additional helper text.
+ */
+static void __RowOverflow(uint8_t required_space)
+{
+	// Check if the new messages will overflow the terminal height
+	if ((input_row + required_space) >= TERMINAL_HEIGHT) {
+		// Clear the terminal and reset the input row
+		TerminalClearAndHome();
+		input_row = 1;
+	}
+}
+
+/**
+ * @fn void __RowOverflow(uint8_t required_space)
+ * @brief Checks if there is enough space left in the terminal to print a new
+ * message without overflowing the bottom of the screen. If there is not enough
+ * space, it clears the terminal and resets the input row to prevent overflow.
+ * @param required_space The number of rows required to print the new message and any additional helper text.
+ */
+static void __InputCommand(uint16_t row)
+{
+	TerminalSerialPrintString(INPUT_TEXT, SHELL_COL_POSITION, row);
+
+	// Move the cursor to the input position and enable it for user input
+	TerminalSetCursorPos(INPUT_COL_POSITION, row);
+	TerminalVisibleCursor();
+}
+
+/**
+ * @fn void __HelpCommand(void)
+ * @brief Handles the logic for displaying help information about the available
+ * command flags when the user types "demo.exe --help" in the dashboard shell.
+ * @param void This function does not take any parameters.
+ */
+static void __HelpCommand(void)
+{
+	// List of available flags and their descriptions to print when the user types "demo.exe --help"
+	const char* flags[] = { "  --help   :\tShow help", 
+                            "  --auto   :\tAuto Mode", 
+                            "  --select :\tSelect Mode" };
+
+	const uint8_t flags_count = sizeof(flags) / sizeof(flags[0]);
+
+	// Check if there is enough space to print the error message and helper text
+	// if not clear the screen and reset the input row
+	__RowOverflow(6);
+
+	// Set cyan text colour for the help command output
+	TerminalSetColour(FG_CYAN, BG_DEFAULT);
+	TerminalSerialPrintString("Available flags for demo.exe:", SHELL_COL_POSITION, input_row);
+
+	// Set default colours for the main body text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	// Print each flag and its description at its respective position
+	for(int i = 0; i < flags_count; i++) {
+        input_row++;
+		TerminalSerialPrintString(flags[i], SHELL_COL_POSITION, input_row);
+    }
+
+	// Increment the input row and prompt the user for the next command
+	input_row++;
+	__InputCommand(++input_row);
+}
+
 /* Public Functions ----------------------------------------------------------*/
 /**
  * @fn void DashboardShellInit(void)
@@ -57,11 +136,7 @@ void DashboardShellInit(void)
 	// Render the interaction prompt
 	TerminalSerialPrintString(HINT_TEXT, SHELL_COL_POSITION, HINT_ROW_POSITION);
     HAL_Delay(200);
-	TerminalSerialPrintString(INPUT_TEXT, SHELL_COL_POSITION, INPUT_ROW_POSITION);
-
-	// Move the cursor to the input position and enable it for user input
-	TerminalSetCursorPos(6, INPUT_ROW_POSITION);
-	TerminalVisibleCursor();
+	__InputCommand(INPUT_ROW_POSITION);
 }
 
 /**
@@ -122,7 +197,8 @@ void DashboardShellCommandParser(char *rx_buffer)
 	// Parse the arguments and go to the appropriate scene based on the provided flag
 	while (arg != NULL) {
 		if (strcmp(arg, ARG_HELP_TEXT) == 0 || strcmp(arg, ARG_SHORT_HELP_TEXT) == 0) {
-			// TODO: Implement help text when the '--help or '-h' flag gets used
+			// Call the help command function to display the available flags and their descriptions
+			__HelpCommand();
 			return;
 		} else if (strcmp(arg, ARG_AUTO_TEXT) == 0 || strcmp(arg, ARG_SHORT_AUTO_TEXT) == 0) {
 			// TODO: Implement auto scene loading when the '--auto or '-a' flag gets used
