@@ -270,20 +270,25 @@ void DashboardShellCommandParser(char *rx_buffer)
 }
 
 /**
- * @fn void DashboardFPSRefresh(uint32_t fps_counter)
+ * @fn void DashboardFPSRefresh(uint32_t fps, uint8_t fps_range)
  * @brief Updates the FPS display in the dashboard status bar with the current
  * frames per second count.
- * @param fps_counter The number of frames rendered in the last second to display as FPS.
+ * @param fps The number of frames rendered in the last second to display as FPS.
+ * @param fps_range The maximum FPS value to display before showing "MAX" or a capped value.
  */
-void DashboardFPSRefresh(uint32_t fps_counter)
+void DashboardFPSRefresh(uint32_t fps, uint8_t fps_range)
 {
+	// Filter out unrealistic fps values that exceed the specified range (e.g., due to a timing issues)
+	if (fps > fps_range*2)
+		return;
+
 	// Buffer to hold the formatted FPS value
 	char fps_value_buffer[42];
 
 	// Format the escape sequence to move the cursor and return the length
 	// The length here is without the string terminator (\0)
 	int fps_value_len = snprintf(fps_value_buffer, sizeof(fps_value_buffer), ANSI_REVERSE_MODE "%-2lu" ANSI_RESET_STYLE,
-	                             (unsigned long)fps_counter);
+	                             (unsigned long)fps);
 
 	// Check if snprintf failed (len < 0) or if the formatted string exceeded the buffer size
 	if (fps_value_len <= 0 || (size_t)fps_value_len >= sizeof(fps_value_buffer))

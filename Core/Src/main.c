@@ -143,7 +143,7 @@ int main(void)
 
 		// While in dashboard mode, check if one second has passed to update the FPS display
 		if (g_system_mode == SYSTEM_STATE_DASHBOARD && (current_time - last_fps >= ONE_SECOND_MS)) {
-			DashboardFPSRefresh(fps_counter);
+			DashboardFPSRefresh(fps_counter, TARGET_FPS);
 
 			// Increment the FPS counter and reset the timer for the next second
 			fps_counter = 0;

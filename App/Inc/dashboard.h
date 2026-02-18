@@ -126,6 +126,6 @@ void DashboardHeader(void);
 void DashboardMenuList(void);
 void DashboardFooter(void);
 
-void DashboardFPSRefresh(uint32_t fps_counter);
+void DashboardFPSRefresh(uint32_t fps, uint8_t fps_range);
 
 #endif /* __DASHBOARD_H */
