@@ -134,8 +134,14 @@ void Error_Handler(void);
 #define MEMS_INT2_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
-#define TRUE 1  // Boolean True
-#define FALSE 0 // Boolean False
+// Timing and frame rate configuration for the main loop and scene updates
+#define TARGET_FPS				30								// Target frames per second for the main loop and scene updates
+#define ONE_SECOND_MS			1000							// Number of milliseconds in one second (used for timing calculations)
+#define FRAME_INTERVAL_MS		(ONE_SECOND_MS / TARGET_FPS)	// Calculated interval in milliseconds between each frame to achieve the target FPS (e.g., 1000ms / 30fps ≈ 33ms per frame)
+
+// Boolean definitions for clarity in code (e.g., for flags, conditions, etc.)
+#define TRUE 		1 		// Boolean True
+#define FALSE 		0 		// Boolean False
 
 /* USER CODE END Private defines */
 

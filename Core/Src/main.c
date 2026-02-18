@@ -117,14 +117,12 @@ int main(void)
 	DashboardShellInit();			// Initialize the dashboard shell interface
 
 	// Timing and Frame Rate Control
-	uint32_t last_heartbeat = HAL_GetTick(); // Tracks the last time a frame was processed
-	static uint32_t frame_interval = 33;     // Target ~30 FPS (1s/f = 1s/30fps = 1000ms / 30 ≈ 33ms)
-	uint32_t frame_counter = 0;              // Incremental count of elapsed frames
+	uint32_t last_heartbeat = HAL_GetTick();	// Tracks the last time a frame was processed
+	uint32_t frame_counter = 0;              	// Incremental count of elapsed frames
 
 	// FPS Calculation Variables
-	uint32_t last_fps = HAL_GetTick();   // Timestamp for the last FPS calculation
-	uint32_t fps_counter = 0;            // Tracks frames rendered in the current second
-	static uint32_t seconds_time = 1000; // Period for FPS update (1000ms)
+	uint32_t last_fps = HAL_GetTick();			// Timestamp for the last FPS calculation
+	uint32_t fps_counter = 0;					// Tracks frames rendered in the current second
 
 	/* USER CODE END 2 */
 
@@ -144,7 +142,7 @@ int main(void)
 		} 
 
 		// While in dashboard mode, check if one second has passed to update the FPS display
-		if (g_system_mode == SYSTEM_STATE_DASHBOARD && (current_time - last_fps >= seconds_time)) {
+		if (g_system_mode == SYSTEM_STATE_DASHBOARD && (current_time - last_fps >= ONE_SECOND_MS)) {
 			DashboardFPSRefresh(fps_counter);
 
 			// Increment the FPS counter and reset the timer for the next second
@@ -153,14 +151,14 @@ int main(void)
 		}
 
 		// Check if it's time to process the next frame based on the target frame interval
-		if (current_time - last_heartbeat >= frame_interval) {
+		if (current_time - last_heartbeat >= FRAME_INTERVAL_MS) {
 			// While in playlist mode, Let SceneManager Handle scene logic based on the current frame
 			if (g_system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
 				SceneManager(frame_counter);
 			}
 
 			// Increment trackers and maintain a consistent time for the next frame
-			last_heartbeat += frame_interval;
+			last_heartbeat += FRAME_INTERVAL_MS;
 			frame_counter++;
 			fps_counter++;
 		}
