@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "serial_hw.h"
+#include "dashboard.h"
 
 // STM32 specific libraries
 #include "main.h"
@@ -237,13 +238,12 @@ void SerialProcessData(void)
 			// Store the length of the received message with null terminator
 			rx_message.length = message_length + 1;
 
-			// Print the received string
-			SerialPrint("DEBUG: Received: ");
-			SerialPrintLn(rx_message.message);
-
 			// Update and save the new start reading position
 			// Wrap the circular buffer back to the start using modulo 
 			s_uart_rx.read_index = (buffer_index + 1) % UART_BUFFER_SIZE;
+
+			// Send the received message to the command parser for processing
+			DashboardShellCommandParser(rx_message.message);
 
 			// Exit loop safely
 			return;
