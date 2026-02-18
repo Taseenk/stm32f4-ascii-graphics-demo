@@ -198,6 +198,10 @@ void DashboardShellInit(void)
  */
 void MainPageInit(void)
 {
+	// Clear the terminal and set up the cursor for the dashboard display
+	TerminalClearAndHome();
+	TerminalInvisibleCursor();
+
 	// Render the dashboard top status bar with system information and page title
 	DashboardHeader();
 
@@ -243,6 +247,8 @@ void DashboardShellCommandParser(char *rx_buffer)
 	// If there are no arguments provided, go to the default scene
 	if (arg == NULL) {
 		// TODO: Implement default scene loading when no arguments are provided
+		g_system_mode = SYSTEM_STATE_DASHBOARD;
+		MainPageInit();
 		return;
 	}
 
@@ -254,9 +260,13 @@ void DashboardShellCommandParser(char *rx_buffer)
 			return;
 		} else if (strcmp(arg, ARG_AUTO_TEXT) == 0 || strcmp(arg, ARG_SHORT_AUTO_TEXT) == 0) {
 			// TODO: Implement auto scene loading when the '--auto or '-a' flag gets used
+			g_system_mode = SYSTEM_STATE_DASHBOARD;
+			MainPageInit();
 			return;
 		} else if (strcmp(arg, ARG_SELECT_TEXT) == 0 || strcmp(arg, ARG_SHORT_SELECT_TEXT) == 0) {
 			// TODO: Implement select scene loading when the '--select or '-s' flag gets used
+			g_system_mode = SYSTEM_STATE_DASHBOARD;
+			MainPageInit();
 			return;
 		} else {
 			// Argument does not match, display an error message
@@ -279,7 +289,7 @@ void DashboardShellCommandParser(char *rx_buffer)
 void DashboardFPSRefresh(uint32_t fps, uint8_t fps_range)
 {
 	// Filter out unrealistic fps values that exceed the specified range (e.g., due to a timing issues)
-	if (fps > fps_range*2)
+	if (fps > fps_range * 2)
 		return;
 
 	// Buffer to hold the formatted FPS value
