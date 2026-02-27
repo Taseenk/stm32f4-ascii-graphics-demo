@@ -256,6 +256,9 @@ void TerminalInit(uint8_t cursor)
 	// Clear the internal framebuffer
 	TerminalClearBuffer();
 
+	// Reset terminal styling to default
+	TerminalResetStyle();
+
 	// Log successful initialization of the terminal
 	SerialPrint("DEBUG: Terminal initialized successfully\r\n");
 }
@@ -317,6 +320,18 @@ void TerminalVisibleCursor(void)
 {
 	// Transmit the ANSI command string for showing the cursor
 	SerialPrint(ANSI_CURSOR_VISIBLE);
+}
+
+/**
+ * @fn void TerminalResetStyle(void)
+ * @brief Sends the ANSI escape sequence to reset all terminal styles to default.
+ * This function uses the ANSI_RESET_STYLE (ESC[0m) to clear any applied
+ * text formatting, colours, or other styles and return to the default terminal appearance.
+ */
+void TerminalResetStyle(void)
+{
+	// Transmit the ANSI command string for resetting all styles to default
+	SerialPrint(ANSI_RESET_STYLE);
 }
 
 /**
