@@ -34,6 +34,7 @@
 #define ANSI_CURSOR_VISIBLE 	ANSI_ESC "?25h"   	// Show the cursor: ESC [ ? 25 h
 #define ANSI_RESET_STYLE 		ANSI_ESC "0m"		// Reset all text formatting and colors: ESC [ 0 m
 #define ANSI_REVERSE_MODE 		ANSI_ESC "7m"		// Enable reverse mode (swap foreground and background colors): ESC [ 7 m
+#define ANSI_RESET_REVERSE_MODE ANSI_ESC "27m"		// Disable reverse mode: ESC [ 27 m
 
 // ANSI Common combination control codes
 #define ANSI_CLS_HOME ANSI_CLEAR_SCREEN ANSI_CURSOR_HOME
