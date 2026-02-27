@@ -22,7 +22,7 @@
 #define FLASH_TEXT          "FLASH: 1024KB OK"
 
 #define DMA_TEXT            "DMA Controller... Initialized"
-#define UART_TEXT           "UART2 Terminal... Connected at 115200bps"
+#define UART_TEXT           "UART2 Terminal... Connected at 921600bps"
 #define TERMINAL_TEXT       "Display Mode... 80x24 ANSI Color"
 
 #define READY_TEXT          "System is ready..."
@@ -55,12 +55,12 @@
 
 #define ARGUMENT_DELIMITER      " "             // Delimiter used to separate command arguments in the input buffer
 #define ARG_HELP_TEXT           "--help"        // Argument text for displaying help information about the command
-#define ARG_AUTO_TEXT           "--auto"        // Argument text for automatically cycling through scenes
+#define ARG_PLAYLIST_TEXT       "--playlist"    // Argument text for automatically cycling through scenes
 #define ARG_SELECT_TEXT         "--select"      // Argument text for selecting a specific scene to load
 
-#define ARG_SHORT_HELP_TEXT     "-h"            // Short argument text for help
-#define ARG_SHORT_AUTO_TEXT     "-a"            // Short argument text for auto
-#define ARG_SHORT_SELECT_TEXT   "-s"            // Short argument text for select
+#define ARG_SHORT_HELP_TEXT         "-h"        // Short argument text for help
+#define ARG_SHORT_PLAYLIST_TEXT     "-p"        // Short argument text for auto
+#define ARG_SHORT_SELECT_TEXT       "-s"        // Short argument text for select
 
 #define UPPERCASE_A         'A'     // ASCII value for uppercase 'A'
 #define UPPERCASE_Z         'Z'     // ASCII value for uppercase 'Z'
@@ -80,16 +80,16 @@
 
 // Dashboard Status Bar Text positions
 #define SYSTEM_TEXT_POSITION        1       // Starting column for system information text
-#define MAIN_PAGE_TEXT_POSITION     34      // Middle of the screen
+#define MAIN_PAGE_TEXT_POSITION     34      // Middle of she screen
 #define FPS_TEXT_POSITION           70      // Starting column for FPS text
 #define FPS_VALUE_POSITION          77      // Position immediately after the FPS label
 
 // Dashboard Main Menu Option Texts and positions
-#define HELP_TEXT       " ?       HELP    -  Get help on using the application "
-#define SELECT_TEXT     " S       SELECT  -  Select a scene to load "
-#define AUTO_TEXT       " A       AUTO    -  Cycle through scenes "
-#define INFO_TEXT       " I       INFO    -  About the application and system information "
-#define QUIT_TEXT       " Q       QUIT    -  Exit the application "
+#define HELP_TEXT       " ?      HELP     -  Get help on using the application "
+#define SELECT_TEXT     " S      SELECT   -  Select a scene to load "
+#define PLAYLIST_TEXT   " P      Playlist -  Cycle through scenes "
+#define INFO_TEXT       " I      INFO     -  About the application and system information "
+#define QUIT_TEXT       " Q      QUIT     -  Exit the application "
 
 #define OPTIONS_COL_POSITION        10      // Starting column for the dashboard option texts
 
@@ -97,8 +97,8 @@
 #define OPTIONS_ROW_OFFSET          3       // Number of rows to space between each dashboard option
 #define HELP_ROW_POSITION           5
 #define SELECT_ROW_POSITION         (HELP_ROW_POSITION + OPTIONS_ROW_OFFSET)        
-#define AUTO_ROW_POSITION           (SELECT_ROW_POSITION + OPTIONS_ROW_OFFSET)
-#define INFO_ROW_POSITION           (AUTO_ROW_POSITION + OPTIONS_ROW_OFFSET)
+#define PLAYLIST_ROW_POSITION       (SELECT_ROW_POSITION + OPTIONS_ROW_OFFSET)
+#define INFO_ROW_POSITION           (PLAYLIST_ROW_POSITION + OPTIONS_ROW_OFFSET)
 #define QUIT_ROW_POSITION           (INFO_ROW_POSITION + OPTIONS_ROW_OFFSET)
 
 // Dashboard Footer Texts

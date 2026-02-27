@@ -122,7 +122,7 @@ static void __CommandError(char *input_buffer, ShellError_t error_type)
 static void __HelpCommand(void)
 {
 	// List of available flags and their descriptions to print when the user types "demo.exe --help"
-	const char *flags[] = {"  --help   :\tShow help", "  --auto   :\tAuto Mode", "  --select :\tSelect Mode"};
+	const char *flags[] = {"  --help   :\tShow help", "  --playlist   :\tPlaylist Mode", "  --select :\tSelect Mode"};
 
 	const uint8_t flags_count = sizeof(flags) / sizeof(flags[0]);
 
@@ -258,8 +258,8 @@ void DashboardShellCommandParser(char *rx_buffer)
 			// Call the help command function to display the available flags and their descriptions
 			__HelpCommand();
 			return;
-		} else if (strcmp(arg, ARG_AUTO_TEXT) == 0 || strcmp(arg, ARG_SHORT_AUTO_TEXT) == 0) {
-			// TODO: Implement auto scene loading when the '--auto or '-a' flag gets used
+		} else if (strcmp(arg, ARG_PLAYLIST_TEXT) == 0 || strcmp(arg, ARG_SHORT_PLAYLIST_TEXT) == 0) {
+			// TODO: Implement auto scene loading when the '--playlist or '-p' flag gets used
 			g_system_mode = SYSTEM_STATE_DASHBOARD;
 			MainPageInit();
 			return;
@@ -359,7 +359,7 @@ void DashboardMenuList(void)
 	// Print each dashboard option text at its respective position
 	TerminalSerialPrintString(HELP_TEXT, OPTIONS_COL_POSITION, HELP_ROW_POSITION);
 	TerminalSerialPrintString(SELECT_TEXT, OPTIONS_COL_POSITION, SELECT_ROW_POSITION);
-	TerminalSerialPrintString(AUTO_TEXT, OPTIONS_COL_POSITION, AUTO_ROW_POSITION);
+	TerminalSerialPrintString(PLAYLIST_TEXT, OPTIONS_COL_POSITION, PLAYLIST_ROW_POSITION);
 	TerminalSerialPrintString(INFO_TEXT, OPTIONS_COL_POSITION, INFO_ROW_POSITION);
 	TerminalSerialPrintString(QUIT_TEXT, OPTIONS_COL_POSITION, QUIT_ROW_POSITION);
 }
