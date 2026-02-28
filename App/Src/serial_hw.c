@@ -7,7 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "serial_hw.h"
-#include "dashboard.h"
+#include "shell.h"
 
 // STM32 specific libraries
 #include "main.h"
@@ -243,7 +243,7 @@ void SerialProcessData(void)
 			s_uart_rx.read_index = (buffer_index + 1) % UART_BUFFER_SIZE;
 
 			// Send the received message to the command parser for processing
-			DashboardShellCommandParser(rx_message.message);
+			ShellCommandParser(rx_message.message);
 
 			// Exit loop safely
 			return;

@@ -34,6 +34,7 @@
 #include "scene_manager.h"
 #include "serial_hw.h"
 #include "terminal.h"
+#include "shell.h"
 
 /* USER CODE END Includes */
 
@@ -113,8 +114,8 @@ int main(void)
 	// Initialize all user modules
 	TerminalInit(FALSE);	// Initialize terminal (disable cursor blinking)
 	SerialReceiveInit();			// Begin UART data reception using DMA
-	TerminalClearScreen();			// Clear the terminal
-	DashboardShellInit();			// Initialize the dashboard shell interface
+	TerminalClearScreen();		    // Clear the terminal
+	ShellInit();					// Initialize the CLI shell interface
 
 	// Timing and Frame Rate Control
 	uint32_t last_heartbeat = HAL_GetTick();	// Tracks the last time a frame was processed
@@ -152,10 +153,6 @@ int main(void)
 
 		// Check if it's time to process the next frame based on the target frame interval
 		if (current_time - last_heartbeat >= FRAME_INTERVAL_MS) {
-			if (g_system_mode == SYSTEM_STATE_DASHBOARD) {
-				DashboardMenuSelection(frame_counter);
-			}
-			
 			// While in playlist mode, Let SceneManager Handle scene logic based on the current frame
 			if (g_system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
 				SceneManager(frame_counter);
