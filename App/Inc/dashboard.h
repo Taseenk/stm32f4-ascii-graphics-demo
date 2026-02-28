@@ -65,7 +65,7 @@ typedef enum {
     DASHBOARD_TOTAL_PAGES
 } DashboardPages_t;
 
-extern DashboardPages_t g_current_page;   // Global variable to track the current dashboard page being displayed (e.g., help, auto, playlist, etc.)
+extern DashboardPages_t current_page;   // Global variable to track the current dashboard page being displayed (e.g., help, auto, playlist, etc.)
 
 /* Function prototypes -------------------------------------------------------*/
 void MainPageInit(void);

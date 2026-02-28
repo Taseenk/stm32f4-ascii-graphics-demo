@@ -161,8 +161,8 @@ static void __CommandError(char *input_buffer, ShellError_t error_type)
  */
 static void __DashboardPageLauncher(DashboardPages_t page)
 {
-	g_system_mode = SYSTEM_STATE_DASHBOARD;
-	g_current_page = page;
+	system_mode = SYSTEM_STATE_DASHBOARD;
+	current_page = page;
 	MainPageInit();
 }
 

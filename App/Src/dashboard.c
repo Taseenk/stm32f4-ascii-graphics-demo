@@ -19,7 +19,7 @@
 #include <string.h>
 
 /* Private Variables ---------------------------------------------------------*/
-DashboardPages_t g_current_page = DASHBOARD_HELP; // Initialize the current dashboard page to the help page
+DashboardPages_t current_page = DASHBOARD_HELP; // Initialize the current dashboard page to the help page
 
 /* Public Functions ----------------------------------------------------------*/
 /**

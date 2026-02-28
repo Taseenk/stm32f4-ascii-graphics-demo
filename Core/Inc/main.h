@@ -44,7 +44,7 @@ typedef enum {
 	SYSTEM_TOTAL_STATES				// Total number of system states (used for bounds checking)
 } SystemMode_t;
 
-extern SystemMode_t g_system_mode;	// Global variable to track the current system mode (e.g., user input, scene display, etc.)
+extern SystemMode_t system_mode;	// Global variable to track the current system mode (e.g., user input, scene display, etc.)
 
 /* USER CODE END ET */
 

@@ -56,7 +56,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-SystemMode_t g_system_mode = SYSTEM_STATE_USER_INPUT; // Initialize the system mode to user input by default
+SystemMode_t system_mode = SYSTEM_STATE_USER_INPUT; // Initialize the system mode to user input by default
 
 /* USER CODE END PV */
 
@@ -138,12 +138,12 @@ int main(void)
 
 		/* USER CODE BEGIN 3 */
 		// Process incoming serial data if the system is in user input mode
-		if (g_system_mode == SYSTEM_STATE_USER_INPUT) {
+		if (system_mode == SYSTEM_STATE_USER_INPUT) {
 			SerialProcessData();
 		} 
 
 		// While in dashboard mode, check if one second has passed to update the FPS display
-		if (g_system_mode == SYSTEM_STATE_DASHBOARD && (current_time - last_fps >= ONE_SECOND_MS)) {
+		if (system_mode == SYSTEM_STATE_DASHBOARD && (current_time - last_fps >= ONE_SECOND_MS)) {
 			DashboardFPSRefresh(fps_counter, TARGET_FPS);
 
 			// Increment the FPS counter and reset the timer for the next second
@@ -154,7 +154,7 @@ int main(void)
 		// Check if it's time to process the next frame based on the target frame interval
 		if (current_time - last_heartbeat >= FRAME_INTERVAL_MS) {
 			// While in playlist mode, Let SceneManager Handle scene logic based on the current frame
-			if (g_system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
+			if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
 				SceneManager(frame_counter);
 			}
 
