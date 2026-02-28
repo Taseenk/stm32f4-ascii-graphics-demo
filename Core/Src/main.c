@@ -153,6 +153,11 @@ int main(void)
 
 		// Check if it's time to process the next frame based on the target frame interval
 		if (current_time - last_heartbeat >= FRAME_INTERVAL_MS) {
+			// While in dashboard mode, update the menu selection highlight based on the current frame count to create a blinking effect
+			if (system_mode == SYSTEM_STATE_DASHBOARD) {
+				DashboardMenuSelection(frame_counter);
+			}
+
 			// While in playlist mode, Let SceneManager Handle scene logic based on the current frame
 			if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
 				SceneManager(frame_counter);

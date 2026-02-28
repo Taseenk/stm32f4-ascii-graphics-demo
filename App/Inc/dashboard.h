@@ -76,4 +76,6 @@ void DashboardFooter(void);
 
 void DashboardFPSRefresh(uint32_t fps, uint8_t fps_range);
 
+void DashboardMenuSelection(uint32_t global_frame);
+
 #endif /* __DASHBOARD_H */

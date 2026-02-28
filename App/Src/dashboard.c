@@ -21,6 +21,33 @@
 /* Private Variables ---------------------------------------------------------*/
 DashboardPages_t current_page = DASHBOARD_HELP; // Initialize the current dashboard page to the help page
 
+/* Private Function Prototypes -----------------------------------------------*/
+static void __ApplyMenuHighlight(uint32_t global_frame);
+
+/* Private Functions ---------------------------------------------------------*/
+/**
+ * @fn static void __ApplyMenuHighlight(uint32_t global_frame)
+ * @brief Applies a blinking highlight effect to the currently selected menu option
+ * in the dashboard based on the global frame count to create a visual indication
+ * of the active option.
+ * @param global_frame The current global frame count used to calculate the blinking state.
+ */
+static void __ApplyMenuHighlight(uint32_t global_frame)
+{
+	const uint8_t blink_rate = 12;  // Number of frames for each blink phase
+	const uint8_t blink_phases = 2; // Total number of phases in the blink cycle (e.g., 2 phases for on/off blinking)
+
+	// Calculate the current blink state based on the global frame count, blink rate, and number of phases
+	uint8_t blink_state = (global_frame / blink_rate) % blink_phases;
+
+	if (blink_state == 0)
+		// Set reverse colour mode for the active menu option to create a blinking highlight effect
+		SerialPrint(ANSI_REVERSE_MODE);
+	else if (blink_state == 1)
+		// Reset to default colour mode
+		SerialPrint(ANSI_RESET_REVERSE_MODE);
+}
+
 /* Public Functions ----------------------------------------------------------*/
 /**
  * @fn void MainPageInit(void)
@@ -142,4 +169,70 @@ void DashboardFooter(void)
 
 	// Output the entire footer as a single string
 	TerminalSerialPrintString(FOOTER_TEXT, FOOTER_COL_POSITION, FOOTER_ROW_POSITION);
+}
+
+/**
+ * @fn void DashboardMenuSelection(uint32_t global_frame)
+ * @brief Applies a blinking highlight effect to the currently selected menu option
+ * in the dashboard based on the global frame count to create a visual indication
+ * of the active option.
+ * @param global_frame The current global frame count used to calculate the blinking state.
+ */
+void DashboardMenuSelection(uint32_t global_frame)
+{
+	switch (current_page) {
+		case DASHBOARD_HELP:
+			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
+			__ApplyMenuHighlight(global_frame);
+
+			// Print the menu option text with the blinking effect
+			TerminalSerialPrintString(HELP_TEXT, OPTIONS_COL_POSITION, HELP_ROW_POSITION);
+
+			// break out of the switch
+			break;
+
+		case DASHBOARD_AUTO:
+			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
+			__ApplyMenuHighlight(global_frame);
+
+			// Print the menu option text with the blinking effect
+			TerminalSerialPrintString(AUTO_TEXT, OPTIONS_COL_POSITION, AUTO_ROW_POSITION);
+
+			// break out of the switch
+			break;
+
+		case DASHBOARD_PLAYLIST:
+			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
+			__ApplyMenuHighlight(global_frame);
+
+			// Print the menu option text with the blinking effect
+			TerminalSerialPrintString(PLAYLIST_TEXT, OPTIONS_COL_POSITION, PLAYLIST_ROW_POSITION);
+
+			// break out of the switch
+			break;
+
+		case DASHBOARD_INFO:
+			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
+			__ApplyMenuHighlight(global_frame);
+
+			// Print the menu option text with the blinking effect
+			TerminalSerialPrintString(INFO_TEXT, OPTIONS_COL_POSITION, INFO_ROW_POSITION);
+
+			// break out of the switch
+			break;
+
+		case DASHBOARD_QUIT:
+			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
+			__ApplyMenuHighlight(global_frame);
+
+			// Print the menu option text with the blinking effect
+			TerminalSerialPrintString(QUIT_TEXT, OPTIONS_COL_POSITION, QUIT_ROW_POSITION);
+
+			// break out of the switch
+			break;
+
+		default:
+			// break out of the switch
+			break;
+	}
 }
