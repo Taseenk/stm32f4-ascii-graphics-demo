@@ -8,9 +8,9 @@
 /* Includes ------------------------------------------------------------------*/
 // Project libraries
 #include "shell.h"
+#include "dashboard.h"
 #include "serial_hw.h"
 #include "terminal.h"
-#include "dashboard.h"
 
 // STM32 libraries
 #include "main.h"
@@ -19,13 +19,14 @@
 #include <string.h>
 
 /* Private Variables ---------------------------------------------------------*/
-static uint16_t input_row = 16;                        // Row position for the user input prompt in the CLI shell
+static uint16_t input_row = 16;			// Row position for the user input prompt in the CLI shell
 
 /* Private Function Prototypes -----------------------------------------------*/
 static void __HelpCommand(void);
 static void __RowOverflow(uint8_t required_space);
 static void __InputCommand(uint16_t row);
 static void __CommandError(char *input_buffer, ShellError_t error_type);
+static void __DashboardPageLauncher(DashboardPages_t page);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
@@ -151,6 +152,20 @@ static void __CommandError(char *input_buffer, ShellError_t error_type)
 	__InputCommand(input_row);
 }
 
+/**
+ * @fn void __DashboardPageLauncher(DashboardPages_t page)
+ * @brief Handles the logic for launching different dashboard pages based on the
+ * provided page parameter. It sets the system mode to the dashboard and initializes
+ * the main page with the specified dashboard page.
+ * @param page An integer representing the specific dashboard page to launch (e.g., playlist, auto mode).
+ */
+static void __DashboardPageLauncher(DashboardPages_t page)
+{
+	g_system_mode = SYSTEM_STATE_DASHBOARD;
+	g_current_page = page;
+	MainPageInit();
+}
+
 /* Public Functions ----------------------------------------------------------*/
 /**
  * @fn void ShellInit(void)
@@ -227,10 +242,8 @@ void ShellCommandParser(char *rx_buffer)
 
 	// If there are no arguments provided, go to the default scene
 	if (arg == NULL) {
-		// TODO: Implement default scene loading when no arguments are provided
-		g_system_mode = SYSTEM_STATE_DASHBOARD;
-		g_current_page = DASHBOARD_PLAYLIST;
-		MainPageInit();
+		// Call the dashboard page launcher function with the playlist page parameter to go to the playlist scene
+		__DashboardPageLauncher(DASHBOARD_PLAYLIST);
 		return;
 	}
 
@@ -241,14 +254,12 @@ void ShellCommandParser(char *rx_buffer)
 			__HelpCommand();
 			return;
 		} else if (strcmp(arg, ARG_PLAYLIST_TEXT) == 0 || strcmp(arg, ARG_SHORT_PLAYLIST_TEXT) == 0) {
-			g_system_mode = SYSTEM_STATE_DASHBOARD;
-			g_current_page = DASHBOARD_PLAYLIST;
-			MainPageInit();
+			// Call the dashboard page launcher function with the playlist page parameter to go to the playlist scene
+			__DashboardPageLauncher(DASHBOARD_PLAYLIST);
 			return;
 		} else if (strcmp(arg, ARG_AUTO_TEXT) == 0 || strcmp(arg, ARG_SHORT_AUTO_TEXT) == 0) {
-			g_system_mode = SYSTEM_STATE_DASHBOARD;
-			g_current_page = DASHBOARD_AUTO;
-			MainPageInit();
+			// Call the dashboard page launcher function with the auto mode page parameter to go to the auto mode scene
+			__DashboardPageLauncher(DASHBOARD_AUTO);
 			return;
 		} else {
 			// Argument does not match, display an error message
