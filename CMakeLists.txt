@@ -51,6 +51,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     App/Src/scene_manager.c
     App/Src/rng_util.c
     App/Src/dashboard.c
+    App/Src/shell.c
 )
 
 # Add include paths
