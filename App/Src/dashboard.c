@@ -15,8 +15,27 @@
 #include "main.h"
 
 // Standard libraries
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
+/* Private Defines -----------------------------------------------------------*/
+// Dashboard Main Menu Option Texts and positions
+#define HELP_TEXT       " ?      HELP     -  Get help on using the application "
+#define AUTO_TEXT       " A      AUTO     -  Automatically go through the scenes "
+#define PLAYLIST_TEXT   " P      Playlist -  Cycle through curated scenes playlist "
+#define INFO_TEXT       " I      INFO     -  About the application and system information "
+#define QUIT_TEXT       " Q      QUIT     -  Exit the application "
+
+#define OPTIONS_COL_POSITION        10      // Starting column for the dashboard option texts
+
+// Row positions for each Main Menu option
+#define OPTIONS_ROW_OFFSET          3       // Number of rows to space between each dashboard option
+#define HELP_ROW_POSITION           5
+#define AUTO_ROW_POSITION           (HELP_ROW_POSITION + OPTIONS_ROW_OFFSET)        
+#define PLAYLIST_ROW_POSITION       (AUTO_ROW_POSITION + OPTIONS_ROW_OFFSET)
+#define INFO_ROW_POSITION           (PLAYLIST_ROW_POSITION + OPTIONS_ROW_OFFSET)
+#define QUIT_ROW_POSITION           (INFO_ROW_POSITION + OPTIONS_ROW_OFFSET)
 
 /* Private Variables ---------------------------------------------------------*/
 DashboardPages_t current_page = DASHBOARD_HELP; // Initialize the current dashboard page to the help page
@@ -164,11 +183,18 @@ void DashboardMenuList(void)
  */
 void DashboardFooter(void)
 {
+	// Footer content to display navigation instructions and credits
+	static const char footer_content[] = "[ENTER] Select   [W/S] Navigate   [ESC] Back   (C) 2026 Taseen";
+
+	// Start position for the footer text
+	const uint8_t col = 8;
+	const uint8_t row = 23;
+
 	// Set default colours
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
 	// Output the entire footer as a single string
-	TerminalSerialPrintString(FOOTER_TEXT, FOOTER_COL_POSITION, FOOTER_ROW_POSITION);
+	TerminalSerialPrintString(footer_content, col, row);
 }
 
 /**

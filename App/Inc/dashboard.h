@@ -31,29 +31,6 @@
 #define FPS_TEXT_POSITION           70      // Starting column for FPS text
 #define FPS_VALUE_POSITION          77      // Position immediately after the FPS label
 
-// Dashboard Main Menu Option Texts and positions
-#define HELP_TEXT       " ?      HELP     -  Get help on using the application "
-#define AUTO_TEXT       " A      AUTO     -  Automatically go through the scenes "
-#define PLAYLIST_TEXT   " P      Playlist -  Cycle through curated scenes playlist "
-#define INFO_TEXT       " I      INFO     -  About the application and system information "
-#define QUIT_TEXT       " Q      QUIT     -  Exit the application "
-
-#define OPTIONS_COL_POSITION        10      // Starting column for the dashboard option texts
-
-// Row positions for each Main Menu option
-#define OPTIONS_ROW_OFFSET          3       // Number of rows to space between each dashboard option
-#define HELP_ROW_POSITION           5
-#define AUTO_ROW_POSITION           (HELP_ROW_POSITION + OPTIONS_ROW_OFFSET)        
-#define PLAYLIST_ROW_POSITION       (AUTO_ROW_POSITION + OPTIONS_ROW_OFFSET)
-#define INFO_ROW_POSITION           (PLAYLIST_ROW_POSITION + OPTIONS_ROW_OFFSET)
-#define QUIT_ROW_POSITION           (INFO_ROW_POSITION + OPTIONS_ROW_OFFSET)
-
-// Dashboard Footer Texts
-#define FOOTER_TEXT     "[ENTER] Select   [W/S] Navigate   [ESC] Back   (C) 2026 Taseen"
-
-#define FOOTER_ROW_POSITION         23      // Row position for the dashboard footer
-#define FOOTER_COL_POSITION         8       // Starting column for the dashboard footer
-
 /* typedefs ------------------------------------------------------------------*/
 // Dashboard pages for tracking the current page being displayed in the dashboard menu
 typedef enum {
