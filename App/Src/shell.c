@@ -24,7 +24,7 @@
 /* Private Defines -----------------------------------------------------------*/
 // Terminal layout definitions for the CLI shell interface
 #define SHELL_COL_POSITION			1		// Starting column for the shell texts
-#define INPUT_COL_POSITION			6		// Starting column for the user input text (after the prompt)
+#define INPUT_COL_POSITION			10		// Starting column for the user input text (after the prompt)
 #define NAME_ROW_POSITION           1		// Starting row for the system name text
 #define COPYRIGHT_ROW_POSITION      (NAME_ROW_POSITION + 1)
 
@@ -133,7 +133,7 @@ static void __EnsureTerminalSpace(uint8_t required_space)
 static void __PrintInputPrompt(uint16_t row)
 {
 	// The prompt string to display before the user input
-	static const char prompt[] = "C:/>";
+	static const char prompt[] = "STM32F4>";
 
 	// Print the input prompt at the current input row
 	TerminalSerialPrintString(prompt, SHELL_COL_POSITION, row);
