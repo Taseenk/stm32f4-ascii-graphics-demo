@@ -20,22 +20,49 @@
 #include <string.h>
 
 /* Private Defines -----------------------------------------------------------*/
-// Dashboard Main Menu Option Texts and positions
-#define HELP_TEXT       " ?      HELP     -  Get help on using the application "
-#define AUTO_TEXT       " A      AUTO     -  Automatically go through the scenes "
-#define PLAYLIST_TEXT   " P      Playlist -  Cycle through curated scenes playlist "
-#define INFO_TEXT       " I      INFO     -  About the application and system information "
-#define QUIT_TEXT       " Q      QUIT     -  Exit the application "
+// Dashboard Status Bar Text
+#define SYSTEM_TEXT         "[SYSTEM: STM32F407VG]"     // Text to display for system information
+#define MAIN_PAGE_TEXT      "[MAIN MENU]"               // Text to display for the dashboard page
+#define FPS_TEXT            "[FPS: ??]"                 // Placeholder text for FPS display
 
-#define OPTIONS_COL_POSITION        10      // Starting column for the dashboard option texts
+// Dashboard Status Bar Text sizes
+#define STATUS_BAR_BUFFER_SIZE  (TERMINAL_WIDTH + ANSI_TEXT_LEN + 1)    // Total size of the status bar buffer, including ANSI escape codes and null terminator
+#define ANSI_TEXT_LEN           8                                       // Length of the ANSI escape codes used for setting and resetting styling
+#define SYSTEM_TEXT_LEN         sizeof(SYSTEM_TEXT) - 1                 // Length of the system text without null terminator
+#define MAIN_PAGE_TEXT_LEN      sizeof(MAIN_PAGE_TEXT) - 1              // Length of the main page text without null terminator
+#define FPS_TEXT_LEN            sizeof(FPS_TEXT) - 1                    // Length of the FPS text without null terminator
+
+// Dashboard Status Bar Text positions
+#define SYSTEM_TEXT_POSITION        1       // Starting column for system information text
+#define MAIN_PAGE_TEXT_POSITION     34      // Middle of she screen
+#define FPS_TEXT_POSITION           70      // Starting column for FPS text
+#define FPS_VALUE_POSITION          77      // Position immediately after the FPS label
+
+
+// Dashboard Main Menu Option Texts and positions
+#define HELP_TEXT		" ?      HELP     -  Get help on using the application "
+#define AUTO_TEXT		" A      AUTO     -  Automatically go through the scenes "
+#define PLAYLIST_TEXT	" P      Playlist -  Cycle through curated scenes playlist "
+#define INFO_TEXT		" I      INFO     -  About the application and system information "
+#define QUIT_TEXT		" Q      QUIT     -  Exit the application "
 
 // Row positions for each Main Menu option
-#define OPTIONS_ROW_OFFSET          3       // Number of rows to space between each dashboard option
-#define HELP_ROW_POSITION           5
-#define AUTO_ROW_POSITION           (HELP_ROW_POSITION + OPTIONS_ROW_OFFSET)        
-#define PLAYLIST_ROW_POSITION       (AUTO_ROW_POSITION + OPTIONS_ROW_OFFSET)
-#define INFO_ROW_POSITION           (PLAYLIST_ROW_POSITION + OPTIONS_ROW_OFFSET)
-#define QUIT_ROW_POSITION           (INFO_ROW_POSITION + OPTIONS_ROW_OFFSET)
+#define OPTIONS_COL_POSITION	10		// Starting column for the dashboard option texts
+#define OPTIONS_ROW_OFFSET		3		// Number of rows to space between each dashboard option
+#define HELP_ROW_POSITION		5		// Starting row for the first dashboard option (help), with subsequent options spaced by OPTIONS_ROW_OFFSET
+#define AUTO_ROW_POSITION		(HELP_ROW_POSITION + OPTIONS_ROW_OFFSET)
+#define PLAYLIST_ROW_POSITION	(AUTO_ROW_POSITION + OPTIONS_ROW_OFFSET)
+#define INFO_ROW_POSITION		(PLAYLIST_ROW_POSITION + OPTIONS_ROW_OFFSET)
+#define QUIT_ROW_POSITION		(INFO_ROW_POSITION + OPTIONS_ROW_OFFSET)
+
+// Menu selection timing and blinking effect parameters
+#define MENU_SELECTION_INTERVAL		230		// Number of frames to wait before switching the highlighted menu option in the dashboard
+#define SELECTION_BLINK_RATE		12		// Number of frames for each blink phase
+#define SELECTION_BLINK_PHASES		2		// Total number of phases in the blink cycle (e.g., 2 phases for on/off blinking)
+
+// Footer position
+#define FOOTER_COL		8		// Starting column for the footer text in the dashboard
+#define FOOTER_ROW		23		// Row position for the footer text in the dashboard
 
 /* Private Variables ---------------------------------------------------------*/
 DashboardPages_t current_page = DASHBOARD_HELP; // Initialize the current dashboard page to the help page
@@ -53,11 +80,8 @@ static void __ApplyMenuHighlight(uint32_t global_frame);
  */
 static void __ApplyMenuHighlight(uint32_t global_frame)
 {
-	const uint8_t blink_rate = 12;  // Number of frames for each blink phase
-	const uint8_t blink_phases = 2; // Total number of phases in the blink cycle (e.g., 2 phases for on/off blinking)
-
 	// Calculate the current blink state based on the global frame count, blink rate, and number of phases
-	uint8_t blink_state = (global_frame / blink_rate) % blink_phases;
+	uint8_t blink_state = (global_frame / SELECTION_BLINK_RATE) % SELECTION_BLINK_PHASES;
 
 	if (blink_state == 0)
 		// Set reverse colour mode for the active menu option to create a blinking highlight effect
@@ -186,15 +210,11 @@ void DashboardFooter(void)
 	// Footer content to display navigation instructions and credits
 	static const char footer_content[] = "[ENTER] Select   [W/S] Navigate   [ESC] Back   (C) 2026 Taseen";
 
-	// Start position for the footer text
-	const uint8_t col = 8;
-	const uint8_t row = 23;
-
 	// Set default colours
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
 	// Output the entire footer as a single string
-	TerminalSerialPrintString(footer_content, col, row);
+	TerminalSerialPrintString(footer_content, FOOTER_COL, FOOTER_ROW);
 }
 
 /**
@@ -206,6 +226,9 @@ void DashboardFooter(void)
  */
 void DashboardMenuSelection(uint32_t global_frame)
 {
+	// Calculate the time spent in the current scene based on the global frame count and the defined interval for scene
+	uint16_t time_in_scene = global_frame % MENU_SELECTION_INTERVAL;
+
 	switch (current_page) {
 		case DASHBOARD_HELP:
 			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
@@ -224,6 +247,12 @@ void DashboardMenuSelection(uint32_t global_frame)
 			// Print the menu option text with the blinking effect
 			TerminalSerialPrintString(AUTO_TEXT, OPTIONS_COL_POSITION, AUTO_ROW_POSITION);
 
+			// Switch the global system mode to the auto scene
+			if (time_in_scene == (MENU_SELECTION_INTERVAL - 1)) {
+				system_mode = SYSTEM_STATE_AUTO_SCENE;
+				TerminalClearAndHome();
+			}
+
 			// break out of the switch
 			break;
 
@@ -233,6 +262,12 @@ void DashboardMenuSelection(uint32_t global_frame)
 
 			// Print the menu option text with the blinking effect
 			TerminalSerialPrintString(PLAYLIST_TEXT, OPTIONS_COL_POSITION, PLAYLIST_ROW_POSITION);
+
+			// Switch the global system mode to the auto scene
+			if (time_in_scene == (MENU_SELECTION_INTERVAL - 1)) {
+				system_mode = SYSTEM_STATE_PLAYLIST_SCENE;
+				TerminalClearAndHome();
+			}
 
 			// break out of the switch
 			break;
