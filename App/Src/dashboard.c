@@ -1,7 +1,9 @@
 /**
  ******************************************************************************
  * @file           : dashboard.c
- * @brief          :
+ * @brief          : Source file for the dashboard module of the STM32F4 ASCII 
+ * graphics demo application, implementing the functions for rendering the dashboard 
+ * UI, updating the FPS display, and managing menu selection with visual feedback.
  ******************************************************************************
  */
 
@@ -37,7 +39,6 @@
 #define MAIN_PAGE_TEXT_POSITION     34      // Middle of she screen
 #define FPS_TEXT_POSITION           70      // Starting column for FPS text
 #define FPS_VALUE_POSITION          77      // Position immediately after the FPS label
-
 
 // Dashboard Main Menu Option Texts and positions
 #define HELP_TEXT		" ?      HELP     -  Get help on using the application "
