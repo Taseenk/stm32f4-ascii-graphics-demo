@@ -52,20 +52,22 @@
 static uint16_t input_row = 16; // Row position for the user input prompt in the CLI shell
 
 /* Private Function Prototypes -----------------------------------------------*/
-static void __HelpCommand(void);
-static void __RowOverflow(uint8_t required_space);
-static void __InputCommand(uint16_t row);
-static void __CommandError(char *input_buffer, ShellError_t error_type);
-static void __DashboardPageLauncher(DashboardPages_t page);
+static void __PrintHelpMenu(void);
+static void __EnsureTerminalSpace(uint8_t required_space);
+static void __PrintInputPrompt(uint16_t row);
+static void __HandleModeArgument(char *arg);
+static void __HandleRunArgument(char *arg);
+static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type);
+static void __NavigateToDashboard(DashboardPages_t page);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn void __HelpCommand(void)
+ * @fn void __PrintHelpMenu(void)
  * @brief Handles the logic for displaying help information about the available
  * command flags when the user types "demo.exe --help" in the dashboard shell.
  * @param void This function does not take any parameters.
  */
-static void __HelpCommand(void)
+static void __PrintHelpMenu(void)
 {
 	// Static texts for the help menu, including usage instructions, description, and options header
     static const char usage_text[]   = "Usage: demo.exe [options] <target>";
@@ -87,7 +89,7 @@ static void __HelpCommand(void)
 
 	// Ensure space for usage (1) + blank (1) + options_count + blank (1) + prompt (1)
 	// if not clear the screen and reset the input row
-	__RowOverflow(6);
+	__EnsureTerminalSpace(6);
 
 	// Print the usage and description followed by a blank line before the options list 
 	TerminalSerialPrintString(usage_text, SHELL_COL_POSITION, input_row++);
@@ -102,17 +104,17 @@ static void __HelpCommand(void)
 	}
 
 	// Prompt the user for the next command
-	__InputCommand(++input_row);
+	__PrintInputPrompt(++input_row);
 }
 
 /**
- * @fn void __RowOverflow(uint8_t required_space)
+ * @fn void __EnsureTerminalSpace(uint8_t required_space)
  * @brief Checks if there is enough space left in the terminal to print a new
  * message without overflowing the bottom of the screen. If there is not enough
  * space, it clears the terminal and resets the input row to prevent overflow.
  * @param required_space The number of rows required to print the new message and any additional helper text.
  */
-static void __RowOverflow(uint8_t required_space)
+static void __EnsureTerminalSpace(uint8_t required_space)
 {
 	// Check if the new messages will overflow the terminal height
 	if ((input_row + required_space) >= TERMINAL_HEIGHT) {
@@ -123,12 +125,12 @@ static void __RowOverflow(uint8_t required_space)
 }
 
 /**
- * @fn void __InputCommand(uint16_t row)
+ * @fn void __PrintInputPrompt(uint16_t row)
  * @brief Displays the input prompt at the specified row and sets the cursor
  * position for user input in the CLI shell.
  * @param row The row position where the input prompt should be displayed.
  */
-static void __InputCommand(uint16_t row)
+static void __PrintInputPrompt(uint16_t row)
 {
 	// The prompt string to display before the user input
 	static const char prompt[] = "C:/>";
@@ -153,15 +155,15 @@ static void __HandleModeArgument(char *arg)
 
 	if (strcmp(arg, mode_args[0]) == 0) {
 		// Call the dashboard page launcher function with the auto mode page parameter to go to the auto mode scene
-		__DashboardPageLauncher(DASHBOARD_AUTO);
+		__NavigateToDashboard(DASHBOARD_AUTO);
 		return;
 	} else if (strcmp(arg, mode_args[1]) == 0) {
 		// Call the dashboard page launcher function with the playlist page parameter to go to the playlist scene
-		__DashboardPageLauncher(DASHBOARD_PLAYLIST);
+		__NavigateToDashboard(DASHBOARD_PLAYLIST);
 		return;
 	} else {
 		// Argument does not match, display an error message
-		__CommandError(arg, SHELL_ERROR_INVALID_ARG);
+		__DisplayErrorMessage(arg, SHELL_ERROR_INVALID_ARG);
 	}
 }
 
@@ -177,14 +179,14 @@ static void __HandleRunArgument(char *arg)
 }
 
 /**
- * @fn void __CommandError(char *input_buffer, ShellError_t error_type)
+ * @fn void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
  * @brief Handles the logic for displaying error messages in the CLI shell
  * when the user inputs an unrecognized command or invalid parameters.
  * @param input_buffer The buffer containing the user input string that caused the error.
  * @param error_type An integer representing the type of error (e.g., 1 for unrecognized command, 2 for invalid
  * parameters).
  */
-static void __CommandError(char *input_buffer, ShellError_t error_type)
+static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
 {
 	static const char error_unknown[] = "An unknown error occurred.";
 	static const char error_bad_cmd[] = "' is not recognized as a command.";
@@ -195,7 +197,7 @@ static void __CommandError(char *input_buffer, ShellError_t error_type)
 
 	// Check if there is enough space to print the error message and helper text
 	// if not clear the screen and reset the input row
-	__RowOverflow(4);
+	__EnsureTerminalSpace(4);
 
 	// Set red text colour for error messages
 	TerminalSetColour(FG_RED, BG_DEFAULT);
@@ -251,17 +253,17 @@ static void __CommandError(char *input_buffer, ShellError_t error_type)
 
 	// Increment the input row and prompt the user for the next command
 	input_row += 2;
-	__InputCommand(input_row);
+	__PrintInputPrompt(input_row);
 }
 
 /**
- * @fn void __DashboardPageLauncher(DashboardPages_t page)
+ * @fn void __NavigateToDashboard(DashboardPages_t page)
  * @brief Handles the logic for launching different dashboard pages based on the
  * provided page parameter. It sets the system mode to the dashboard and initializes
  * the main page with the specified dashboard page.
  * @param page An integer representing the specific dashboard page to launch (e.g., playlist, auto mode).
  */
-static void __DashboardPageLauncher(DashboardPages_t page)
+static void __NavigateToDashboard(DashboardPages_t page)
 {
 	system_mode = SYSTEM_STATE_DASHBOARD;
 	current_page = page;
@@ -319,7 +321,7 @@ void ShellInit(void)
 	// Render the interaction prompt
 	TerminalSerialPrintString(hint_text, SHELL_COL_POSITION, HINT_ROW_POSITION);
 	HAL_Delay(200);
-	__InputCommand(INPUT_ROW_POSITION);
+	__PrintInputPrompt(INPUT_ROW_POSITION);
 }
 
 /**
@@ -361,7 +363,7 @@ void ShellCommandParser(char *rx_buffer)
 	// Check if the received buffer starts with the expected command prefix
 	if (strncmp(rx_buffer, command_text, COMMAND_TEXT_LEN) != 0) {
 		// Command does not match, display an error message
-		__CommandError(rx_buffer, SHELL_ERROR_BAD_COMMAND);
+		__DisplayErrorMessage(rx_buffer, SHELL_ERROR_BAD_COMMAND);
 		return;
 	}
 
@@ -371,7 +373,7 @@ void ShellCommandParser(char *rx_buffer)
 	// If there are no flags provided, go to the default scene
 	if (flag == NULL) {
 		// Navigate to the default dashboard page (e.g., playlist) if no flags are provided with the command
-		__DashboardPageLauncher(DASHBOARD_PLAYLIST);
+		__NavigateToDashboard(DASHBOARD_PLAYLIST);
 		return;
 	}
 
@@ -380,7 +382,7 @@ void ShellCommandParser(char *rx_buffer)
 		/* --- Help Flag --- */
 		if (strcmp(flag, flag_help_text) == 0 || strcmp(flag, flag_short_help_text) == 0 || strcmp(flag, flag_short_question_text) == 0) {
 			// Call the help command function to display the available flags and their descriptions
-			__HelpCommand();
+			__PrintHelpMenu();
 			return;
 		}
 
@@ -394,7 +396,7 @@ void ShellCommandParser(char *rx_buffer)
 				__HandleModeArgument(arg);
 			} else {
 				// Argument does not match, display an error message
-				__CommandError(flag, SHELL_ERROR_MISSING_ARG);
+				__DisplayErrorMessage(flag, SHELL_ERROR_MISSING_ARG);
 				return;
 			}
 		}
@@ -409,7 +411,7 @@ void ShellCommandParser(char *rx_buffer)
 				__HandleRunArgument(arg);
 			} else {
 				// Argument does not match, display an error message
-				__CommandError(flag, SHELL_ERROR_MISSING_ARG);
+				__DisplayErrorMessage(flag, SHELL_ERROR_MISSING_ARG);
 				return;
 			}
 		}
@@ -417,7 +419,7 @@ void ShellCommandParser(char *rx_buffer)
 		/* --- UNKNOWN Flag --- */
 		else {
 			// No flag was given, display an error message
-			__CommandError(flag, SHELL_ERROR_INVALID_FLAG);
+			__DisplayErrorMessage(flag, SHELL_ERROR_INVALID_FLAG);
 			return;
 		}
 
