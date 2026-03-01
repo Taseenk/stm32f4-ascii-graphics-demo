@@ -1,7 +1,9 @@
 /**
  ******************************************************************************
  * @file           : shell.c
- * @brief          :
+ * @brief          : Implements the CLI shell interface for the ASCII graphics demo,
+ * allowing users to interact with the system through a terminal interface and 
+ * execute commands to navigate the dashboard and access different features.
  ******************************************************************************
  */
 
@@ -20,8 +22,31 @@
 #include <string.h>
 
 /* Private Defines -----------------------------------------------------------*/
-#define SHELL_COL_POSITION 1 // Starting column for the shell texts
-#define INPUT_COL_POSITION 6 // Starting column for the user input text (after the prompt)
+// Terminal layout definitions for the CLI shell interface
+#define SHELL_COL_POSITION			1		// Starting column for the shell texts
+#define INPUT_COL_POSITION			6		// Starting column for the user input text (after the prompt)
+#define NAME_ROW_POSITION           1		// Starting row for the system name text
+#define COPYRIGHT_ROW_POSITION      (NAME_ROW_POSITION + 1)
+
+#define CPU_ROW_POSITION            (COPYRIGHT_ROW_POSITION + 2)
+#define SRAM_ROW_POSITION           (CPU_ROW_POSITION + 1)
+#define FLASH_ROW_POSITION          (SRAM_ROW_POSITION + 1)
+
+#define DMA_ROW_POSITION            (FLASH_ROW_POSITION + 2)
+#define UART_ROW_POSITION           (DMA_ROW_POSITION + 1)
+#define TERMINAL_ROW_POSITION       (UART_ROW_POSITION + 1)
+
+#define READY_ROW_POSITION          (TERMINAL_ROW_POSITION + 2)
+
+#define HINT_ROW_POSITION           (READY_ROW_POSITION + 2)
+#define INPUT_ROW_POSITION          (HINT_ROW_POSITION + 2)
+
+// Shell Command Parsing
+#define COMMAND_TEXT_LEN	8		// Length of the command text without null terminator
+
+#define UPPERCASE_A         'A'     // ASCII value for uppercase 'A'
+#define UPPERCASE_Z         'Z'     // ASCII value for uppercase 'Z'
+#define LOWERCASE_OFFSET    32      // Offset to convert uppercase letters to lowercase in ASCII
 
 /* Private Variables ---------------------------------------------------------*/
 static uint16_t input_row = 16; // Row position for the user input prompt in the CLI shell
@@ -199,53 +224,37 @@ void ShellInit(void)
 	static const char ready_text[] = "System is ready...";
 	static const char hint_text[] = "Type 'demo.exe --help'";
 
-	// Row positions local to ShellInit logic
-	const uint8_t row_name = 1;
-	const uint8_t row_copyright = row_name + 1;
-
-	const uint8_t row_cpu = row_copyright + 2;
-	const uint8_t row_sram = row_cpu + 1;
-	const uint8_t row_flash = row_sram + 1;
-
-	const uint8_t row_dma = row_flash + 2;
-	const uint8_t row_uart = row_dma + 1;
-	const uint8_t row_terminal = row_uart + 1;
-
-	const uint8_t row_ready = row_terminal + 2;
-	const uint8_t row_hint = row_ready + 2;
-	const uint8_t row_input = row_hint + 2;
-
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
 	// Render the system header
-	TerminalSerialPrintString(name_text, SHELL_COL_POSITION, row_name);
-	TerminalSerialPrintString(copyright_text, SHELL_COL_POSITION, row_copyright);
+	TerminalSerialPrintString(name_text, SHELL_COL_POSITION, NAME_ROW_POSITION);
+	TerminalSerialPrintString(copyright_text, SHELL_COL_POSITION, COPYRIGHT_ROW_POSITION);
 	HAL_Delay(150);
 
 	// Render the hardware specs with delays to simulate a boot sequence
-	TerminalSerialPrintString(cpu_text, SHELL_COL_POSITION, row_cpu);
+	TerminalSerialPrintString(cpu_text, SHELL_COL_POSITION, CPU_ROW_POSITION);
 	HAL_Delay(300);
-	TerminalSerialPrintString(sram_text, SHELL_COL_POSITION, row_sram);
+	TerminalSerialPrintString(sram_text, SHELL_COL_POSITION, SRAM_ROW_POSITION);
 	HAL_Delay(1000);
-	TerminalSerialPrintString(flash_text, SHELL_COL_POSITION, row_flash);
+	TerminalSerialPrintString(flash_text, SHELL_COL_POSITION, FLASH_ROW_POSITION);
 	HAL_Delay(300);
 
 	// Render the peripheral checks with delays to simulate a boot sequence
-	TerminalSerialPrintString(dma_text, SHELL_COL_POSITION, row_dma);
+	TerminalSerialPrintString(dma_text, SHELL_COL_POSITION, DMA_ROW_POSITION);
 	HAL_Delay(450);
-	TerminalSerialPrintString(uart_text, SHELL_COL_POSITION, row_uart);
+	TerminalSerialPrintString(uart_text, SHELL_COL_POSITION, UART_ROW_POSITION);
 	HAL_Delay(300);
-	TerminalSerialPrintString(terminal_text, SHELL_COL_POSITION, row_terminal);
+	TerminalSerialPrintString(terminal_text, SHELL_COL_POSITION, TERMINAL_ROW_POSITION);
 	HAL_Delay(1000);
 
 	// Render the system ready message
-	TerminalSerialPrintString(ready_text, SHELL_COL_POSITION, row_ready);
+	TerminalSerialPrintString(ready_text, SHELL_COL_POSITION, READY_ROW_POSITION);
 
 	// Render the interaction prompt
-	TerminalSerialPrintString(hint_text, SHELL_COL_POSITION, row_hint);
+	TerminalSerialPrintString(hint_text, SHELL_COL_POSITION, HINT_ROW_POSITION);
 	HAL_Delay(200);
-	__InputCommand(row_input);
+	__InputCommand(INPUT_ROW_POSITION);
 }
 
 /**
@@ -256,9 +265,7 @@ void ShellInit(void)
  */
 void ShellCommandParser(char *rx_buffer)
 {
-	// Shell Command Parsing
 	static const char command_text[] = "demo.exe"; // Expected command text to trigger the demo command parsing logic
-	static const uint8_t command_text_len = 8;     // Length of the command text without null terminator
 
 	// Argument texts for parsing the command flags
 	static const char argument_delimiter[] = " ";
@@ -269,11 +276,6 @@ void ShellCommandParser(char *rx_buffer)
 	static const char arg_short_auto_text[] = "-a";
 	static const char arg_short_playlist_text[] = "-p";
 
-	// ASCII values for uppercase letter range and offset for converting to lowercase
-	static const uint8_t uppercase_a = 'A';
-	static const uint8_t uppercase_z = 'Z';
-	static const uint8_t offset = 32;
-
 	// Early exit if buffer is null or invalid (e.g., empty string)
 	if (rx_buffer == NULL)
 		return;
@@ -283,20 +285,20 @@ void ShellCommandParser(char *rx_buffer)
 
 	// Convert the received buffer to lowercase for comparison
 	for (size_t i = 0; i < buffer_len; i++) {
-		if (rx_buffer[i] >= uppercase_a && rx_buffer[i] <= uppercase_z) {
-			rx_buffer[i] += offset;
+		if (rx_buffer[i] >= UPPERCASE_A && rx_buffer[i] <= UPPERCASE_Z) {
+			rx_buffer[i] += LOWERCASE_OFFSET;
 		}
 	}
 
 	// Check if the received command starts with the expected command text
-	if (strncmp(rx_buffer, command_text, command_text_len) != 0) {
+	if (strncmp(rx_buffer, command_text, COMMAND_TEXT_LEN) != 0) {
 		// Command does not match, display an error message
 		__CommandError(rx_buffer, SHELL_ERROR_BAD_COMMAND);
 		return;
 	}
 
 	// Extract the arguments from the buffer after the command and parse them
-	char *arg = strtok(rx_buffer + command_text_len, argument_delimiter);
+	char *arg = strtok(rx_buffer + COMMAND_TEXT_LEN, argument_delimiter);
 
 	// If there are no arguments provided, go to the default scene
 	if (arg == NULL) {

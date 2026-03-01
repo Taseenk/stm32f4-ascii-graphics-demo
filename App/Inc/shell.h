@@ -1,8 +1,8 @@
 /**
  ******************************************************************************
  * @file           : shell.h
- * @brief          :
- *
+ * @brief          : Header file for the CLI shell interface, containing function 
+ * prototypes and type definitions
  ******************************************************************************
  */
 
