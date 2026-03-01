@@ -42,8 +42,6 @@
 #define INPUT_ROW_POSITION          (HINT_ROW_POSITION + 2)
 
 // Shell Command Parsing
-#define COMMAND_TEXT_LEN	8		// Length of the command text without null terminator
-
 #define UPPERCASE_A         'A'     // ASCII value for uppercase 'A'
 #define UPPERCASE_Z         'Z'     // ASCII value for uppercase 'Z'
 #define LOWERCASE_OFFSET    32      // Offset to convert uppercase letters to lowercase in ASCII
@@ -51,7 +49,11 @@
 /* Private Variables ---------------------------------------------------------*/
 static uint16_t input_row = 16; // Row position for the user input prompt in the CLI shell
 
+// Help message for the demo command, displayed when the user types 'HELP DEMO'
+static const char hint_message[] = "Type 'HELP DEMO' for command usage information.";
+
 /* Private Function Prototypes -----------------------------------------------*/
+static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset);
 static void __PrintHelpMenu(void);
 static void __EnsureTerminalSpace(uint8_t required_space);
 static void __PrintInputPrompt(uint16_t row);
@@ -62,6 +64,76 @@ static void __NavigateToDashboard(DashboardPages_t page);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
+ * @fn void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
+ * @brief Parses the arguments provided for the help command and displays the
+ * appropriate help information based on the arguments (e.g., "demo" to show the demo command flags).
+ * @param rx_buffer The buffer containing the user input string to parse for the help command.
+ * @param command_offset The offset in the buffer where the command arguments start after the command text.
+ */
+static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
+{
+	// Argument texts for parsing the command
+	static const char args_delimiter[] = " ";
+
+	// Extract the command from the buffer after the command and parse them
+	char *parameter = strtok(rx_buffer + command_offset, args_delimiter);
+
+	// If there are no command provided, ...
+	if (parameter == NULL) {
+		// TODO: no parameter providend what then
+		return;
+	}
+
+	while (parameter != NULL) {
+		/* --- Case: HELP Demo parameter --- */
+		if (strcmp(parameter, "demo") == 0) {
+			// Call the help command function to display the available Qualifiers and their descriptions
+			__PrintHelpMenu();
+			return;
+		}
+
+		/* --- Case: UNKNOWN parameter --- */
+		else {
+			// TODO: ERROR FLOW UNKNOWN parameter
+			// should say "Sorry, no documentation on <command>"
+		}
+
+		// Move to the next argument in the buffer
+		parameter = strtok(NULL, args_delimiter);
+	}
+}
+
+static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
+{
+	// Argument texts for parsing the command
+	static const char args_delimiter[] = " ";
+
+	// Extract the command from the buffer after the command and parse them
+	char *parameter = strtok(rx_buffer + command_offset, args_delimiter);
+
+	// If there are no command provided, ...
+	if (parameter == NULL) {
+		// TODO: no parameter providend what then
+		return;
+	}
+
+	while (parameter != NULL) {
+		/* --- Case: RUN Demo --- */
+		if (strcmp(parameter, "demo") == 0) {
+			return;
+		}
+
+		/* --- Case: UNKNOWN parameter --- */
+		else {
+			// TODO: ERROR FLOW UNKNOWN parameter
+		}
+
+		// Move to the next argument in the buffer
+		parameter = strtok(NULL, args_delimiter);
+	}
+}
+
+/**
  * @fn void __PrintHelpMenu(void)
  * @brief Handles the logic for displaying help information about the available
  * command flags when the user types "demo.exe --help" in the dashboard shell.
@@ -70,19 +142,19 @@ static void __NavigateToDashboard(DashboardPages_t page);
 static void __PrintHelpMenu(void)
 {
 	// Static texts for the help menu, including usage instructions, description, and options header
-    static const char usage_text[]   = "Usage: demo.exe [options] <target>";
+	static const char usage_text[] = "Usage: demo.exe [options] <target>";
 
 	// Array of strings for the available command flags and their descriptions to be printed in the help menu
-    static const char *options[] = {
-		"Options:",
-        "  -?, -h, --help    Show this help message and exit",
-        "  -m, --mode <auto | playlist>",
-		"                    Set the system operation mode. 'playlist' plays a curated",
-        "                    list of scenes back-to-back. 'auto' displays every scene",
-        "                    in the system one after another at a set interval.",
-        "  -r, --run <glitch | matrix>",
-		"                    Directly launch a specific scene bypassing the dashboard interface.",
-    };
+	static const char *options[] = {
+	    "Options:",
+	    "  -?, -h, --help    Show this help message and exit",
+	    "  -m, --mode <auto | playlist>",
+	    "                    Set the system operation mode. 'playlist' plays a curated",
+	    "                    list of scenes back-to-back. 'auto' displays every scene",
+	    "                    in the system one after another at a set interval.",
+	    "  -r, --run <glitch | matrix>",
+	    "                    Directly launch a specific scene bypassing the dashboard interface.",
+	};
 
 	// Calculate the number of flags in the array for iteration
 	const uint8_t options_count = sizeof(options) / sizeof(options[0]);
@@ -91,7 +163,7 @@ static void __PrintHelpMenu(void)
 	// if not clear the screen and reset the input row
 	__EnsureTerminalSpace(6);
 
-	// Print the usage and description followed by a blank line before the options list 
+	// Print the usage and description followed by a blank line before the options list
 	TerminalSerialPrintString(usage_text, SHELL_COL_POSITION, input_row++);
 	input_row++;
 
@@ -175,7 +247,8 @@ static void __HandleModeArgument(char *arg)
  */
 static void __HandleRunArgument(char *arg)
 {
-	// TODO: Implement the logic for directly launching specific scenes based on the provided argument (e.g., "glitch" or "matrix")
+	// TODO: Implement the logic for directly launching specific scenes based on the provided argument (e.g., "glitch"
+	// or "matrix")
 }
 
 /**
@@ -193,7 +266,6 @@ static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
 	static const char error_flag[] = "Invalid flag: '";
 	static const char error_missing[] = "Missing argument for flag: '";
 	static const char error_arg[] = "Invalid argument value: '";
-	static const char hint_message[] = "Type 'demo.exe --help' for options.";
 
 	// Check if there is enough space to print the error message and helper text
 	// if not clear the screen and reset the input row
@@ -289,7 +361,6 @@ void ShellInit(void)
 	static const char uart_text[] = "UART2 Terminal... Connected at 921600bps";
 	static const char terminal_text[] = "Display Mode... 80x24 ANSI Color";
 	static const char ready_text[] = "System is ready...";
-	static const char hint_text[] = "Type 'demo.exe --help'";
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
@@ -319,7 +390,7 @@ void ShellInit(void)
 	TerminalSerialPrintString(ready_text, SHELL_COL_POSITION, READY_ROW_POSITION);
 
 	// Render the interaction prompt
-	TerminalSerialPrintString(hint_text, SHELL_COL_POSITION, HINT_ROW_POSITION);
+	TerminalSerialPrintString(hint_message, SHELL_COL_POSITION, HINT_ROW_POSITION);
 	HAL_Delay(200);
 	__PrintInputPrompt(INPUT_ROW_POSITION);
 }
@@ -332,21 +403,6 @@ void ShellInit(void)
  */
 void ShellCommandParser(char *rx_buffer)
 {
-	static const char command_text[] = "demo.exe"; // Expected command text to trigger the demo command parsing logic
-
-	// Argument texts for parsing the command flags
-	static const char args_delimiter[] = " ";
-
-	static const char flag_help_text[] = "--help";
-	static const char flag_short_help_text[] = "-h";
-	static const char flag_short_question_text[] = "-?";
-
-	static const char flag_mode_text[] = "--mode";
-	static const char flag_short_mode_text[] = "-m";
-
-	static const char flag_run_text[] = "--run";
-	static const char flag_short_run_text[] = "-r";
-
 	// Early exit if buffer is null or invalid (e.g., empty string)
 	if (rx_buffer == NULL)
 		return;
@@ -360,70 +416,81 @@ void ShellCommandParser(char *rx_buffer)
 		}
 	}
 
-	// Check if the received buffer starts with the expected command prefix
-	if (strncmp(rx_buffer, command_text, COMMAND_TEXT_LEN) != 0) {
+	// Parse the command and call the appropriate handler function based on the command text
+	if (strncmp(rx_buffer, "run", 3) == 0) {
+		// Call the run command parser function to handle the run command arguments and execute the appropriate action
+		__ParseRunCommand(rx_buffer, 3);
+	} else if (strncmp(rx_buffer, "help", 4) == 0) {
+		// Call the help command parser function to handle the help command arguments and display the appropriate help
+		// information
+		__ParseHelpCommand(rx_buffer, 4);
+	} else {
 		// Command does not match, display an error message
 		__DisplayErrorMessage(rx_buffer, SHELL_ERROR_BAD_COMMAND);
 		return;
 	}
 
-	// Extract the flags from the buffer after the command and parse them
-	char *flag = strtok(rx_buffer + COMMAND_TEXT_LEN, args_delimiter);
+	// static const char command_text[] = "demo.exe"; // Expected command text to trigger the demo command parsing logic
 
-	// If there are no flags provided, go to the default scene
-	if (flag == NULL) {
-		// Navigate to the default dashboard page (e.g., playlist) if no flags are provided with the command
-		__NavigateToDashboard(DASHBOARD_PLAYLIST);
-		return;
-	}
+	// Argument texts for parsing the command
+	// static const char flag_help_text[] = "--help";
+	// static const char flag_short_help_text[] = "-h";
+	// static const char flag_short_question_text[] = "-?";
+
+	// static const char flag_mode_text[] = "--mode";
+	// static const char flag_short_mode_text[] = "-m";
+
+	// static const char flag_run_text[] = "--run";
+	// static const char flag_short_run_text[] = "-r";
 
 	// Parse the flags and go to the appropriate scene based on the provided flag
-	while (flag != NULL) {
-		/* --- Help Flag --- */
-		if (strcmp(flag, flag_help_text) == 0 || strcmp(flag, flag_short_help_text) == 0 || strcmp(flag, flag_short_question_text) == 0) {
-			// Call the help command function to display the available flags and their descriptions
-			__PrintHelpMenu();
-			return;
-		}
+	// while (flag != NULL) {
+	// 	/* --- Help Flag --- */
+	// 	if (strcmp(flag, flag_help_text) == 0 || strcmp(flag, flag_short_help_text) == 0 ||
+	// 	    strcmp(flag, flag_short_question_text) == 0) {
+	// 		// Call the help command function to display the available flags and their descriptions
+	// 		__PrintHelpMenu();
+	// 		return;
+	// 	}
 
-		/* --- Mode Flag --- */
-		else if (strcmp(flag, flag_mode_text) == 0 || strcmp(flag, flag_short_mode_text) == 0) {
-			// Get the argument for the mode flag (e.g., "auto" or "playlist")
-			char *arg = strtok(NULL, args_delimiter);
+	// 	/* --- Mode Flag --- */
+	// 	else if (strcmp(flag, flag_mode_text) == 0 || strcmp(flag, flag_short_mode_text) == 0) {
+	// 		// Get the argument for the mode flag (e.g., "auto" or "playlist")
+	// 		char *arg = strtok(NULL, args_delimiter);
 
-			if (arg != NULL) {
-				// argument value (e.g., "auto" or "playlist")
-				__HandleModeArgument(arg);
-			} else {
-				// Argument does not match, display an error message
-				__DisplayErrorMessage(flag, SHELL_ERROR_MISSING_ARG);
-				return;
-			}
-		}
+	// 		if (arg != NULL) {
+	// 			// argument value (e.g., "auto" or "playlist")
+	// 			__HandleModeArgument(arg);
+	// 		} else {
+	// 			// Argument does not match, display an error message
+	// 			__DisplayErrorMessage(flag, SHELL_ERROR_MISSING_ARG);
+	// 			return;
+	// 		}
+	// 	}
 
-		/* --- Run Flag --- */
-		else if (strcmp(flag, flag_run_text) == 0 || strcmp(flag, flag_short_run_text) == 0) {
-			// Get the argument for the run flag (e.g., "glitch" or "matrix")
-			char *arg = strtok(NULL, args_delimiter);
+	// 	/* --- Run Flag --- */
+	// 	else if (strcmp(flag, flag_run_text) == 0 || strcmp(flag, flag_short_run_text) == 0) {
+	// 		// Get the argument for the run flag (e.g., "glitch" or "matrix")
+	// 		char *arg = strtok(NULL, args_delimiter);
 
-			if (arg != NULL) {
-				// argument value (e.g., "glitch" or "matrix")
-				__HandleRunArgument(arg);
-			} else {
-				// Argument does not match, display an error message
-				__DisplayErrorMessage(flag, SHELL_ERROR_MISSING_ARG);
-				return;
-			}
-		}
+	// 		if (arg != NULL) {
+	// 			// argument value (e.g., "glitch" or "matrix")
+	// 			__HandleRunArgument(arg);
+	// 		} else {
+	// 			// Argument does not match, display an error message
+	// 			__DisplayErrorMessage(flag, SHELL_ERROR_MISSING_ARG);
+	// 			return;
+	// 		}
+	// 	}
 
-		/* --- UNKNOWN Flag --- */
-		else {
-			// No flag was given, display an error message
-			__DisplayErrorMessage(flag, SHELL_ERROR_INVALID_FLAG);
-			return;
-		}
+	// 	/* --- UNKNOWN Flag --- */
+	// 	else {
+	// 		// No flag was given, display an error message
+	// 		__DisplayErrorMessage(flag, SHELL_ERROR_INVALID_FLAG);
+	// 		return;
+	// 	}
 
-		// Move to the next argument in the buffer
-		flag = strtok(NULL, args_delimiter);
-	}
+	// 	// Move to the next argument in the buffer
+	// 	flag = strtok(NULL, args_delimiter);
+	// }
 }
