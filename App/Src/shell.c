@@ -64,6 +64,7 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset);
 
 static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset);
 static void __PrintHelpKey1Demo(void);
+static void __PrintHelpKey2Mode(void);
 
 static void __NavigateToDashboard(DashboardPages_t page);
 
@@ -192,6 +193,7 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 			/* --- Case: Mode subkeys (e.g., "HELP DEMO /MODE") --- */
 			if (strcmp(subkey, "/mode") == 0) {
 				// Print the MODE subkey help information for the demo command
+				__PrintHelpKey2Mode();
 				return;
 			} 
 			/* --- Case: Scene subkeys (e.g., "HELP DEMO /SCENE") --- */
@@ -255,6 +257,54 @@ static void __PrintHelpKey1Demo(void)
 	TerminalSerialPrintString(additional_info_header, SHELL_COL_POSITION, input_row++);
 	input_row++;
 	TerminalSerialPrintString(subkeys_list, SHELL_COL_POSITION, input_row++);
+
+	// Prompt the user for the next command
+	__PrintInputPrompt(++input_row);
+}
+
+/**
+ * @fn static void __PrintHelpKey2Mode(void)
+ * @brief Handles the logic for displaying help information about the available
+ * modes for the demo command when the user types "HELP DEMO /MODE" in the dashboard shell,
+ * including usage instructions and descriptions for each mode option.
+ * @param void This function does not take any parameters.
+ */
+static void __PrintHelpKey2Mode(void)
+{
+	// Text for the path header and subkey header
+	static const char path_header[] = "DEMO";
+	static const char subkey_header[] = "  /MODE";
+
+	// Description lines for the /MODE subkey of the demo parameter
+	static const char desc_line1[] = "    /Mode=name";
+	static const char desc_line2[] = "    Specifies the playback behavior for the DEMO program.";
+	static const char desc_line3[] = "    Valid modes are:";
+
+	// Explicit Parameter Definitions
+    static const char opt_auto[]    = "      AUTO      Displays every scene sequentially at set intervals.";
+    static const char opt_play[]    = "      PLAYLIST  Plays a curated list of specific scenes back-to-back.";
+
+	// Ensure space for Path(1), SubKey(1), Gap(1), Desc(2), Gap(1), Desc(1), Options(2)
+	__EnsureTerminalSpace(9);
+
+	// Set default colours for the main body text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	// Print the path header, subkey header
+	TerminalSerialPrintString(path_header, SHELL_COL_POSITION, input_row++);
+	TerminalSerialPrintString(subkey_header, SHELL_COL_POSITION, input_row++);
+	input_row++;
+
+	// Print the description lines for the /MODE subkey of the demo command
+	TerminalSerialPrintString(desc_line1, SHELL_COL_POSITION, input_row++);
+	TerminalSerialPrintString(desc_line2, SHELL_COL_POSITION, input_row++);
+	input_row++;
+	TerminalSerialPrintString(desc_line3, SHELL_COL_POSITION, input_row++);
+	
+	// Print the valid mode options for the /MODE subkey of the demo command
+	TerminalSerialPrintString(opt_auto, SHELL_COL_POSITION, input_row++);
+    TerminalSerialPrintString(opt_play, SHELL_COL_POSITION, input_row++);
+	input_row++;
 
 	// Prompt the user for the next command
 	__PrintInputPrompt(++input_row);
