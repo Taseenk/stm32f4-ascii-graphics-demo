@@ -63,7 +63,7 @@ static void __NavigateToDashboard(DashboardPages_t page);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn void __PrintInputPrompt(uint16_t row)
+ * @fn static void __PrintInputPrompt(uint16_t row)
  * @brief Displays the input prompt at the specified row and sets the cursor
  * position for user input in the CLI shell.
  * @param row The row position where the input prompt should be displayed.
@@ -71,7 +71,7 @@ static void __NavigateToDashboard(DashboardPages_t page);
 static void __PrintInputPrompt(uint16_t row)
 {
 	// The prompt string to display before the user input
-	static const char prompt[] = "C:/>";
+	static const char prompt[] = "STM32F4>";
 
 	// Print the input prompt at the current input row
 	TerminalSerialPrintString(prompt, SHELL_COL_POSITION, row);
@@ -79,6 +79,23 @@ static void __PrintInputPrompt(uint16_t row)
 	// Move the cursor to the input position and enable it for user input
 	TerminalSetCursorPos(INPUT_COL_POSITION, row);
 	TerminalVisibleCursor();
+}
+
+/**
+ * @fn static void __EnsureTerminalSpace(uint8_t required_space)
+ * @brief Checks if there is enough space left in the terminal to print a new
+ * message without overflowing the bottom of the screen. If there is not enough
+ * space, it clears the terminal and resets the input row to prevent overflow.
+ * @param required_space The number of rows required to print the new message and any additional helper text.
+ */
+static void __EnsureTerminalSpace(uint8_t required_space)
+{
+	// Check if the new messages will overflow the terminal height
+	if ((input_row + required_space) >= TERMINAL_HEIGHT) {
+		// Clear the terminal and reset the input row
+		TerminalClearAndHome();
+		input_row = 1;
+	}
 }
 
 /**
@@ -116,23 +133,6 @@ static void __HelpCommand(void)
 	// Increment the input row and prompt the user for the next command
 	input_row++;
 	__PrintInputPrompt(++input_row);
-}
-
-/**
- * @fn static void __EnsureTerminalSpace(uint8_t required_space)
- * @brief Checks if there is enough space left in the terminal to print a new
- * message without overflowing the bottom of the screen. If there is not enough
- * space, it clears the terminal and resets the input row to prevent overflow.
- * @param required_space The number of rows required to print the new message and any additional helper text.
- */
-static void __EnsureTerminalSpace(uint8_t required_space)
-{
-	// Check if the new messages will overflow the terminal height
-	if ((input_row + required_space) >= TERMINAL_HEIGHT) {
-		// Clear the terminal and reset the input row
-		TerminalClearAndHome();
-		input_row = 1;
-	}
 }
 
 /**
@@ -225,7 +225,7 @@ void ShellInit(void)
 	static const char uart_text[] = "UART2 Terminal... Connected at 921600bps";
 	static const char terminal_text[] = "Display Mode... 80x24 ANSI Color";
 	static const char ready_text[] = "System is ready...";
-	static const char hint_text[] = "Type 'demo.exe --help'";
+	static const char hint_message[] = "Type 'HELP DEMO' for command usage information.";
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
@@ -255,7 +255,7 @@ void ShellInit(void)
 	TerminalSerialPrintString(ready_text, SHELL_COL_POSITION, READY_ROW_POSITION);
 
 	// Render the interaction prompt
-	TerminalSerialPrintString(hint_text, SHELL_COL_POSITION, HINT_ROW_POSITION);
+	TerminalSerialPrintString(hint_message, SHELL_COL_POSITION, HINT_ROW_POSITION);
 	HAL_Delay(200);
 	__PrintInputPrompt(INPUT_ROW_POSITION);
 }
