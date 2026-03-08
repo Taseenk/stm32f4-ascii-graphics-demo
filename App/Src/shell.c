@@ -24,7 +24,7 @@
 /* Private Defines -----------------------------------------------------------*/
 // Terminal layout definitions for the CLI shell interface
 #define SHELL_COL_POSITION			1		// Starting column for the shell texts
-#define INPUT_COL_POSITION			6		// Starting column for the user input text (after the prompt)
+#define INPUT_COL_POSITION			10		// Starting column for the user input text (after the prompt)
 #define NAME_ROW_POSITION           1		// Starting row for the system name text
 #define COPYRIGHT_ROW_POSITION      (NAME_ROW_POSITION + 1)
 
@@ -52,7 +52,7 @@ static const char demo_parameter_text[] = "demo";
 #define LOWERCASE_OFFSET    32      // Offset to convert uppercase letters to lowercase in ASCII
 
 /* Private Variables ---------------------------------------------------------*/
-static uint16_t input_row = 16; // Row position for the user input prompt in the CLI shell
+static uint16_t input_row = 16;		// Row position for the user input prompt in the CLI shell
 
 /* Private Function Prototypes -----------------------------------------------*/
 static void __PrintInputPrompt(uint16_t row);
@@ -63,7 +63,7 @@ static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type);
 static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset);
 
 static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset);
-static void __HelpCommand(void);
+static void __PrintHelpKey1Demo(void);
 
 static void __NavigateToDashboard(DashboardPages_t page);
 
@@ -155,17 +155,6 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 }
 
 /**
- * @fn void __HelpCommand(void)
- * @brief Handles the logic for displaying help information about the available
- * command flags when the user types "demo.exe --help" in the dashboard shell.
- * @param void This function does not take any parameters.
- */
-static void __HelpCommand(void)
-{
-	
-}
-
-/**
  * @fn static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
  * @brief Parses the arguments provided for the help command and displays the
  * appropriate help information based on the arguments (e.g., "demo" to show the demo command flags).
@@ -196,6 +185,7 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 			// If there is no subkey provided after "HELP DEMO", display the general help information for the demo
 			if (subkey == NULL) {
 				// Call the help command function to display the available subkeys and their descriptions
+				__PrintHelpKey1Demo();
 				return;
 			}
 
@@ -225,6 +215,49 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 		// Move to the next argument in the buffer
 		parameter = strtok(NULL, args_delimiter);
 	}
+}
+
+/**
+ * @fn static void __PrintHelpKey1Demo(void)
+ * @brief Handles the logic for displaying help information about the "demo" parameter
+ * when the user types "HELP DEMO" in the dashboard shell, including usage instructions,
+ * description, and available subkeys for the demo command.
+ * @param void This function does not take any parameters.
+ */
+static void __PrintHelpKey1Demo(void)
+{
+	static const char key1_topic[] = "DEMO";
+	static const char help_line1[] = "  Invokes the DEMO program showcasing various scenes";
+	static const char help_line2[] = "  and graphics capabilities of the system.";
+	static const char format_text[] = "  Format:  DEMO [/MODE=type or /SCENE=name]";
+
+	static const char additional_info_header[] = "Additional information available:";
+	static const char subkeys_list[] = "  /MODE      /SCENE";
+
+	// Ensure space for Topic(1), Gap(1), Desc(2), Gap(1), Format(1), Gap(1), Header(1), List(1)
+	__EnsureTerminalSpace(9);
+
+	// Set default colours for the main body text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	// Print the key topic header followed by a gap
+	TerminalSerialPrintString(key1_topic, SHELL_COL_POSITION, input_row++);
+	input_row++;
+
+	// Print the help text and format instructions for the demo command followed by a gap
+	TerminalSerialPrintString(help_line1, SHELL_COL_POSITION, input_row++);
+	TerminalSerialPrintString(help_line2, SHELL_COL_POSITION, input_row++);
+	input_row++;
+	TerminalSerialPrintString(format_text, SHELL_COL_POSITION, input_row++);
+	input_row++;
+
+	// Print the additional information header followed by the list of subkeys for the demo command
+	TerminalSerialPrintString(additional_info_header, SHELL_COL_POSITION, input_row++);
+	input_row++;
+	TerminalSerialPrintString(subkeys_list, SHELL_COL_POSITION, input_row++);
+
+	// Prompt the user for the next command
+	__PrintInputPrompt(++input_row);
 }
 
 /**
