@@ -58,7 +58,7 @@ static uint16_t input_row = 16;		// Row position for the user input prompt in th
 static void __PrintInputPrompt(uint16_t row);
 
 static void __EnsureTerminalSpace(uint8_t required_space);
-static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type);
+static void __DisplayErrorMessage(ShellError_t error_type);
 
 static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset);
 
@@ -107,16 +107,61 @@ static void __EnsureTerminalSpace(uint8_t required_space)
 }
 
 /**
- * @fn void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
+ * @fn static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
  * @brief Handles the logic for displaying error messages in the CLI shell
  * when the user inputs an unrecognized command or invalid parameters.
- * @param input_buffer The buffer containing the user input string that caused the error.
+ * Follows VMS-style error message formatting conventions for consistency and clarity.
  * @param error_type An integer representing the type of error (e.g., 1 for unrecognized command, 2 for invalid
  * parameters).
  */
-static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
+static void __DisplayErrorMessage(ShellError_t error_type)
 {
-	
+	// Set red text colour for error messages
+	TerminalSetColour(FG_RED, BG_DEFAULT);
+
+	switch (error_type) {
+		case SHELL_ERROR_UNKNOWN_COMMAND:
+			TerminalSerialPrintString("%SYSTEM-E-UNRECOGNIZED, command not found", SHELL_COL_POSITION, input_row++);
+
+			// break out of the switch
+			break;
+
+		case SHELL_ERROR_MISSING_TOPIC:
+			TerminalSerialPrintString("%HELP-E-NOTOPIC, please specify a help topic (e.g., HELP DEMO)", SHELL_COL_POSITION, input_row++);
+			
+			// break out of the switch
+			break;
+
+		case SHELL_ERROR_UNKNOWN_TOPIC:
+			TerminalSerialPrintString("%HELP-E-UNKNOWNTOPIC, no documentation available for that topic", SHELL_COL_POSITION, input_row++);
+			
+			// break out of the switch
+			break;
+
+		case SHELL_ERROR_UNKNOWN_QUALIFIER:
+			TerminalSerialPrintString("%SHELL-E-INVQUAL, unrecognized qualifier in command string", SHELL_COL_POSITION, input_row++);
+			
+			// break out of the switch
+			break;
+
+		case SHELL_ERROR_INVALID_PARAMETER:
+			TerminalSerialPrintString("%SHELL-E-INVPARAM, invalid parameter value provided", SHELL_COL_POSITION, input_row++);
+			
+			// break out of the switch
+			break;
+
+		default:
+			TerminalSerialPrintString("%SYSTEM-F-ANOMALY, an unexpected shell error occurred", SHELL_COL_POSITION, input_row++);
+			
+			// break out of the switch
+			break;
+	}
+
+	// Set default colours for helper text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	// Prompt the user for the next command
+	__PrintInputPrompt(++input_row);
 }
 
 /**

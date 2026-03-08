@@ -16,8 +16,11 @@
 // Shell error types for handling different error scenarios in the command parser
 typedef enum {
     SHELL_ERROR_NONE = 0,           // No error occurred
-    SHELL_ERROR_BAD_COMMAND,        // Command not recognized (e.g., "unknown.exe")
-    SHELL_ERROR_INVALID_PARAM,      // Flag not recognized (e.g., "--wrong")
+    SHELL_ERROR_UNKNOWN_COMMAND,    // Command not recognized (e.g., "FLY DEMO")
+    SHELL_ERROR_MISSING_TOPIC,      // Command exists, but no topic (e.g., "HELP")
+    SHELL_ERROR_UNKNOWN_TOPIC,      // Topic not in library (e.g., "HELP PROJECT")
+    SHELL_ERROR_UNKNOWN_QUALIFIER,  // Key-2 not recognized (e.g., "HELP DEMO /FAST")
+    SHELL_ERROR_INVALID_PARAMETER   // Qualifier value is wrong (e.g., "DEMO /MODE=TURBO")
 } ShellError_t;
 
 /* Function prototypes -------------------------------------------------------*/
