@@ -42,6 +42,8 @@
 #define INPUT_ROW_POSITION          (HINT_ROW_POSITION + 2)
 
 // Shell Command Parsing
+static const char demo_parameter_text[] = "demo";
+
 #define RUN_COMMAND_TEXT_LEN		3	// Length of the "run" command text for parsing user input
 #define HELP_COMMAND_TEXT_LEN		4	// Length of the "help" command text for parsing user input
 
@@ -124,7 +126,32 @@ static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
  */
 static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 {
+	// Argument texts for parsing the command
+	static const char args_delimiter[] = " ";
 
+	// Extract the command from the buffer after the command and parse them
+	char *parameter = strtok(rx_buffer + command_offset, args_delimiter);
+
+	// If there are no command provided, ...
+	if (parameter == NULL) {
+		// TODO: SHOW ERROR when no parameter is given
+		return;
+	}
+
+	while (parameter != NULL) {
+		/* --- Case: RUN Demo --- */
+		if (strcmp(parameter, demo_parameter_text) == 0) {
+			return;
+		}
+
+		/* --- Case: UNKNOWN parameter --- */
+		else {
+			// TODO: ERROR FLOW UNKNOWN parameter
+		}
+
+		// Move to the next argument in the buffer
+		parameter = strtok(NULL, args_delimiter);
+	}
 }
 
 /**
@@ -149,7 +176,6 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 {
 	// Argument texts for parsing the command
 	static const char args_delimiter[] = " ";
-	static const char demo_parameter_text[] = "demo";
 
 	// Extract the command from the buffer after the command and parse them
 	char *parameter = strtok(rx_buffer + command_offset, args_delimiter);
