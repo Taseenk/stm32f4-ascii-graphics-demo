@@ -56,9 +56,12 @@ static uint16_t input_row = 16; // Row position for the user input prompt in the
 static void __PrintInputPrompt(uint16_t row);
 
 static void __EnsureTerminalSpace(uint8_t required_space);
-
-static void __HelpCommand(void);
 static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type);
+
+static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset);
+
+static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset);
+static void __HelpCommand(void);
 
 static void __NavigateToDashboard(DashboardPages_t page);
 
@@ -100,6 +103,31 @@ static void __EnsureTerminalSpace(uint8_t required_space)
 }
 
 /**
+ * @fn void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
+ * @brief Handles the logic for displaying error messages in the CLI shell
+ * when the user inputs an unrecognized command or invalid parameters.
+ * @param input_buffer The buffer containing the user input string that caused the error.
+ * @param error_type An integer representing the type of error (e.g., 1 for unrecognized command, 2 for invalid
+ * parameters).
+ */
+static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
+{
+	
+}
+
+/**
+ * @fn static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
+ * @brief Parses the arguments provided for the run command and executes the
+ * appropriate action based on the arguments.
+ * @param rx_buffer The buffer containing the user input string to parse for the run command.
+ * @param command_offset The offset in the buffer where the command arguments start after the command text.
+ */
+static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
+{
+
+}
+
+/**
  * @fn void __HelpCommand(void)
  * @brief Handles the logic for displaying help information about the available
  * command flags when the user types "demo.exe --help" in the dashboard shell.
@@ -111,16 +139,66 @@ static void __HelpCommand(void)
 }
 
 /**
- * @fn void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
- * @brief Handles the logic for displaying error messages in the CLI shell
- * when the user inputs an unrecognized command or invalid parameters.
- * @param input_buffer The buffer containing the user input string that caused the error.
- * @param error_type An integer representing the type of error (e.g., 1 for unrecognized command, 2 for invalid
- * parameters).
+ * @fn static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
+ * @brief Parses the arguments provided for the help command and displays the
+ * appropriate help information based on the arguments (e.g., "demo" to show the demo command flags).
+ * @param rx_buffer The buffer containing the user input string to parse for the help command.
+ * @param command_offset The offset in the buffer where the command arguments start after the command text.
  */
-static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
+static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 {
-	
+	// Argument texts for parsing the command
+	static const char args_delimiter[] = " ";
+	static const char demo_parameter_text[] = "demo";
+
+	// Extract the command from the buffer after the command and parse them
+	char *parameter = strtok(rx_buffer + command_offset, args_delimiter);
+
+	// If there are no command provided, ...
+	if (parameter == NULL) {
+		// TODO: SHOW ERROR when no parameter is given
+		return;
+	}
+
+	// Parse the provided parameter and go to the appropriate help information based on the provided parameter and subkey
+	while (parameter != NULL) {
+		/* --- Case: Demo parameter --- */
+		if (strcmp(parameter, demo_parameter_text) == 0) {
+			char *subkey = strtok(NULL, args_delimiter);
+
+			/* --- Case: Help Demo (e.g., "HELP DEMO")--- */
+			// If there is no subkey provided after "HELP DEMO", display the general help information for the demo
+			if (subkey == NULL) {
+				// Call the help command function to display the available subkeys and their descriptions
+				return;
+			}
+
+			/* --- Case: Mode subkeys (e.g., "HELP DEMO /MODE") --- */
+			if (strcmp(subkey, "/mode") == 0) {
+				// Print the MODE subkey help information for the demo command
+				return;
+			} 
+			/* --- Case: Scene subkeys (e.g., "HELP DEMO /SCENE") --- */
+			else if (strcmp(subkey, "/scene") == 0) {
+				// Print the scene subkey help information for the demo command
+				return;
+			} 
+			/* --- Case: UNKNOWN subkeys --- */
+			else {
+				// TODO: ERROR FLOW UNKNOWN parameter
+				// should say "Sorry, no documentation on <command>"
+			}
+		}
+
+		/* --- Case: UNKNOWN parameter --- */
+		else {
+			// TODO: ERROR FLOW UNKNOWN parameter
+			// should say "Sorry, no documentation on <command>"
+		}
+
+		// Move to the next argument in the buffer
+		parameter = strtok(NULL, args_delimiter);
+	}
 }
 
 /**
@@ -220,12 +298,12 @@ void ShellCommandParser(char *rx_buffer)
 	/* --- Case: RUN command --- */
 	if (strncmp(rx_buffer, run_command_text, RUN_COMMAND_TEXT_LEN) == 0) {
 		// Call the run command parser function to handle the run command arguments and execute the appropriate action
-		// TODO: Implement logic for parsing the run command
+		__ParseRunCommand(rx_buffer, RUN_COMMAND_TEXT_LEN);
 	}
 	/* --- Case: HELP command --- */
 	else if (strncmp(rx_buffer, help_command_text, HELP_COMMAND_TEXT_LEN) == 0) {
 		// Call the help command parser function to handle the help command arguments and display the appropriate help information
-		// TODO: Implement logic for parsing the help command
+		__ParseHelpCommand(rx_buffer, HELP_COMMAND_TEXT_LEN);
 	}
 	/* --- Case: UNKNOWN command --- */
 	else {
