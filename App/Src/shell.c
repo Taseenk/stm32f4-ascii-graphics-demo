@@ -65,6 +65,7 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset);
 static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset);
 static void __PrintHelpKey1Demo(void);
 static void __PrintHelpKey2Mode(void);
+static void __PrintHelpKey2Scene(void);
 
 static void __NavigateToDashboard(DashboardPages_t page);
 
@@ -199,6 +200,7 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 			/* --- Case: Scene subkeys (e.g., "HELP DEMO /SCENE") --- */
 			else if (strcmp(subkey, "/scene") == 0) {
 				// Print the scene subkey help information for the demo command
+				__PrintHelpKey2Scene();
 				return;
 			} 
 			/* --- Case: UNKNOWN subkeys --- */
@@ -257,6 +259,44 @@ static void __PrintHelpKey1Demo(void)
 	TerminalSerialPrintString(additional_info_header, SHELL_COL_POSITION, input_row++);
 	input_row++;
 	TerminalSerialPrintString(subkeys_list, SHELL_COL_POSITION, input_row++);
+
+	// Prompt the user for the next command
+	__PrintInputPrompt(++input_row);
+}
+
+/**
+ * @fn static void __PrintHelpKey2Scene(void)
+ * @brief Handles the logic for displaying help information about the available
+ * scenes for the demo command when the user types "HELP DEMO /SCENE" in the dashboard shell,
+ * including usage instructions and descriptions for each scene option.
+ * @param void This function does not take any parameters.
+ */
+static void __PrintHelpKey2Scene(void)
+{
+	// Text for the path header and subkey header
+	static const char path_header[] = "DEMO";
+    static const char subkey_header[] = "  /SCENE";
+
+	// Description lines for the /SCENE subkey of the demo parameter
+	static const char desc_line1[] = "    /SCENE=name";
+    static const char desc_line2[] = "    Specifies the graphics scene to launch immediately, bypassing";
+    static const char desc_line3[] = "    the interactive dashboard menu.";
+
+	// Ensure space for Path(1), SubKey(1), Gap(1), Desc(7)
+	__EnsureTerminalSpace(7);
+
+	// Set default colours for the main body text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	//
+	TerminalSerialPrintString(path_header, SHELL_COL_POSITION, input_row++);
+	TerminalSerialPrintString(subkey_header, SHELL_COL_POSITION, input_row++);
+    input_row++;
+
+	//
+	TerminalSerialPrintString(desc_line1, SHELL_COL_POSITION, input_row++);
+    TerminalSerialPrintString(desc_line2, SHELL_COL_POSITION, input_row++);
+	TerminalSerialPrintString(desc_line3, SHELL_COL_POSITION, input_row++);
 
 	// Prompt the user for the next command
 	__PrintInputPrompt(++input_row);
