@@ -42,7 +42,8 @@
 #define INPUT_ROW_POSITION          (HINT_ROW_POSITION + 2)
 
 // Shell Command Parsing
-#define COMMAND_TEXT_LEN	8		// Length of the command text without null terminator
+#define RUN_COMMAND_TEXT_LEN		3	// Length of the "run" command text for parsing user input
+#define HELP_COMMAND_TEXT_LEN		4	// Length of the "help" command text for parsing user input
 
 #define UPPERCASE_A         'A'     // ASCII value for uppercase 'A'
 #define UPPERCASE_Z         'Z'     // ASCII value for uppercase 'Z'
@@ -106,33 +107,7 @@ static void __EnsureTerminalSpace(uint8_t required_space)
  */
 static void __HelpCommand(void)
 {
-	// List of available flags and their descriptions to print when the user types "demo.exe --help"
-	static const char *flags[] = {"Available flags for demo.exe:", "  -h, --help     :\tShow help",
-	                              "  -p, --playlist :\tPlaylist Mode", "  -a, --auto     :\tAuto Mode"};
-
-	// Calculate the number of flags in the array for iteration
-	const uint8_t flags_count = sizeof(flags) / sizeof(flags[0]);
-
-	// Check if there is enough space to print the error message and helper text
-	// if not clear the screen and reset the input row
-	__EnsureTerminalSpace(6);
-
-	// Set cyan text colour for the help command output
-	TerminalSetColour(FG_CYAN, BG_DEFAULT);
-	TerminalSerialPrintString(flags[0], SHELL_COL_POSITION, input_row);
-
-	// Set default colours for the main body text
-	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
-
-	// Print each flag and its description at its respective position
-	for (int i = 1; i < flags_count; i++) {
-		input_row++;
-		TerminalSerialPrintString(flags[i], SHELL_COL_POSITION, input_row);
-	}
-
-	// Increment the input row and prompt the user for the next command
-	input_row++;
-	__PrintInputPrompt(++input_row);
+	
 }
 
 /**
@@ -145,51 +120,7 @@ static void __HelpCommand(void)
  */
 static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
 {
-	static const char error_unknown[] = "An unknown error occurred.";
-	static const char error_prefix[] = "'";
-	static const char error_bad_cmd[] = "' is not recognized as a command.";
-	static const char error_param[] = "Invalid parameter: ";
-	static const char hint_message[] = "Type 'demo.exe --help or -h' for options.";
-
-	// Check if there is enough space to print the error message and helper text
-	// if not clear the screen and reset the input row
-	__EnsureTerminalSpace(4);
-
-	// Set red text colour for error messages
-	TerminalSetColour(FG_RED, BG_DEFAULT);
-
-	// Print the appropriate error message based on the error type
-	TerminalSetCursorPos(SHELL_COL_POSITION, input_row);
-	switch (error_type) {
-		case SHELL_ERROR_BAD_COMMAND:
-			SerialPrint(error_prefix);
-            SerialPrint(input_buffer);
-            SerialPrintLn(error_bad_cmd);
-			// break out of the switch
-			break;
-
-		case SHELL_ERROR_INVALID_PARAM:
-			SerialPrint(error_param);
-			SerialPrintLn(input_buffer);
-			// break out of the switch
-			break;
-
-		default:
-			SerialPrintLn(error_unknown);
-			// break out of the switch
-			break;
-	}
-
-	// Set default colours for helper text
-	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
-
-	input_row += 2;
-	TerminalSetCursorPos(SHELL_COL_POSITION, input_row);
-	SerialPrintLn(hint_message);
-
-	// Increment the input row and prompt the user for the next command
-	input_row += 2;
-	__PrintInputPrompt(input_row);
+	
 }
 
 /**
@@ -268,69 +199,37 @@ void ShellInit(void)
  */
 void ShellCommandParser(char *rx_buffer)
 {
-	static const char command_text[] = "demo.exe"; // Expected command text to trigger the demo command parsing logic
-
-	// Argument texts for parsing the command flags
-	static const char argument_delimiter[] = " ";
-	static const char arg_help_text[] = "--help";
-	static const char arg_auto_text[] = "--auto";
-	static const char arg_playlist_text[] = "--playlist";
-	static const char arg_short_help_text[] = "-h";
-	static const char arg_short_auto_text[] = "-a";
-	static const char arg_short_playlist_text[] = "-p";
-
 	// Early exit if buffer is null or invalid (e.g., empty string)
 	if (rx_buffer == NULL)
 		return;
 
-	// Calculate the length of the received buffer
-	size_t buffer_len = strlen(rx_buffer);
-
 	// Convert the received buffer to lowercase for comparison
+	// In ASCII, the difference between uppercase and lowercase letters is a offset of 32
+	size_t buffer_len = strlen(rx_buffer);
 	for (size_t i = 0; i < buffer_len; i++) {
 		if (rx_buffer[i] >= UPPERCASE_A && rx_buffer[i] <= UPPERCASE_Z) {
 			rx_buffer[i] += LOWERCASE_OFFSET;
 		}
 	}
+	
+	// Text for the run and help commands to compare against the user input
+	static const char run_command_text[] = "run";
+	static const char help_command_text[] = "help";
 
-	// Check if the received command starts with the expected command text
-	if (strncmp(rx_buffer, command_text, COMMAND_TEXT_LEN) != 0) {
-		// Command does not match, display an error message
-		__DisplayErrorMessage(rx_buffer, SHELL_ERROR_BAD_COMMAND);
-		return;
+	// Parse the command and call the appropriate handler function based on the command text
+	/* --- Case: RUN command --- */
+	if (strncmp(rx_buffer, run_command_text, RUN_COMMAND_TEXT_LEN) == 0) {
+		// Call the run command parser function to handle the run command arguments and execute the appropriate action
+		// TODO: Implement logic for parsing the run command
 	}
-
-	// Extract the arguments from the buffer after the command and parse them
-	char *arg = strtok(rx_buffer + COMMAND_TEXT_LEN, argument_delimiter);
-
-	// If there are no arguments provided, go to the default scene
-	if (arg == NULL) {
-		// Call the dashboard page launcher function with the playlist page parameter to go to the playlist scene
-		__NavigateToDashboard(DASHBOARD_PLAYLIST);
-		return;
+	/* --- Case: HELP command --- */
+	else if (strncmp(rx_buffer, help_command_text, HELP_COMMAND_TEXT_LEN) == 0) {
+		// Call the help command parser function to handle the help command arguments and display the appropriate help information
+		// TODO: Implement logic for parsing the help command
 	}
-
-	// Parse the arguments and go to the appropriate scene based on the provided flag
-	while (arg != NULL) {
-		if (strcmp(arg, arg_help_text) == 0 || strcmp(arg, arg_short_help_text) == 0) {
-			// Call the help command function to display the available flags and their descriptions
-			__HelpCommand();
-			return;
-		} else if (strcmp(arg, arg_playlist_text) == 0 || strcmp(arg, arg_short_playlist_text) == 0) {
-			// Call the dashboard page launcher function with the playlist page parameter to go to the playlist scene
-			__NavigateToDashboard(DASHBOARD_PLAYLIST);
-			return;
-		} else if (strcmp(arg, arg_auto_text) == 0 || strcmp(arg, arg_short_auto_text) == 0) {
-			// Call the dashboard page launcher function with the auto mode page parameter to go to the auto mode scene
-			__NavigateToDashboard(DASHBOARD_AUTO);
-			return;
-		} else {
-			// Argument does not match, display an error message
-			__DisplayErrorMessage(arg, SHELL_ERROR_INVALID_PARAM);
-			return;
-		}
-
-		// Move to the next argument in the buffer
-		arg = strtok(NULL, argument_delimiter);
+	/* --- Case: UNKNOWN command --- */
+	else {
+		// TODO: Command does not match, ERROR FLOW UNKNOWN command
+		return;
 	}
 }
