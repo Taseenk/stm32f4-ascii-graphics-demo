@@ -42,7 +42,7 @@
 #define INPUT_ROW_POSITION          (HINT_ROW_POSITION + 2)
 
 // Shell Command Parsing
-static const char demo_parameter_text[] = "demo";
+static const char demo_topic_text[] = "demo";
 
 #define RUN_COMMAND_TEXT_LEN		3	// Length of the "run" command text for parsing user input
 #define HELP_COMMAND_TEXT_LEN		4	// Length of the "help" command text for parsing user input
@@ -108,14 +108,17 @@ static void __EnsureTerminalSpace(uint8_t required_space)
 
 /**
  * @fn static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
- * @brief Handles the logic for displaying error messages in the CLI shell
- * when the user inputs an unrecognized command or invalid parameters.
- * Follows VMS-style error message formatting conventions for consistency and clarity.
+ * @brief Handles the logic for displaying error messages in the CLI shell when the user 
+ * inputs an unrecognized command or invalid parameters. Follows VMS-style error message 
+ * formatting conventions for consistency and clarity.
  * @param error_type An integer representing the type of error (e.g., 1 for unrecognized command, 2 for invalid
  * parameters).
  */
 static void __DisplayErrorMessage(ShellError_t error_type)
 {
+	// Space for Error(1) + Gap(1)
+    __EnsureTerminalSpace(2);
+
 	// Set red text colour for error messages
 	TerminalSetColour(FG_RED, BG_DEFAULT);
 
@@ -177,27 +180,28 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 	static const char args_delimiter[] = " ";
 
 	// Extract the command from the buffer after the command and parse them
-	char *parameter = strtok(rx_buffer + command_offset, args_delimiter);
+	char *topic = strtok(rx_buffer + command_offset, args_delimiter);
 
-	// If there are no command provided, ...
-	if (parameter == NULL) {
-		// TODO: SHOW ERROR when no parameter is given
+	// If there is no command provided (e.g. user just typed "HELP")
+	if (topic == NULL) {
+		__DisplayErrorMessage(SHELL_ERROR_MISSING_TOPIC);
 		return;
 	}
 
-	while (parameter != NULL) {
+	while (topic != NULL) {
 		/* --- Case: RUN Demo --- */
-		if (strcmp(parameter, demo_parameter_text) == 0) {
+		if (strcmp(topic, demo_topic_text) == 0) {
 			return;
 		}
 
-		/* --- Case: UNKNOWN parameter --- */
+		/* --- Case: UNKNOWN topic --- */
 		else {
-			// TODO: ERROR FLOW UNKNOWN parameter
+			// Topic provided does not match any known help topics, display an error message
+			__DisplayErrorMessage( SHELL_ERROR_UNKNOWN_TOPIC);
 		}
 
 		// Move to the next argument in the buffer
-		parameter = strtok(NULL, args_delimiter);
+		topic = strtok(NULL, args_delimiter);
 	}
 }
 
@@ -214,63 +218,63 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 	static const char args_delimiter[] = " ";
 
 	// Extract the command from the buffer after the command and parse them
-	char *parameter = strtok(rx_buffer + command_offset, args_delimiter);
+	char *topic = strtok(rx_buffer + command_offset, args_delimiter);
 
-	// If there are no command provided, ...
-	if (parameter == NULL) {
-		// TODO: SHOW ERROR when no parameter is given
+	// If there is no command provided (e.g. user just typed "HELP")
+	if (topic == NULL) {
+		__DisplayErrorMessage(SHELL_ERROR_MISSING_TOPIC);
 		return;
 	}
 
-	// Parse the provided parameter and go to the appropriate help information based on the provided parameter and subkey
-	while (parameter != NULL) {
-		/* --- Case: Demo parameter --- */
-		if (strcmp(parameter, demo_parameter_text) == 0) {
-			char *subkey = strtok(NULL, args_delimiter);
+	// Parse the provided topic and go to the appropriate help information based on the provided topic and qualifier
+	while (topic != NULL) {
+		/* --- Case: Demo topic --- */
+		if (strcmp(topic, demo_topic_text) == 0) {
+			char *qualifier = strtok(NULL, args_delimiter);
 
 			/* --- Case: Help Demo (e.g., "HELP DEMO")--- */
-			// If there is no subkey provided after "HELP DEMO", display the general help information for the demo
-			if (subkey == NULL) {
-				// Call the help command function to display the available subkeys and their descriptions
+			// If there is no qualifier provided after "HELP DEMO", display the general help information for the demo
+			if (qualifier == NULL) {
+				// Call the help command function to display the available qualifiers and their descriptions
 				__PrintHelpKey1Demo();
 				return;
 			}
 
-			/* --- Case: Mode subkeys (e.g., "HELP DEMO /MODE") --- */
-			if (strcmp(subkey, "/mode") == 0) {
-				// Print the MODE subkey help information for the demo command
+			/* --- Case: Mode qualifier (e.g., "HELP DEMO /MODE") --- */
+			if (strcmp(qualifier, "/mode") == 0) {
+				// Print the MODE qualifier help information for the demo command
 				__PrintHelpKey2Mode();
 				return;
 			} 
-			/* --- Case: Scene subkeys (e.g., "HELP DEMO /SCENE") --- */
-			else if (strcmp(subkey, "/scene") == 0) {
-				// Print the scene subkey help information for the demo command
+			/* --- Case: Scene qualifier (e.g., "HELP DEMO /SCENE") --- */
+			else if (strcmp(qualifier, "/scene") == 0) {
+				// Print the scene qualifier help information for the demo command
 				__PrintHelpKey2Scene();
 				return;
 			} 
-			/* --- Case: UNKNOWN subkeys --- */
+			/* --- Case: UNKNOWN qualifier --- */
 			else {
-				// TODO: ERROR FLOW UNKNOWN parameter
-				// should say "Sorry, no documentation on <command>"
+				// Qualifier provided after the topic is not recognized, display an error message
+				__DisplayErrorMessage( SHELL_ERROR_UNKNOWN_QUALIFIER);
 			}
 		}
 
-		/* --- Case: UNKNOWN parameter --- */
+		/* --- Case: UNKNOWN topic --- */
 		else {
-			// TODO: ERROR FLOW UNKNOWN parameter
-			// should say "Sorry, no documentation on <command>"
+			// Topic provided does not match any known help topics, display an error message
+			__DisplayErrorMessage( SHELL_ERROR_UNKNOWN_TOPIC);
 		}
 
 		// Move to the next argument in the buffer
-		parameter = strtok(NULL, args_delimiter);
+		topic = strtok(NULL, args_delimiter);
 	}
 }
 
 /**
  * @fn static void __PrintHelpKey1Demo(void)
- * @brief Handles the logic for displaying help information about the "demo" parameter
+ * @brief Handles the logic for displaying help information about the "demo" topic
  * when the user types "HELP DEMO" in the dashboard shell, including usage instructions,
- * description, and available subkeys for the demo command.
+ * description, and available qualifier for the demo command.
  * @param void This function does not take any parameters.
  */
 static void __PrintHelpKey1Demo(void)
@@ -281,7 +285,7 @@ static void __PrintHelpKey1Demo(void)
 	static const char format_text[] = "  Format:  DEMO [/MODE=type or /SCENE=name]";
 
 	static const char additional_info_header[] = "Additional information available:";
-	static const char subkeys_list[] = "  /MODE      /SCENE";
+	static const char qualifiers_list[] = "  /MODE      /SCENE";
 
 	// Ensure space for Topic(1), Gap(1), Desc(2), Gap(1), Format(1), Gap(1), Header(1), List(1)
 	__EnsureTerminalSpace(9);
@@ -300,10 +304,10 @@ static void __PrintHelpKey1Demo(void)
 	TerminalSerialPrintString(format_text, SHELL_COL_POSITION, input_row++);
 	input_row++;
 
-	// Print the additional information header followed by the list of subkeys for the demo command
+	// Print the additional information header followed by the list of qualifiers for the demo command
 	TerminalSerialPrintString(additional_info_header, SHELL_COL_POSITION, input_row++);
 	input_row++;
-	TerminalSerialPrintString(subkeys_list, SHELL_COL_POSITION, input_row++);
+	TerminalSerialPrintString(qualifiers_list, SHELL_COL_POSITION, input_row++);
 
 	// Prompt the user for the next command
 	__PrintInputPrompt(++input_row);
@@ -318,16 +322,16 @@ static void __PrintHelpKey1Demo(void)
  */
 static void __PrintHelpKey2Scene(void)
 {
-	// Text for the path header and subkey header
+	// Text for the path header and qualifier header
 	static const char path_header[] = "DEMO";
-    static const char subkey_header[] = "  /SCENE";
+    static const char qualifier_header[] = "  /SCENE";
 
-	// Description lines for the /SCENE subkey of the demo parameter
+	// Description lines for the /SCENE qualifier of the demo topic
 	static const char desc_line1[] = "    /SCENE=name";
     static const char desc_line2[] = "    Specifies the graphics scene to launch immediately, bypassing";
     static const char desc_line3[] = "    the interactive dashboard menu.";
 
-	// Ensure space for Path(1), SubKey(1), Gap(1), Desc(7)
+	// Ensure space for Path(1), qualifier(1), Gap(1), Desc(7)
 	__EnsureTerminalSpace(7);
 
 	// Set default colours for the main body text
@@ -335,7 +339,7 @@ static void __PrintHelpKey2Scene(void)
 
 	//
 	TerminalSerialPrintString(path_header, SHELL_COL_POSITION, input_row++);
-	TerminalSerialPrintString(subkey_header, SHELL_COL_POSITION, input_row++);
+	TerminalSerialPrintString(qualifier_header, SHELL_COL_POSITION, input_row++);
     input_row++;
 
 	//
@@ -356,11 +360,11 @@ static void __PrintHelpKey2Scene(void)
  */
 static void __PrintHelpKey2Mode(void)
 {
-	// Text for the path header and subkey header
+	// Text for the path header and qualifier header
 	static const char path_header[] = "DEMO";
-	static const char subkey_header[] = "  /MODE";
+	static const char qualifier_header[] = "  /MODE";
 
-	// Description lines for the /MODE subkey of the demo parameter
+	// Description lines for the /MODE qualifier of the demo topic
 	static const char desc_line1[] = "    /Mode=name";
 	static const char desc_line2[] = "    Specifies the playback behavior for the DEMO program.";
 	static const char desc_line3[] = "    Valid modes are:";
@@ -369,24 +373,24 @@ static void __PrintHelpKey2Mode(void)
     static const char opt_auto[]    = "      AUTO      Displays every scene sequentially at set intervals.";
     static const char opt_play[]    = "      PLAYLIST  Plays a curated list of specific scenes back-to-back.";
 
-	// Ensure space for Path(1), SubKey(1), Gap(1), Desc(2), Gap(1), Desc(1), Options(2)
+	// Ensure space for Path(1), qualifier(1), Gap(1), Desc(2), Gap(1), Desc(1), Options(2)
 	__EnsureTerminalSpace(9);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
-	// Print the path header, subkey header
+	// Print the path header, qualifier header
 	TerminalSerialPrintString(path_header, SHELL_COL_POSITION, input_row++);
-	TerminalSerialPrintString(subkey_header, SHELL_COL_POSITION, input_row++);
+	TerminalSerialPrintString(qualifier_header, SHELL_COL_POSITION, input_row++);
 	input_row++;
 
-	// Print the description lines for the /MODE subkey of the demo command
+	// Print the description lines for the /MODE qualifier of the demo command
 	TerminalSerialPrintString(desc_line1, SHELL_COL_POSITION, input_row++);
 	TerminalSerialPrintString(desc_line2, SHELL_COL_POSITION, input_row++);
 	input_row++;
 	TerminalSerialPrintString(desc_line3, SHELL_COL_POSITION, input_row++);
 	
-	// Print the valid mode options for the /MODE subkey of the demo command
+	// Print the valid mode options for the /MODE qualifier of the demo command
 	TerminalSerialPrintString(opt_auto, SHELL_COL_POSITION, input_row++);
     TerminalSerialPrintString(opt_play, SHELL_COL_POSITION, input_row++);
 	input_row++;
@@ -501,7 +505,8 @@ void ShellCommandParser(char *rx_buffer)
 	}
 	/* --- Case: UNKNOWN command --- */
 	else {
-		// TODO: Command does not match, ERROR FLOW UNKNOWN command
+		// Command not recognized (e.g., "FLY DEMO")
+		__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_COMMAND);
 		return;
 	}
 }
