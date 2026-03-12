@@ -42,16 +42,19 @@
 #define INPUT_ROW_POSITION          (HINT_ROW_POSITION + 2)
 
 // Shell Command Parsing
-static const char demo_topic_text[] = "demo";
-
-#define RUN_COMMAND_TEXT_LEN		3	// Length of the "run" command text for parsing user input
-#define HELP_COMMAND_TEXT_LEN		4	// Length of the "help" command text for parsing user input
+#define RUN_COMMAND_TEXT_LEN		(sizeof(run_command_text) - 1)	// Length of the "run" command text for parsing user input
+#define HELP_COMMAND_TEXT_LEN		(sizeof(help_command_text) - 1)	// Length of the "help" command text for parsing user input
 
 #define UPPERCASE_A         'A'     // ASCII value for uppercase 'A'
 #define UPPERCASE_Z         'Z'     // ASCII value for uppercase 'Z'
 #define LOWERCASE_OFFSET    32      // Offset to convert uppercase letters to lowercase in ASCII
 
 /* Private Variables ---------------------------------------------------------*/
+static const char run_command_text[] = "run";
+static const char help_command_text[] = "help";
+
+static const char demo_topic_text[] = "demo";
+
 static uint16_t input_row = 16;		// Row position for the user input prompt in the CLI shell
 
 /* Private Function Prototypes -----------------------------------------------*/
@@ -127,37 +130,31 @@ static void __DisplayErrorMessage(ShellError_t error_type)
 		case SHELL_ERROR_UNKNOWN_COMMAND:
 			TerminalSerialPrintString("%SYSTEM-E-UNRECOGNIZED, command not found", SHELL_COL_POSITION, input_row++);
 
-			// break out of the switch
 			break;
 
 		case SHELL_ERROR_MISSING_TOPIC:
 			TerminalSerialPrintString("%HELP-E-NOTOPIC, please specify a help topic (e.g., HELP DEMO)", SHELL_COL_POSITION, input_row++);
 			
-			// break out of the switch
 			break;
 
 		case SHELL_ERROR_UNKNOWN_TOPIC:
 			TerminalSerialPrintString("%HELP-E-UNKNOWNTOPIC, no documentation available for that topic", SHELL_COL_POSITION, input_row++);
 			
-			// break out of the switch
 			break;
 
 		case SHELL_ERROR_UNKNOWN_QUALIFIER:
 			TerminalSerialPrintString("%SYSTEM-E-INVQUAL, unrecognized qualifier in command string", SHELL_COL_POSITION, input_row++);
 			
-			// break out of the switch
 			break;
 
 		case SHELL_ERROR_INVALID_PARAMETER:
 			TerminalSerialPrintString("%SYSTEM-E-INVPARAM, invalid parameter value provided", SHELL_COL_POSITION, input_row++);
 			
-			// break out of the switch
 			break;
 
 		default:
 			TerminalSerialPrintString("%SYSTEM-F-ANOMALY, an unexpected shell error occurred", SHELL_COL_POSITION, input_row++);
 			
-			// break out of the switch
 			break;
 	}
 
@@ -185,50 +182,48 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 	// Extract the command from the buffer after the command and parse them
 	char *topic = strtok(rx_buffer + command_offset, args_delimiter);
 
-	// If there is no command provided (e.g. user just typed "HELP")
+	// No topic provided (e.g. user typed "RUN" with nothing after)
 	if (topic == NULL) {
 		__DisplayErrorMessage(SHELL_ERROR_MISSING_TOPIC);
 		return;
 	}
 
-	while (topic != NULL) {
-		/* --- Case: RUN Demo --- */
-		if (strcmp(topic, demo_topic_text) == 0) {
-			char *qualifier = strtok_r(char *restrict, const char *restrict, char **restrict)
-			//strtok(NULL, args_delimiter);
+	// Parse the provided topic and go to the appropriate action based on the provided topic and qualifier
+	/* --- Case: RUN Demo --- */
+	if (strcmp(topic, demo_topic_text) == 0) {
+		char *qualifier = strtok(NULL, args_delimiter);
 
-			/* --- Case: RUN Demo--- */
-			// If there is no qualifier provided after "RUN DEMO"
-			if (qualifier == NULL) {
-				// Call the dashboard page launcher swithing to the auto mode page by default if no qualifier is provided to run demo
-				__NavigateToDashboard(DASHBOARD_PLAYLIST);
-			}
-
-			/* --- Case: Mode qualifier (e.g., "RUN DEMO /MODE=auto") --- */
-			else if (strcmp(qualifier, auto_mode_qualifier_text) == 0) {
-				// Call the dashboard page launcher switching to the auto mode page if the auto mode qualifier is provided to run demo 
-				__NavigateToDashboard(DASHBOARD_AUTO);
-			} 
-			/* --- Case: Mode qualifier (e.g., "RUN DEMO /Mode=playlist") --- */
-			else if (strcmp(qualifier, playlist_mode_qualifier_text) == 0) {
-				// Call the dashboard page launcher switching to the playlist page if the playlist mode qualifier is provided to run demo
-				__NavigateToDashboard(DASHBOARD_PLAYLIST);
-			}
-			/* --- Case: UNKNOWN qualifier --- */
-			else {
-				// Qualifier provided after the topic is not recognized, display an error message
-				__DisplayErrorMessage( SHELL_ERROR_UNKNOWN_QUALIFIER);
-			}
+		/* --- Case: RUN Demo--- */
+		// If there is no qualifier provided after "RUN DEMO"
+		if (qualifier == NULL) {
+			// Call the dashboard page launcher swithing to the auto mode page by default if no qualifier is provided to
+			// run demo
+			__NavigateToDashboard(DASHBOARD_PLAYLIST);
 		}
 
-		/* --- Case: UNKNOWN topic --- */
+		/* --- Case: Mode qualifier (e.g., "RUN DEMO /MODE=auto") --- */
+		else if (strcmp(qualifier, auto_mode_qualifier_text) == 0) {
+			// Call the dashboard page launcher switching to the auto mode page if the auto mode qualifier is provided
+			// to run demo
+			__NavigateToDashboard(DASHBOARD_AUTO);
+		}
+		/* --- Case: Mode qualifier (e.g., "RUN DEMO /Mode=playlist") --- */
+		else if (strcmp(qualifier, playlist_mode_qualifier_text) == 0) {
+			// Call the dashboard page launcher switching to the playlist page if the playlist mode qualifier is
+			// provided to run demo
+			__NavigateToDashboard(DASHBOARD_PLAYLIST);
+		}
+		/* --- Case: UNKNOWN qualifier --- */
 		else {
-			// Topic provided does not match any known RUN topics, display an error message
-			__DisplayErrorMessage( SHELL_ERROR_UNKNOWN_TOPIC);
+			// Qualifier provided after the topic is not recognized, display an error message
+			__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_QUALIFIER);
 		}
+	}
 
-		// Move to the next argument in the buffer
-		topic = strtok(NULL, args_delimiter);
+	/* --- Case: UNKNOWN topic --- */
+	else {
+		// Topic provided does not match any known RUN topics, display an error message
+		__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_TOPIC);
 	}
 }
 
@@ -245,7 +240,6 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 	static const char args_delimiter[] = " ";
 	static const char mode_qualifier_text[] = "/mode";
 	static const char scene_qualifier_text[] = "/scene";
-	static const char run_topic_text[] = "run";
 
 	// Extract the command from the buffer after the command and parse them
 	char *topic = strtok(rx_buffer + command_offset, args_delimiter);
@@ -257,51 +251,47 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 	}
 
 	// Parse the provided topic and go to the appropriate help information based on the provided topic and qualifier
-	while (topic != NULL) {
-		/* --- Case: Demo topic --- */
-		if (strcmp(topic, demo_topic_text) == 0) {
-			char *qualifier = strtok(NULL, args_delimiter);
+	/* --- Case: Demo topic --- */
+	if (strcmp(topic, demo_topic_text) == 0) {
+		char *qualifier = strtok(NULL, args_delimiter);
 
-			/* --- Case: Help Demo (e.g., "HELP DEMO")--- */
-			// If there is no qualifier provided after "HELP DEMO", display the general help information for the demo
-			if (qualifier == NULL) {
-				// Call the help command function to display the available qualifiers and their descriptions
-				__PrintHelpKey1Demo();
-				return;
-			}
-
-			/* --- Case: Mode qualifier (e.g., "HELP DEMO /MODE") --- */
-			if (strcmp(qualifier, mode_qualifier_text) == 0) {
-				// Print the MODE qualifier help information for the demo command
-				__PrintHelpKey2Mode();
-				return;
-			} 
-			/* --- Case: Scene qualifier (e.g., "HELP DEMO /SCENE") --- */
-			else if (strcmp(qualifier, scene_qualifier_text) == 0) {
-				// Print the scene qualifier help information for the demo command
-				__PrintHelpKey2Scene();
-				return;
-			}
-			/* --- Case: UNKNOWN qualifier --- */
-			else {
-				// Qualifier provided after the topic is not recognized, display an error message
-				__DisplayErrorMessage( SHELL_ERROR_UNKNOWN_QUALIFIER);
-			}
+		/* --- Case: Help Demo (e.g., "HELP DEMO")--- */
+		// If there is no qualifier provided after "HELP DEMO", display the general help information for the demo
+		if (qualifier == NULL) {
+			// Call the help command function to display the available qualifiers and their descriptions
+			__PrintHelpKey1Demo();
+			return;
 		}
 
-		/* --- Case: Run topic --- */
-		else if (strcmp(topic, run_topic_text) == 0) {
-			__PrintHelpKey1Run();
+		/* --- Case: Mode qualifier (e.g., "HELP DEMO /MODE") --- */
+		if (strcmp(qualifier, mode_qualifier_text) == 0) {
+			// Print the MODE qualifier help information for the demo command
+			__PrintHelpKey2Mode();
+			return;
 		}
-
-		/* --- Case: UNKNOWN topic --- */
+		/* --- Case: Scene qualifier (e.g., "HELP DEMO /SCENE") --- */
+		else if (strcmp(qualifier, scene_qualifier_text) == 0) {
+			// Print the scene qualifier help information for the demo command
+			__PrintHelpKey2Scene();
+			return;
+		}
+		/* --- Case: UNKNOWN qualifier --- */
 		else {
-			// Topic provided does not match any known help topics, display an error message
-			__DisplayErrorMessage( SHELL_ERROR_UNKNOWN_TOPIC);
+			// Qualifier provided after the topic is not recognized, display an error message
+			__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_QUALIFIER);
 		}
+	}
 
-		// Move to the next argument in the buffer
-		topic = strtok(NULL, args_delimiter);
+	/* --- Case: Run topic --- */
+	else if ((strncmp(rx_buffer, run_command_text, RUN_COMMAND_TEXT_LEN) == 0) &&
+	    (rx_buffer[RUN_COMMAND_TEXT_LEN] == SPACE_CHAR || rx_buffer[RUN_COMMAND_TEXT_LEN] == NULL_TERMINATOR)) {
+		__PrintHelpKey1Run();
+	}
+
+	/* --- Case: UNKNOWN topic --- */
+	else {
+		// Topic provided does not match any known help topics, display an error message
+		__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_TOPIC);
 	}
 }
 
@@ -450,8 +440,8 @@ static void __PrintHelpKey2Mode(void)
     static const char opt_auto[]    = "      AUTO      Displays every scene sequentially at set intervals.";
     static const char opt_play[]    = "      PLAYLIST  Plays a curated list of specific scenes back-to-back.";
 
-	// Ensure space for Path(1), qualifier(1), Gap(1), Desc(2), Gap(1), Desc(1), Options(2)
-	__EnsureTerminalSpace(9);
+	// Ensure space for Path(1), qualifier(1), Gap(1), Desc(2), Gap(1), Desc(1), Options(2), Gap(1)
+	__EnsureTerminalSpace(10);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
@@ -542,6 +532,9 @@ void ShellInit(void)
 	TerminalSerialPrintString(hint_message, SHELL_COL_POSITION, HINT_ROW_POSITION);
 	HAL_Delay(200);
 	__PrintInputPrompt(INPUT_ROW_POSITION);
+
+	// Set the initial input row position for user commands
+	input_row = INPUT_ROW_POSITION;
 }
 
 /**
@@ -564,20 +557,19 @@ void ShellCommandParser(char *rx_buffer)
 			rx_buffer[i] += LOWERCASE_OFFSET;
 		}
 	}
-	
-	// Text for the run and help commands to compare against the user input
-	static const char run_command_text[] = "run";
-	static const char help_command_text[] = "help";
 
 	// Parse the command and call the appropriate handler function based on the command text
 	/* --- Case: RUN command --- */
-	if (strncmp(rx_buffer, run_command_text, RUN_COMMAND_TEXT_LEN) == 0) {
+	if ((strncmp(rx_buffer, run_command_text, RUN_COMMAND_TEXT_LEN) == 0) && (rx_buffer[RUN_COMMAND_TEXT_LEN] == SPACE_CHAR ||
+	    rx_buffer[RUN_COMMAND_TEXT_LEN] == NULL_TERMINATOR)) {
 		// Call the run command parser function to handle the run command arguments and execute the appropriate action
 		__ParseRunCommand(rx_buffer, RUN_COMMAND_TEXT_LEN);
 	}
 	/* --- Case: HELP command --- */
-	else if (strncmp(rx_buffer, help_command_text, HELP_COMMAND_TEXT_LEN) == 0) {
-		// Call the help command parser function to handle the help command arguments and display the appropriate help information
+	else if ((strncmp(rx_buffer, help_command_text, HELP_COMMAND_TEXT_LEN) == 0) &&
+	         (rx_buffer[HELP_COMMAND_TEXT_LEN] == SPACE_CHAR || rx_buffer[HELP_COMMAND_TEXT_LEN] == NULL_TERMINATOR)) {
+		// Call the help command parser function to handle the help command arguments and display the appropriate
+		// help information
 		__ParseHelpCommand(rx_buffer, HELP_COMMAND_TEXT_LEN);
 	}
 	/* --- Case: UNKNOWN command --- */
