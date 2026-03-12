@@ -10,6 +10,7 @@
 /* Includes ------------------------------------------------------------------*/
 // Project libraries
 #include "shell.h"
+#include "shell_strings.h"
 #include "dashboard.h"
 #include "serial_hw.h"
 #include "terminal.h"
@@ -42,26 +43,18 @@
 #define INPUT_ROW_POSITION          (HINT_ROW_POSITION + 2)
 
 // Shell Command Parsing
-#define RUN_COMMAND_TEXT_LEN		(sizeof(run_command_text) - 1)	// Length of the "run" command text for parsing user input
-#define HELP_COMMAND_TEXT_LEN		(sizeof(help_command_text) - 1)	// Length of the "help" command text for parsing user input
-
 #define UPPERCASE_A         'A'     // ASCII value for uppercase 'A'
 #define UPPERCASE_Z         'Z'     // ASCII value for uppercase 'Z'
 #define LOWERCASE_OFFSET    32      // Offset to convert uppercase letters to lowercase in ASCII
 
 // Error message formatting required rows for the CLI shell
 #define ERROR_MESSAGE_ROWS		2
-#define HELP_KEY1_RUN_ROWS		9
-#define HELP_KEY1_DEMO_ROWS		9
+#define HELP_KEY1_RUN_ROWS		10
+#define HELP_KEY1_DEMO_ROWS		10
 #define HELP_KEY2_SCENE_ROW		7
 #define HELP_KEY2_MODE_ROW 		10
 
 /* Private Variables ---------------------------------------------------------*/
-static const char run_command_text[] = "run";
-static const char help_command_text[] = "help";
-
-static const char demo_topic_text[] = "demo";
-
 static uint16_t input_row = 16;		// Row position for the user input prompt in the CLI shell
 
 /* Private Function Prototypes -----------------------------------------------*/
@@ -89,9 +82,6 @@ static void __NavigateToDashboard(DashboardPages_t page);
  */
 static void __PrintInputPrompt(uint16_t row)
 {
-	// The prompt string to display before the user input
-	static const char prompt[] = "STM32F4>";
-
 	// Print the input prompt at the current input row
 	TerminalSerialPrintString(prompt, SHELL_COL_POSITION, row);
 
@@ -114,6 +104,8 @@ static void __EnsureTerminalSpace(uint8_t required_space)
 		// Clear the terminal and reset the input row
 		TerminalClearAndHome();
 		input_row = 1;
+	} else {
+		input_row++;
 	}
 }
 
@@ -135,33 +127,27 @@ static void __DisplayErrorMessage(ShellError_t error_type)
 
 	switch (error_type) {
 		case SHELL_ERROR_UNKNOWN_COMMAND:
-			TerminalSerialPrintString("%SYSTEM-E-UNRECOGNIZED, command not found", SHELL_COL_POSITION, input_row++);
-
+			TerminalSerialPrintString(shell_error[SHELL_ERROR_UNKNOWN_COMMAND], SHELL_COL_POSITION, input_row++);
 			break;
 
 		case SHELL_ERROR_MISSING_TOPIC:
-			TerminalSerialPrintString("%HELP-E-NOTOPIC, please specify a help topic (e.g., HELP DEMO)", SHELL_COL_POSITION, input_row++);
-			
+			TerminalSerialPrintString(shell_error[SHELL_ERROR_MISSING_TOPIC], SHELL_COL_POSITION, input_row++);
 			break;
 
 		case SHELL_ERROR_UNKNOWN_TOPIC:
-			TerminalSerialPrintString("%HELP-E-UNKNOWNTOPIC, no documentation available for that topic", SHELL_COL_POSITION, input_row++);
-			
+			TerminalSerialPrintString(shell_error[SHELL_ERROR_UNKNOWN_TOPIC], SHELL_COL_POSITION, input_row++);
 			break;
 
 		case SHELL_ERROR_UNKNOWN_QUALIFIER:
-			TerminalSerialPrintString("%SYSTEM-E-INVQUAL, unrecognized qualifier in command string", SHELL_COL_POSITION, input_row++);
-			
+			TerminalSerialPrintString(shell_error[SHELL_ERROR_UNKNOWN_QUALIFIER], SHELL_COL_POSITION, input_row++);
 			break;
 
 		case SHELL_ERROR_INVALID_PARAMETER:
-			TerminalSerialPrintString("%SYSTEM-E-INVPARAM, invalid parameter value provided", SHELL_COL_POSITION, input_row++);
-			
+			TerminalSerialPrintString(shell_error[SHELL_ERROR_INVALID_PARAMETER], SHELL_COL_POSITION, input_row++);
 			break;
 
 		default:
-			TerminalSerialPrintString("%SYSTEM-F-ANOMALY, an unexpected shell error occurred", SHELL_COL_POSITION, input_row++);
-			
+			TerminalSerialPrintString(shell_error[6], SHELL_COL_POSITION, input_row++);
 			break;
 	}
 
@@ -183,8 +169,6 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 {
 	// Argument texts for parsing the command
 	static const char args_delimiter[] = " ";
-	static const char auto_mode_qualifier_text[] = "/mode=auto";
-	static const char playlist_mode_qualifier_text[] = "/mode=playlist";
 
 	// Extract the command from the buffer after the command and parse them
 	char *topic = strtok(rx_buffer + command_offset, args_delimiter);
@@ -197,7 +181,7 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 
 	// Parse the provided topic and go to the appropriate action based on the provided topic and qualifier
 	/* --- Case: RUN Demo --- */
-	if (strcmp(topic, demo_topic_text) == 0) {
+	if (strcmp(topic, demo_paremeter_text) == 0) {
 		char *qualifier = strtok(NULL, args_delimiter);
 
 		/* --- Case: RUN Demo--- */
@@ -245,8 +229,7 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 {
 	// Argument texts for parsing the command
 	static const char args_delimiter[] = " ";
-	static const char mode_qualifier_text[] = "/mode";
-	static const char scene_qualifier_text[] = "/scene";
+	
 
 	// Extract the command from the buffer after the command and parse them
 	char *topic = strtok(rx_buffer + command_offset, args_delimiter);
@@ -259,7 +242,7 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 
 	// Parse the provided topic and go to the appropriate help information based on the provided topic and qualifier
 	/* --- Case: Demo topic --- */
-	if (strcmp(topic, demo_topic_text) == 0) {
+	if (strcmp(topic, demo_paremeter_text) == 0) {
 		char *qualifier = strtok(NULL, args_delimiter);
 
 		/* --- Case: Help Demo (e.g., "HELP DEMO")--- */
@@ -309,35 +292,16 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
  */
 static void __PrintHelpKey1Run(void)
 {
-	static const char key1_topic[] = "RUN";
-    static const char help_line1[] = "  Starts the execution of a specified program.";
-    static const char help_line2[] = "  Qualifiers may be appended to modify execution behavior.";
-	static const char format_text[] = "  Format:  RUN [program name] [/QUALIFIER=...]";
-
-	static const char additional_info_header[] = "Additional information available:";
-    static const char subkeys_list[] = "  DEMO";
-
 	// Ensure space for Topic(1), Gap(1), Desc(2), Gap(1), Format(1), Gap(1), Header(1), List(1)
 	__EnsureTerminalSpace(HELP_KEY1_RUN_ROWS);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
-	// Print the key topic header followed by a gap
-	TerminalSerialPrintString(key1_topic, SHELL_COL_POSITION, input_row++);
-	input_row++;
-
-	// Print the help text and format instructions for the demo command followed by a gap
-	TerminalSerialPrintString(help_line1, SHELL_COL_POSITION, input_row++);
-	TerminalSerialPrintString(help_line2, SHELL_COL_POSITION, input_row++);
-	input_row++;
-    TerminalSerialPrintString(format_text, SHELL_COL_POSITION, input_row++);
-    input_row++;
-
-    // Print the additional information header followed by the list of subkeys for the run command
-    TerminalSerialPrintString(additional_info_header, SHELL_COL_POSITION, input_row++);
-    input_row++;
-    TerminalSerialPrintString(subkeys_list, SHELL_COL_POSITION, input_row++);
+	// Print the help information for the run command from the shell strings module
+	for (uint8_t i = 0; i < shell_help_run_len; i++) {
+		TerminalSerialPrintString(shell_help_run[i], SHELL_COL_POSITION, input_row++);
+	}
 
 	// Prompt the user for the next command
 	__PrintInputPrompt(++input_row);
@@ -352,35 +316,16 @@ static void __PrintHelpKey1Run(void)
  */
 static void __PrintHelpKey1Demo(void)
 {
-	static const char key1_topic[] = "DEMO";
-	static const char help_line1[] = "  Invokes the DEMO program showcasing various scenes";
-	static const char help_line2[] = "  and graphics capabilities of the system.";
-	static const char format_text[] = "  Format:  DEMO [/MODE=type or /SCENE=name]";
-
-	static const char additional_info_header[] = "Additional information available:";
-	static const char qualifiers_list[] = "  /MODE      /SCENE";
-
 	// Ensure space for Topic(1), Gap(1), Desc(2), Gap(1), Format(1), Gap(1), Header(1), List(1)
 	__EnsureTerminalSpace(HELP_KEY1_DEMO_ROWS);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
-	// Print the key topic header followed by a gap
-	TerminalSerialPrintString(key1_topic, SHELL_COL_POSITION, input_row++);
-	input_row++;
-
-	// Print the help text and format instructions for the demo command followed by a gap
-	TerminalSerialPrintString(help_line1, SHELL_COL_POSITION, input_row++);
-	TerminalSerialPrintString(help_line2, SHELL_COL_POSITION, input_row++);
-	input_row++;
-	TerminalSerialPrintString(format_text, SHELL_COL_POSITION, input_row++);
-	input_row++;
-
-	// Print the additional information header followed by the list of qualifiers for the demo command
-	TerminalSerialPrintString(additional_info_header, SHELL_COL_POSITION, input_row++);
-	input_row++;
-	TerminalSerialPrintString(qualifiers_list, SHELL_COL_POSITION, input_row++);
+	// Print the help information for the demo command from the shell strings module
+	for (uint8_t i = 0; i < shell_help_demo_len; i++) {
+		TerminalSerialPrintString(shell_help_demo[i], SHELL_COL_POSITION, input_row++);
+	}
 
 	// Prompt the user for the next command
 	__PrintInputPrompt(++input_row);
@@ -395,30 +340,16 @@ static void __PrintHelpKey1Demo(void)
  */
 static void __PrintHelpKey2Scene(void)
 {
-	// Text for the path header and qualifier header
-	static const char path_header[] = "DEMO";
-    static const char qualifier_header[] = "  /SCENE";
-
-	// Description lines for the /SCENE qualifier of the demo topic
-	static const char desc_line1[] = "    /SCENE=name";
-    static const char desc_line2[] = "    Specifies the graphics scene to launch immediately, bypassing";
-    static const char desc_line3[] = "    the interactive dashboard menu.";
-
 	// Ensure space for Path(1), qualifier(1), Gap(1), Desc(7)
 	__EnsureTerminalSpace(HELP_KEY2_SCENE_ROW);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
-	//
-	TerminalSerialPrintString(path_header, SHELL_COL_POSITION, input_row++);
-	TerminalSerialPrintString(qualifier_header, SHELL_COL_POSITION, input_row++);
-    input_row++;
-
-	//
-	TerminalSerialPrintString(desc_line1, SHELL_COL_POSITION, input_row++);
-    TerminalSerialPrintString(desc_line2, SHELL_COL_POSITION, input_row++);
-	TerminalSerialPrintString(desc_line3, SHELL_COL_POSITION, input_row++);
+	// Print the help information for the demo command's scene qualifier from the shell strings module
+	for (uint8_t i = 0; i < shell_help_subkey_scene_len; i++) {
+		TerminalSerialPrintString(shell_help_subkey_scene[i], SHELL_COL_POSITION, input_row++);
+	}
 
 	// Prompt the user for the next command
 	__PrintInputPrompt(++input_row);
@@ -433,40 +364,16 @@ static void __PrintHelpKey2Scene(void)
  */
 static void __PrintHelpKey2Mode(void)
 {
-	// Text for the path header and qualifier header
-	static const char path_header[] = "DEMO";
-	static const char qualifier_header[] = "  /MODE";
-
-	// Description lines for the /MODE qualifier of the demo topic
-	static const char desc_line1[] = "    /Mode=name";
-	static const char desc_line2[] = "    Specifies the playback behavior for the DEMO program.";
-	static const char desc_line3[] = "    Valid modes are:";
-
-	// Explicit Parameter Definitions
-    static const char opt_auto[]    = "      AUTO      Displays every scene sequentially at set intervals.";
-    static const char opt_play[]    = "      PLAYLIST  Plays a curated list of specific scenes back-to-back.";
-
 	// Ensure space for Path(1), qualifier(1), Gap(1), Desc(2), Gap(1), Desc(1), Options(2), Gap(1)
 	__EnsureTerminalSpace(HELP_KEY2_MODE_ROW);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
-	// Print the path header, qualifier header
-	TerminalSerialPrintString(path_header, SHELL_COL_POSITION, input_row++);
-	TerminalSerialPrintString(qualifier_header, SHELL_COL_POSITION, input_row++);
-	input_row++;
-
-	// Print the description lines for the /MODE qualifier of the demo command
-	TerminalSerialPrintString(desc_line1, SHELL_COL_POSITION, input_row++);
-	TerminalSerialPrintString(desc_line2, SHELL_COL_POSITION, input_row++);
-	input_row++;
-	TerminalSerialPrintString(desc_line3, SHELL_COL_POSITION, input_row++);
-	
-	// Print the valid mode options for the /MODE qualifier of the demo command
-	TerminalSerialPrintString(opt_auto, SHELL_COL_POSITION, input_row++);
-    TerminalSerialPrintString(opt_play, SHELL_COL_POSITION, input_row++);
-	input_row++;
+	// Print the help information for the mode qualifier of the demo command from the shell strings module
+	for (uint8_t i = 0; i < shell_help_subkey_mode_len; i++) {
+		TerminalSerialPrintString(shell_help_subkey_mode[i], SHELL_COL_POSITION, input_row++);
+	}
 
 	// Prompt the user for the next command
 	__PrintInputPrompt(++input_row);
@@ -495,48 +402,36 @@ static void __NavigateToDashboard(DashboardPages_t page)
  */
 void ShellInit(void)
 {
-	// Shell Initialization Texts
-	static const char name_text[] = "STM32F407VG BIOS v1.0.4";
-	static const char copyright_text[] = "(C) 2026 Taseen ASCII Graphics Demo";
-	static const char cpu_text[] = "CPU: ARM Cortex-M4 @ 168MHz (PLL_LOCKED)";
-	static const char sram_text[] = "SRAM: 128KB OK";
-	static const char flash_text[] = "FLASH: 1024KB OK";
-	static const char dma_text[] = "DMA Controller... Initialized";
-	static const char uart_text[] = "UART2 Terminal... Connected at 921600bps";
-	static const char terminal_text[] = "Display Mode... 80x24 ANSI Color";
-	static const char ready_text[] = "System is ready...";
-	static const char hint_message[] = "Type 'HELP DEMO' for command usage information.";
-
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
 	// Render the system header
-	TerminalSerialPrintString(name_text, SHELL_COL_POSITION, NAME_ROW_POSITION);
-	TerminalSerialPrintString(copyright_text, SHELL_COL_POSITION, COPYRIGHT_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[0], SHELL_COL_POSITION, NAME_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[1], SHELL_COL_POSITION, COPYRIGHT_ROW_POSITION);
 	HAL_Delay(150);
 
 	// Render the hardware specs with delays to simulate a boot sequence
-	TerminalSerialPrintString(cpu_text, SHELL_COL_POSITION, CPU_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[2], SHELL_COL_POSITION, CPU_ROW_POSITION);
 	HAL_Delay(300);
-	TerminalSerialPrintString(sram_text, SHELL_COL_POSITION, SRAM_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[3], SHELL_COL_POSITION, SRAM_ROW_POSITION);
 	HAL_Delay(1000);
-	TerminalSerialPrintString(flash_text, SHELL_COL_POSITION, FLASH_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[4], SHELL_COL_POSITION, FLASH_ROW_POSITION);
 	HAL_Delay(300);
 
 	// Render the peripheral checks with delays to simulate a boot sequence
-	TerminalSerialPrintString(dma_text, SHELL_COL_POSITION, DMA_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[5], SHELL_COL_POSITION, DMA_ROW_POSITION);
 	HAL_Delay(450);
-	TerminalSerialPrintString(uart_text, SHELL_COL_POSITION, UART_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[6], SHELL_COL_POSITION, UART_ROW_POSITION);
 	HAL_Delay(300);
-	TerminalSerialPrintString(terminal_text, SHELL_COL_POSITION, TERMINAL_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[7], SHELL_COL_POSITION, TERMINAL_ROW_POSITION);
 	HAL_Delay(1000);
 
-	// Render the system ready message
-	TerminalSerialPrintString(ready_text, SHELL_COL_POSITION, READY_ROW_POSITION);
+	// Render the system ready message and hint message
+	TerminalSerialPrintString(shell_boot[8], SHELL_COL_POSITION, READY_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[9], SHELL_COL_POSITION, HINT_ROW_POSITION);
+	HAL_Delay(200);
 
 	// Render the interaction prompt
-	TerminalSerialPrintString(hint_message, SHELL_COL_POSITION, HINT_ROW_POSITION);
-	HAL_Delay(200);
 	__PrintInputPrompt(INPUT_ROW_POSITION);
 
 	// Set the initial input row position for user commands
