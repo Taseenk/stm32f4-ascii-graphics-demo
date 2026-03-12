@@ -179,6 +179,8 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 {
 	// Argument texts for parsing the command
 	static const char args_delimiter[] = " ";
+	static const char auto_mode_qualifier_text[] = "/mode=auto";
+	static const char playlist_mode_qualifier_text[] = "/mode=playlist";
 
 	// Extract the command from the buffer after the command and parse them
 	char *topic = strtok(rx_buffer + command_offset, args_delimiter);
@@ -192,12 +194,36 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 	while (topic != NULL) {
 		/* --- Case: RUN Demo --- */
 		if (strcmp(topic, demo_topic_text) == 0) {
-			return;
+			char *qualifier = strtok_r(char *restrict, const char *restrict, char **restrict)
+			//strtok(NULL, args_delimiter);
+
+			/* --- Case: RUN Demo--- */
+			// If there is no qualifier provided after "RUN DEMO"
+			if (qualifier == NULL) {
+				// Call the dashboard page launcher swithing to the auto mode page by default if no qualifier is provided to run demo
+				__NavigateToDashboard(DASHBOARD_PLAYLIST);
+			}
+
+			/* --- Case: Mode qualifier (e.g., "RUN DEMO /MODE=auto") --- */
+			else if (strcmp(qualifier, auto_mode_qualifier_text) == 0) {
+				// Call the dashboard page launcher switching to the auto mode page if the auto mode qualifier is provided to run demo 
+				__NavigateToDashboard(DASHBOARD_AUTO);
+			} 
+			/* --- Case: Mode qualifier (e.g., "RUN DEMO /Mode=playlist") --- */
+			else if (strcmp(qualifier, playlist_mode_qualifier_text) == 0) {
+				// Call the dashboard page launcher switching to the playlist page if the playlist mode qualifier is provided to run demo
+				__NavigateToDashboard(DASHBOARD_PLAYLIST);
+			}
+			/* --- Case: UNKNOWN qualifier --- */
+			else {
+				// Qualifier provided after the topic is not recognized, display an error message
+				__DisplayErrorMessage( SHELL_ERROR_UNKNOWN_QUALIFIER);
+			}
 		}
 
 		/* --- Case: UNKNOWN topic --- */
 		else {
-			// Topic provided does not match any known help topics, display an error message
+			// Topic provided does not match any known RUN topics, display an error message
 			__DisplayErrorMessage( SHELL_ERROR_UNKNOWN_TOPIC);
 		}
 

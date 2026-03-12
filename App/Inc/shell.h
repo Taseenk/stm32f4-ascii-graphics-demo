@@ -24,7 +24,10 @@ typedef enum {
 } ShellError_t;
 
 /* Function prototypes -------------------------------------------------------*/
+// Initializes the CLI shell interface, rendering the system information and ready prompt 
 void ShellInit(void);
+
+// Command parser function prototype for processing user input from the CLI shell
 void ShellCommandParser(char *rx_buffer);
 
 #endif /* __SHELL_H */
