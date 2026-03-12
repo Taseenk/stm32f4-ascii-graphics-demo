@@ -49,6 +49,13 @@
 #define UPPERCASE_Z         'Z'     // ASCII value for uppercase 'Z'
 #define LOWERCASE_OFFSET    32      // Offset to convert uppercase letters to lowercase in ASCII
 
+// Error message formatting required rows for the CLI shell
+#define ERROR_MESSAGE_ROWS		2
+#define HELP_KEY1_RUN_ROWS		9
+#define HELP_KEY1_DEMO_ROWS		9
+#define HELP_KEY2_SCENE_ROW		7
+#define HELP_KEY2_MODE_ROW 		10
+
 /* Private Variables ---------------------------------------------------------*/
 static const char run_command_text[] = "run";
 static const char help_command_text[] = "help";
@@ -121,7 +128,7 @@ static void __EnsureTerminalSpace(uint8_t required_space)
 static void __DisplayErrorMessage(ShellError_t error_type)
 {
 	// Space for Error(1) + Gap(1)
-    __EnsureTerminalSpace(2);
+	__EnsureTerminalSpace(ERROR_MESSAGE_ROWS);
 
 	// Set red text colour for error messages
 	TerminalSetColour(FG_RED, BG_DEFAULT);
@@ -283,8 +290,7 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 	}
 
 	/* --- Case: Run topic --- */
-	else if ((strncmp(rx_buffer, run_command_text, RUN_COMMAND_TEXT_LEN) == 0) &&
-	    (rx_buffer[RUN_COMMAND_TEXT_LEN] == SPACE_CHAR || rx_buffer[RUN_COMMAND_TEXT_LEN] == NULL_TERMINATOR)) {
+	else if (strncmp(topic, run_command_text, RUN_COMMAND_TEXT_LEN) == 0) {
 		__PrintHelpKey1Run();
 	}
 
@@ -312,7 +318,7 @@ static void __PrintHelpKey1Run(void)
     static const char subkeys_list[] = "  DEMO";
 
 	// Ensure space for Topic(1), Gap(1), Desc(2), Gap(1), Format(1), Gap(1), Header(1), List(1)
-    __EnsureTerminalSpace(9);
+	__EnsureTerminalSpace(HELP_KEY1_RUN_ROWS);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
@@ -355,7 +361,7 @@ static void __PrintHelpKey1Demo(void)
 	static const char qualifiers_list[] = "  /MODE      /SCENE";
 
 	// Ensure space for Topic(1), Gap(1), Desc(2), Gap(1), Format(1), Gap(1), Header(1), List(1)
-	__EnsureTerminalSpace(9);
+	__EnsureTerminalSpace(HELP_KEY1_DEMO_ROWS);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
@@ -399,7 +405,7 @@ static void __PrintHelpKey2Scene(void)
     static const char desc_line3[] = "    the interactive dashboard menu.";
 
 	// Ensure space for Path(1), qualifier(1), Gap(1), Desc(7)
-	__EnsureTerminalSpace(7);
+	__EnsureTerminalSpace(HELP_KEY2_SCENE_ROW);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
@@ -441,7 +447,7 @@ static void __PrintHelpKey2Mode(void)
     static const char opt_play[]    = "      PLAYLIST  Plays a curated list of specific scenes back-to-back.";
 
 	// Ensure space for Path(1), qualifier(1), Gap(1), Desc(2), Gap(1), Desc(1), Options(2), Gap(1)
-	__EnsureTerminalSpace(10);
+	__EnsureTerminalSpace(HELP_KEY2_MODE_ROW);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
