@@ -63,6 +63,7 @@ static void __DisplayErrorMessage(ShellError_t error_type);
 static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset);
 
 static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset);
+static void __PrintHelpKey1Run(void);
 static void __PrintHelpKey1Demo(void);
 static void __PrintHelpKey2Mode(void);
 static void __PrintHelpKey2Scene(void);
@@ -142,13 +143,13 @@ static void __DisplayErrorMessage(ShellError_t error_type)
 			break;
 
 		case SHELL_ERROR_UNKNOWN_QUALIFIER:
-			TerminalSerialPrintString("%SHELL-E-INVQUAL, unrecognized qualifier in command string", SHELL_COL_POSITION, input_row++);
+			TerminalSerialPrintString("%SYSTEM-E-INVQUAL, unrecognized qualifier in command string", SHELL_COL_POSITION, input_row++);
 			
 			// break out of the switch
 			break;
 
 		case SHELL_ERROR_INVALID_PARAMETER:
-			TerminalSerialPrintString("%SHELL-E-INVPARAM, invalid parameter value provided", SHELL_COL_POSITION, input_row++);
+			TerminalSerialPrintString("%SYSTEM-E-INVPARAM, invalid parameter value provided", SHELL_COL_POSITION, input_row++);
 			
 			// break out of the switch
 			break;
@@ -216,6 +217,9 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 {
 	// Argument texts for parsing the command
 	static const char args_delimiter[] = " ";
+	static const char mode_qualifier_text[] = "/mode";
+	static const char scene_qualifier_text[] = "/scene";
+	static const char run_topic_text[] = "run";
 
 	// Extract the command from the buffer after the command and parse them
 	char *topic = strtok(rx_buffer + command_offset, args_delimiter);
@@ -241,22 +245,27 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 			}
 
 			/* --- Case: Mode qualifier (e.g., "HELP DEMO /MODE") --- */
-			if (strcmp(qualifier, "/mode") == 0) {
+			if (strcmp(qualifier, mode_qualifier_text) == 0) {
 				// Print the MODE qualifier help information for the demo command
 				__PrintHelpKey2Mode();
 				return;
 			} 
 			/* --- Case: Scene qualifier (e.g., "HELP DEMO /SCENE") --- */
-			else if (strcmp(qualifier, "/scene") == 0) {
+			else if (strcmp(qualifier, scene_qualifier_text) == 0) {
 				// Print the scene qualifier help information for the demo command
 				__PrintHelpKey2Scene();
 				return;
-			} 
+			}
 			/* --- Case: UNKNOWN qualifier --- */
 			else {
 				// Qualifier provided after the topic is not recognized, display an error message
 				__DisplayErrorMessage( SHELL_ERROR_UNKNOWN_QUALIFIER);
 			}
+		}
+
+		/* --- Case: Run topic --- */
+		else if (strcmp(topic, run_topic_text) == 0) {
+			__PrintHelpKey1Run();
 		}
 
 		/* --- Case: UNKNOWN topic --- */
@@ -271,9 +280,51 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 }
 
 /**
+ * @fn static void __PrintHelpKey1Run(void)
+ * @brief Handles the logic for displaying help information about the "run" topic.
+ * When the user types "HELP RUN" in the dashboard shell, including usage instructions,
+ * @param void This function does not take any parameters.
+ */
+static void __PrintHelpKey1Run(void)
+{
+	static const char key1_topic[] = "RUN";
+    static const char help_line1[] = "  Starts the execution of a specified program.";
+    static const char help_line2[] = "  Qualifiers may be appended to modify execution behavior.";
+	static const char format_text[] = "  Format:  RUN [program name] [/QUALIFIER=...]";
+
+	static const char additional_info_header[] = "Additional information available:";
+    static const char subkeys_list[] = "  DEMO";
+
+	// Ensure space for Topic(1), Gap(1), Desc(2), Gap(1), Format(1), Gap(1), Header(1), List(1)
+    __EnsureTerminalSpace(9);
+
+	// Set default colours for the main body text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	// Print the key topic header followed by a gap
+	TerminalSerialPrintString(key1_topic, SHELL_COL_POSITION, input_row++);
+	input_row++;
+
+	// Print the help text and format instructions for the demo command followed by a gap
+	TerminalSerialPrintString(help_line1, SHELL_COL_POSITION, input_row++);
+	TerminalSerialPrintString(help_line2, SHELL_COL_POSITION, input_row++);
+	input_row++;
+    TerminalSerialPrintString(format_text, SHELL_COL_POSITION, input_row++);
+    input_row++;
+
+    // Print the additional information header followed by the list of subkeys for the run command
+    TerminalSerialPrintString(additional_info_header, SHELL_COL_POSITION, input_row++);
+    input_row++;
+    TerminalSerialPrintString(subkeys_list, SHELL_COL_POSITION, input_row++);
+
+	// Prompt the user for the next command
+	__PrintInputPrompt(++input_row);
+}
+
+/**
  * @fn static void __PrintHelpKey1Demo(void)
- * @brief Handles the logic for displaying help information about the "demo" topic
- * when the user types "HELP DEMO" in the dashboard shell, including usage instructions,
+ * @brief Handles the logic for displaying help information about the "demo" topic.
+ * When the user types "HELP DEMO" in the dashboard shell, including usage instructions,
  * description, and available qualifier for the demo command.
  * @param void This function does not take any parameters.
  */
@@ -400,7 +451,7 @@ static void __PrintHelpKey2Mode(void)
 }
 
 /**
- * @fn void __NavigateToDashboard(DashboardPages_t page)
+ * @fn static void __NavigateToDashboard(DashboardPages_t page)
  * @brief Handles the logic for launching different dashboard pages based on the
  * provided page parameter. It sets the system mode to the dashboard and initializes
  * the main page with the specified dashboard page.
