@@ -55,9 +55,6 @@
 /* Private Variables ---------------------------------------------------------*/
 static uint16_t input_row = 16;		// Row position for the user input prompt in the CLI shell
 
-// Help message for the demo command, displayed when the user types 'HELP DEMO'
-static const char hint_message[] = "Type 'HELP DEMO' for command usage information.";
-
 /* Private Function Prototypes -----------------------------------------------*/
 static void __PrintInputPrompt(uint16_t row);
 
