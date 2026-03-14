@@ -1,7 +1,8 @@
 /**
  ******************************************************************************
  * @file           : shell_strings.h
- * @brief          : 
+ * @brief          : Header file for the CLI shell interface string definitions,
+ * containing external declarations. This file is intended to be included ONLY by shell.c.
  ******************************************************************************
  */
 
