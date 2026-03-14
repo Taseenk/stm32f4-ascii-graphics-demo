@@ -12,14 +12,12 @@
 #include "shell.h"
 #include "shell_strings.h"
 #include "dashboard.h"
-#include "serial_hw.h"
 #include "terminal.h"
 
 // STM32 libraries
 #include "main.h"
 
 // Standard libraries
-#include <stdint.h>
 #include <string.h>
 
 /* Private Defines -----------------------------------------------------------*/
@@ -462,13 +460,13 @@ void ShellCommandParser(char *rx_buffer)
 	// Parse the command and call the appropriate handler function based on the command text
 	/* --- Case: RUN command --- */
 	if ((strncmp(rx_buffer, run_command_text, RUN_COMMAND_TEXT_LEN) == 0) && (rx_buffer[RUN_COMMAND_TEXT_LEN] == SPACE_CHAR ||
-	    rx_buffer[RUN_COMMAND_TEXT_LEN] == NULL_TERMINATOR)) {
+	    rx_buffer[RUN_COMMAND_TEXT_LEN] == '\0')) {
 		// Call the run command parser function to handle the run command arguments and execute the appropriate action
 		__ParseRunCommand(rx_buffer, RUN_COMMAND_TEXT_LEN);
 	}
 	/* --- Case: HELP command --- */
 	else if ((strncmp(rx_buffer, help_command_text, HELP_COMMAND_TEXT_LEN) == 0) &&
-	         (rx_buffer[HELP_COMMAND_TEXT_LEN] == SPACE_CHAR || rx_buffer[HELP_COMMAND_TEXT_LEN] == NULL_TERMINATOR)) {
+	         (rx_buffer[HELP_COMMAND_TEXT_LEN] == SPACE_CHAR || rx_buffer[HELP_COMMAND_TEXT_LEN] == '\0')) {
 		// Call the help command parser function to handle the help command arguments and display the appropriate
 		// help information
 		__ParseHelpCommand(rx_buffer, HELP_COMMAND_TEXT_LEN);
