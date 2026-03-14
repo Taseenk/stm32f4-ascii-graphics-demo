@@ -10,15 +10,14 @@
 /* Includes ------------------------------------------------------------------*/
 // Project libraries
 #include "shell.h"
+#include "shell_strings.h"
 #include "dashboard.h"
-#include "serial_hw.h"
 #include "terminal.h"
 
 // STM32 libraries
 #include "main.h"
 
 // Standard libraries
-#include <stdint.h>
 #include <string.h>
 
 /* Private Defines -----------------------------------------------------------*/
@@ -46,141 +45,54 @@
 #define UPPERCASE_Z         'Z'     // ASCII value for uppercase 'Z'
 #define LOWERCASE_OFFSET    32      // Offset to convert uppercase letters to lowercase in ASCII
 
+// Error message formatting required rows for the CLI shell
+#define ERROR_MESSAGE_ROWS		2
+#define HELP_KEY1_RUN_ROWS		10
+#define HELP_KEY1_DEMO_ROWS		10
+#define HELP_KEY2_SCENE_ROW		7
+#define HELP_KEY2_MODE_ROW 		10
+
 /* Private Variables ---------------------------------------------------------*/
-static uint16_t input_row = 16; // Row position for the user input prompt in the CLI shell
+static uint16_t input_row = 16;		// Row position for the user input prompt in the CLI shell
 
 // Help message for the demo command, displayed when the user types 'HELP DEMO'
 static const char hint_message[] = "Type 'HELP DEMO' for command usage information.";
 
 /* Private Function Prototypes -----------------------------------------------*/
-static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset);
-static void __PrintHelpMenu(void);
-static void __EnsureTerminalSpace(uint8_t required_space);
 static void __PrintInputPrompt(uint16_t row);
-static void __HandleModeArgument(char *arg);
-static void __HandleRunArgument(char *arg);
-static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type);
+
+static void __EnsureTerminalSpace(uint8_t required_space);
+static void __DisplayErrorMessage(ShellError_t error_type);
+
+static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset);
+
+static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset);
+static void __PrintHelpKey1Run(void);
+static void __PrintHelpKey1Demo(void);
+static void __PrintHelpKey2Mode(void);
+static void __PrintHelpKey2Scene(void);
+
 static void __NavigateToDashboard(DashboardPages_t page);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
- * @brief Parses the arguments provided for the help command and displays the
- * appropriate help information based on the arguments (e.g., "demo" to show the demo command flags).
- * @param rx_buffer The buffer containing the user input string to parse for the help command.
- * @param command_offset The offset in the buffer where the command arguments start after the command text.
+ * @fn static void __PrintInputPrompt(uint16_t row)
+ * @brief Displays the input prompt at the specified row and sets the cursor
+ * position for user input in the CLI shell.
+ * @param row The row position where the input prompt should be displayed.
  */
-static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
+static void __PrintInputPrompt(uint16_t row)
 {
-	// Argument texts for parsing the command
-	static const char args_delimiter[] = " ";
+	// Print the input prompt at the current input row
+	TerminalSerialPrintString(prompt, SHELL_COL_POSITION, row);
 
-	// Extract the command from the buffer after the command and parse them
-	char *parameter = strtok(rx_buffer + command_offset, args_delimiter);
-
-	// If there are no command provided, ...
-	if (parameter == NULL) {
-		// TODO: no parameter providend what then
-		return;
-	}
-
-	while (parameter != NULL) {
-		/* --- Case: HELP Demo parameter --- */
-		if (strcmp(parameter, "demo") == 0) {
-			// Call the help command function to display the available Qualifiers and their descriptions
-			__PrintHelpMenu();
-			return;
-		}
-
-		/* --- Case: UNKNOWN parameter --- */
-		else {
-			// TODO: ERROR FLOW UNKNOWN parameter
-			// should say "Sorry, no documentation on <command>"
-		}
-
-		// Move to the next argument in the buffer
-		parameter = strtok(NULL, args_delimiter);
-	}
-}
-
-static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
-{
-	// Argument texts for parsing the command
-	static const char args_delimiter[] = " ";
-
-	// Extract the command from the buffer after the command and parse them
-	char *parameter = strtok(rx_buffer + command_offset, args_delimiter);
-
-	// If there are no command provided, ...
-	if (parameter == NULL) {
-		// TODO: no parameter providend what then
-		return;
-	}
-
-	while (parameter != NULL) {
-		/* --- Case: RUN Demo --- */
-		if (strcmp(parameter, "demo") == 0) {
-			return;
-		}
-
-		/* --- Case: UNKNOWN parameter --- */
-		else {
-			// TODO: ERROR FLOW UNKNOWN parameter
-		}
-
-		// Move to the next argument in the buffer
-		parameter = strtok(NULL, args_delimiter);
-	}
+	// Move the cursor to the input position and enable it for user input
+	TerminalSetCursorPos(INPUT_COL_POSITION, row);
+	TerminalVisibleCursor();
 }
 
 /**
- * @fn void __PrintHelpMenu(void)
- * @brief Handles the logic for displaying help information about the available
- * command flags when the user types "demo.exe --help" in the dashboard shell.
- * @param void This function does not take any parameters.
- */
-static void __PrintHelpMenu(void)
-{
-	// Static texts for the help menu, including usage instructions, description, and options header
-	static const char usage_text[] = "Usage: demo.exe [options] <target>";
-
-	// Array of strings for the available command flags and their descriptions to be printed in the help menu
-	static const char *options[] = {
-	    "Options:",
-	    "  -?, -h, --help    Show this help message and exit",
-	    "  -m, --mode <auto | playlist>",
-	    "                    Set the system operation mode. 'playlist' plays a curated",
-	    "                    list of scenes back-to-back. 'auto' displays every scene",
-	    "                    in the system one after another at a set interval.",
-	    "  -r, --run <glitch | matrix>",
-	    "                    Directly launch a specific scene bypassing the dashboard interface.",
-	};
-
-	// Calculate the number of flags in the array for iteration
-	const uint8_t options_count = sizeof(options) / sizeof(options[0]);
-
-	// Ensure space for usage (1) + blank (1) + options_count + blank (1) + prompt (1)
-	// if not clear the screen and reset the input row
-	__EnsureTerminalSpace(6);
-
-	// Print the usage and description followed by a blank line before the options list
-	TerminalSerialPrintString(usage_text, SHELL_COL_POSITION, input_row++);
-	input_row++;
-
-	// Set default colours for the main body text
-	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
-
-	// Print each flag and its description at its respective position
-	for (int i = 0; i < options_count; i++) {
-		TerminalSerialPrintString(options[i], SHELL_COL_POSITION, input_row++);
-	}
-
-	// Prompt the user for the next command
-	__PrintInputPrompt(++input_row);
-}
-
-/**
- * @fn void __EnsureTerminalSpace(uint8_t required_space)
+ * @fn static void __EnsureTerminalSpace(uint8_t required_space)
  * @brief Checks if there is enough space left in the terminal to print a new
  * message without overflowing the bottom of the screen. If there is not enough
  * space, it clears the terminal and resets the input row to prevent overflow.
@@ -193,143 +105,283 @@ static void __EnsureTerminalSpace(uint8_t required_space)
 		// Clear the terminal and reset the input row
 		TerminalClearAndHome();
 		input_row = 1;
-	}
-}
-
-/**
- * @fn void __PrintInputPrompt(uint16_t row)
- * @brief Displays the input prompt at the specified row and sets the cursor
- * position for user input in the CLI shell.
- * @param row The row position where the input prompt should be displayed.
- */
-static void __PrintInputPrompt(uint16_t row)
-{
-	// The prompt string to display before the user input
-	static const char prompt[] = "STM32F4>";
-
-	// Print the input prompt at the current input row
-	TerminalSerialPrintString(prompt, SHELL_COL_POSITION, row);
-
-	// Move the cursor to the input position and enable it for user input
-	TerminalSetCursorPos(INPUT_COL_POSITION, row);
-	TerminalVisibleCursor();
-}
-
-/**
- * @fn void __HandleModeArgument(char *arg)
- * @brief Parses the argument provided for the mode flag and launches the
- * corresponding dashboard page based on the argument value (e.g., "auto" or "playlist").
- * @param arg The argument string provided for the mode flag to determine which dashboard page to launch.
- */
-static void __HandleModeArgument(char *arg)
-{
-	static const char *mode_args[] = {"auto", "playlist"};
-
-	if (strcmp(arg, mode_args[0]) == 0) {
-		// Call the dashboard page launcher function with the auto mode page parameter to go to the auto mode scene
-		__NavigateToDashboard(DASHBOARD_AUTO);
-		return;
-	} else if (strcmp(arg, mode_args[1]) == 0) {
-		// Call the dashboard page launcher function with the playlist page parameter to go to the playlist scene
-		__NavigateToDashboard(DASHBOARD_PLAYLIST);
-		return;
 	} else {
-		// Argument does not match, display an error message
-		__DisplayErrorMessage(arg, SHELL_ERROR_INVALID_ARG);
+		input_row++;
 	}
 }
 
 /**
- * @fn void __HandleRunArgument(char *arg)
- * @brief Parses the argument provided for the run flag and executes the
- * corresponding action based on the argument value (e.g., "glitch" or "matrix").
- * @param arg The argument string provided for the run flag to determine which action to execute.
- */
-static void __HandleRunArgument(char *arg)
-{
-	// TODO: Implement the logic for directly launching specific scenes based on the provided argument (e.g., "glitch"
-	// or "matrix")
-}
-
-/**
- * @fn void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
- * @brief Handles the logic for displaying error messages in the CLI shell
- * when the user inputs an unrecognized command or invalid parameters.
- * @param input_buffer The buffer containing the user input string that caused the error.
+ * @fn static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
+ * @brief Handles the logic for displaying error messages in the CLI shell when the user 
+ * inputs an unrecognized command or invalid parameters. Follows VMS-style error message 
+ * formatting conventions for consistency and clarity.
  * @param error_type An integer representing the type of error (e.g., 1 for unrecognized command, 2 for invalid
  * parameters).
  */
-static void __DisplayErrorMessage(char *input_buffer, ShellError_t error_type)
+static void __DisplayErrorMessage(ShellError_t error_type)
 {
-	static const char error_unknown[] = "An unknown error occurred.";
-	static const char error_bad_cmd[] = "' is not recognized as a command.";
-	static const char error_flag[] = "Invalid flag: '";
-	static const char error_missing[] = "Missing argument for flag: '";
-	static const char error_arg[] = "Invalid argument value: '";
-
-	// Check if there is enough space to print the error message and helper text
-	// if not clear the screen and reset the input row
-	__EnsureTerminalSpace(4);
+	// Space for Error(1) + Gap(1)
+	__EnsureTerminalSpace(ERROR_MESSAGE_ROWS);
 
 	// Set red text colour for error messages
 	TerminalSetColour(FG_RED, BG_DEFAULT);
 
-	// Print the appropriate error message based on the error type
-	TerminalSetCursorPos(SHELL_COL_POSITION, input_row);
-
 	switch (error_type) {
-		case SHELL_ERROR_BAD_COMMAND:
-			SerialPrint("'");
-			SerialPrint(input_buffer);
-			SerialPrintLn(error_bad_cmd);
-
-			// break out of the switch
+		case SHELL_ERROR_UNKNOWN_COMMAND:
+			TerminalSerialPrintString(shell_error[SHELL_ERROR_UNKNOWN_COMMAND], SHELL_COL_POSITION, input_row++);
 			break;
 
-		case SHELL_ERROR_INVALID_FLAG:
-			SerialPrint(error_flag);
-			SerialPrint(input_buffer);
-			SerialPrintLn("'");
-
-			// break out of the switch
+		case SHELL_ERROR_MISSING_TOPIC:
+			TerminalSerialPrintString(shell_error[SHELL_ERROR_MISSING_TOPIC], SHELL_COL_POSITION, input_row++);
 			break;
 
-		case SHELL_ERROR_MISSING_ARG:
-			SerialPrint(error_missing);
-			SerialPrint(input_buffer);
-			SerialPrintLn("'");
-
-			// break out of the switch
+		case SHELL_ERROR_UNKNOWN_TOPIC:
+			TerminalSerialPrintString(shell_error[SHELL_ERROR_UNKNOWN_TOPIC], SHELL_COL_POSITION, input_row++);
 			break;
 
-		case SHELL_ERROR_INVALID_ARG:
-			SerialPrint(error_arg);
-			SerialPrint(input_buffer);
-			SerialPrintLn("'");
+		case SHELL_ERROR_UNKNOWN_QUALIFIER:
+			TerminalSerialPrintString(shell_error[SHELL_ERROR_UNKNOWN_QUALIFIER], SHELL_COL_POSITION, input_row++);
+			break;
 
-			// break out of the switch
+		case SHELL_ERROR_INVALID_PARAMETER:
+			TerminalSerialPrintString(shell_error[SHELL_ERROR_INVALID_PARAMETER], SHELL_COL_POSITION, input_row++);
 			break;
 
 		default:
-			SerialPrintLn(error_unknown);
-			// break out of the switch
+			TerminalSerialPrintString(shell_error[6], SHELL_COL_POSITION, input_row++);
 			break;
 	}
 
 	// Set default colours for helper text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
-	input_row += 2;
-	TerminalSetCursorPos(SHELL_COL_POSITION, input_row);
-	SerialPrintLn(hint_message);
-
-	// Increment the input row and prompt the user for the next command
-	input_row += 2;
-	__PrintInputPrompt(input_row);
+	// Prompt the user for the next command
+	__PrintInputPrompt(++input_row);
 }
 
 /**
- * @fn void __NavigateToDashboard(DashboardPages_t page)
+ * @fn static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
+ * @brief Parses the arguments provided for the run command and executes the
+ * appropriate action based on the arguments.
+ * @param rx_buffer The buffer containing the user input string to parse for the run command.
+ * @param command_offset The offset in the buffer where the command arguments start after the command text.
+ */
+static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
+{
+	// Argument texts for parsing the command
+	static const char args_delimiter[] = " ";
+
+	// Extract the command from the buffer after the command and parse them
+	char *topic = strtok(rx_buffer + command_offset, args_delimiter);
+
+	// No topic provided (e.g. user typed "RUN" with nothing after)
+	if (topic == NULL) {
+		__DisplayErrorMessage(SHELL_ERROR_MISSING_TOPIC);
+		return;
+	}
+
+	// Parse the provided topic and go to the appropriate action based on the provided topic and qualifier
+	/* --- Case: RUN Demo --- */
+	if (strcmp(topic, demo_paremeter_text) == 0) {
+		char *qualifier = strtok(NULL, args_delimiter);
+
+		/* --- Case: RUN Demo--- */
+		// If there is no qualifier provided after "RUN DEMO"
+		if (qualifier == NULL) {
+			// Call the dashboard page launcher swithing to the auto mode page by default if no qualifier is provided to
+			// run demo
+			__NavigateToDashboard(DASHBOARD_PLAYLIST);
+		}
+
+		/* --- Case: Mode qualifier (e.g., "RUN DEMO /MODE=auto") --- */
+		else if (strcmp(qualifier, auto_mode_qualifier_text) == 0) {
+			// Call the dashboard page launcher switching to the auto mode page if the auto mode qualifier is provided
+			// to run demo
+			__NavigateToDashboard(DASHBOARD_AUTO);
+		}
+		/* --- Case: Mode qualifier (e.g., "RUN DEMO /Mode=playlist") --- */
+		else if (strcmp(qualifier, playlist_mode_qualifier_text) == 0) {
+			// Call the dashboard page launcher switching to the playlist page if the playlist mode qualifier is
+			// provided to run demo
+			__NavigateToDashboard(DASHBOARD_PLAYLIST);
+		}
+		/* --- Case: UNKNOWN qualifier --- */
+		else {
+			// Qualifier provided after the topic is not recognized, display an error message
+			__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_QUALIFIER);
+		}
+	}
+
+	/* --- Case: UNKNOWN topic --- */
+	else {
+		// Topic provided does not match any known RUN topics, display an error message
+		__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_TOPIC);
+	}
+}
+
+/**
+ * @fn static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
+ * @brief Parses the arguments provided for the help command and displays the
+ * appropriate help information based on the arguments (e.g., "demo" to show the demo command flags).
+ * @param rx_buffer The buffer containing the user input string to parse for the help command.
+ * @param command_offset The offset in the buffer where the command arguments start after the command text.
+ */
+static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
+{
+	// Argument texts for parsing the command
+	static const char args_delimiter[] = " ";
+	
+
+	// Extract the command from the buffer after the command and parse them
+	char *topic = strtok(rx_buffer + command_offset, args_delimiter);
+
+	// If there is no command provided (e.g. user just typed "HELP")
+	if (topic == NULL) {
+		__DisplayErrorMessage(SHELL_ERROR_MISSING_TOPIC);
+		return;
+	}
+
+	// Parse the provided topic and go to the appropriate help information based on the provided topic and qualifier
+	/* --- Case: Demo topic --- */
+	if (strcmp(topic, demo_paremeter_text) == 0) {
+		char *qualifier = strtok(NULL, args_delimiter);
+
+		/* --- Case: Help Demo (e.g., "HELP DEMO")--- */
+		// If there is no qualifier provided after "HELP DEMO", display the general help information for the demo
+		if (qualifier == NULL) {
+			// Call the help command function to display the available qualifiers and their descriptions
+			__PrintHelpKey1Demo();
+			return;
+		}
+
+		/* --- Case: Mode qualifier (e.g., "HELP DEMO /MODE") --- */
+		if (strcmp(qualifier, mode_qualifier_text) == 0) {
+			// Print the MODE qualifier help information for the demo command
+			__PrintHelpKey2Mode();
+			return;
+		}
+		/* --- Case: Scene qualifier (e.g., "HELP DEMO /SCENE") --- */
+		else if (strcmp(qualifier, scene_qualifier_text) == 0) {
+			// Print the scene qualifier help information for the demo command
+			__PrintHelpKey2Scene();
+			return;
+		}
+		/* --- Case: UNKNOWN qualifier --- */
+		else {
+			// Qualifier provided after the topic is not recognized, display an error message
+			__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_QUALIFIER);
+		}
+	}
+
+	/* --- Case: Run topic --- */
+	else if (strncmp(topic, run_command_text, RUN_COMMAND_TEXT_LEN) == 0) {
+		__PrintHelpKey1Run();
+	}
+
+	/* --- Case: UNKNOWN topic --- */
+	else {
+		// Topic provided does not match any known help topics, display an error message
+		__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_TOPIC);
+	}
+}
+
+/**
+ * @fn static void __PrintHelpKey1Run(void)
+ * @brief Handles the logic for displaying help information about the "run" topic.
+ * When the user types "HELP RUN" in the dashboard shell, including usage instructions,
+ * @param void This function does not take any parameters.
+ */
+static void __PrintHelpKey1Run(void)
+{
+	// Ensure space for Topic(1), Gap(1), Desc(2), Gap(1), Format(1), Gap(1), Header(1), List(1)
+	__EnsureTerminalSpace(HELP_KEY1_RUN_ROWS);
+
+	// Set default colours for the main body text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	// Print the help information for the run command from the shell strings module
+	for (uint8_t i = 0; i < shell_help_run_len; i++) {
+		TerminalSerialPrintString(shell_help_run[i], SHELL_COL_POSITION, input_row++);
+	}
+
+	// Prompt the user for the next command
+	__PrintInputPrompt(++input_row);
+}
+
+/**
+ * @fn static void __PrintHelpKey1Demo(void)
+ * @brief Handles the logic for displaying help information about the "demo" topic.
+ * When the user types "HELP DEMO" in the dashboard shell, including usage instructions,
+ * description, and available qualifier for the demo command.
+ * @param void This function does not take any parameters.
+ */
+static void __PrintHelpKey1Demo(void)
+{
+	// Ensure space for Topic(1), Gap(1), Desc(2), Gap(1), Format(1), Gap(1), Header(1), List(1)
+	__EnsureTerminalSpace(HELP_KEY1_DEMO_ROWS);
+
+	// Set default colours for the main body text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	// Print the help information for the demo command from the shell strings module
+	for (uint8_t i = 0; i < shell_help_demo_len; i++) {
+		TerminalSerialPrintString(shell_help_demo[i], SHELL_COL_POSITION, input_row++);
+	}
+
+	// Prompt the user for the next command
+	__PrintInputPrompt(++input_row);
+}
+
+/**
+ * @fn static void __PrintHelpKey2Scene(void)
+ * @brief Handles the logic for displaying help information about the available
+ * scenes for the demo command when the user types "HELP DEMO /SCENE" in the dashboard shell,
+ * including usage instructions and descriptions for each scene option.
+ * @param void This function does not take any parameters.
+ */
+static void __PrintHelpKey2Scene(void)
+{
+	// Ensure space for Path(1), qualifier(1), Gap(1), Desc(7)
+	__EnsureTerminalSpace(HELP_KEY2_SCENE_ROW);
+
+	// Set default colours for the main body text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	// Print the help information for the demo command's scene qualifier from the shell strings module
+	for (uint8_t i = 0; i < shell_help_subkey_scene_len; i++) {
+		TerminalSerialPrintString(shell_help_subkey_scene[i], SHELL_COL_POSITION, input_row++);
+	}
+
+	// Prompt the user for the next command
+	__PrintInputPrompt(++input_row);
+}
+
+/**
+ * @fn static void __PrintHelpKey2Mode(void)
+ * @brief Handles the logic for displaying help information about the available
+ * modes for the demo command when the user types "HELP DEMO /MODE" in the dashboard shell,
+ * including usage instructions and descriptions for each mode option.
+ * @param void This function does not take any parameters.
+ */
+static void __PrintHelpKey2Mode(void)
+{
+	// Ensure space for Path(1), qualifier(1), Gap(1), Desc(2), Gap(1), Desc(1), Options(2), Gap(1)
+	__EnsureTerminalSpace(HELP_KEY2_MODE_ROW);
+
+	// Set default colours for the main body text
+	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
+
+	// Print the help information for the mode qualifier of the demo command from the shell strings module
+	for (uint8_t i = 0; i < shell_help_subkey_mode_len; i++) {
+		TerminalSerialPrintString(shell_help_subkey_mode[i], SHELL_COL_POSITION, input_row++);
+	}
+
+	// Prompt the user for the next command
+	__PrintInputPrompt(++input_row);
+}
+
+/**
+ * @fn static void __NavigateToDashboard(DashboardPages_t page)
  * @brief Handles the logic for launching different dashboard pages based on the
  * provided page parameter. It sets the system mode to the dashboard and initializes
  * the main page with the specified dashboard page.
@@ -351,48 +403,40 @@ static void __NavigateToDashboard(DashboardPages_t page)
  */
 void ShellInit(void)
 {
-	// Shell Initialization Texts
-	static const char name_text[] = "STM32F407VG BIOS v1.0.4";
-	static const char copyright_text[] = "(C) 2026 Taseen ASCII Graphics Demo";
-	static const char cpu_text[] = "CPU: ARM Cortex-M4 @ 168MHz (PLL_LOCKED)";
-	static const char sram_text[] = "SRAM: 128KB OK";
-	static const char flash_text[] = "FLASH: 1024KB OK";
-	static const char dma_text[] = "DMA Controller... Initialized";
-	static const char uart_text[] = "UART2 Terminal... Connected at 921600bps";
-	static const char terminal_text[] = "Display Mode... 80x24 ANSI Color";
-	static const char ready_text[] = "System is ready...";
-
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
 	// Render the system header
-	TerminalSerialPrintString(name_text, SHELL_COL_POSITION, NAME_ROW_POSITION);
-	TerminalSerialPrintString(copyright_text, SHELL_COL_POSITION, COPYRIGHT_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[0], SHELL_COL_POSITION, NAME_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[1], SHELL_COL_POSITION, COPYRIGHT_ROW_POSITION);
 	HAL_Delay(150);
 
 	// Render the hardware specs with delays to simulate a boot sequence
-	TerminalSerialPrintString(cpu_text, SHELL_COL_POSITION, CPU_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[2], SHELL_COL_POSITION, CPU_ROW_POSITION);
 	HAL_Delay(300);
-	TerminalSerialPrintString(sram_text, SHELL_COL_POSITION, SRAM_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[3], SHELL_COL_POSITION, SRAM_ROW_POSITION);
 	HAL_Delay(1000);
-	TerminalSerialPrintString(flash_text, SHELL_COL_POSITION, FLASH_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[4], SHELL_COL_POSITION, FLASH_ROW_POSITION);
 	HAL_Delay(300);
 
 	// Render the peripheral checks with delays to simulate a boot sequence
-	TerminalSerialPrintString(dma_text, SHELL_COL_POSITION, DMA_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[5], SHELL_COL_POSITION, DMA_ROW_POSITION);
 	HAL_Delay(450);
-	TerminalSerialPrintString(uart_text, SHELL_COL_POSITION, UART_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[6], SHELL_COL_POSITION, UART_ROW_POSITION);
 	HAL_Delay(300);
-	TerminalSerialPrintString(terminal_text, SHELL_COL_POSITION, TERMINAL_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[7], SHELL_COL_POSITION, TERMINAL_ROW_POSITION);
 	HAL_Delay(1000);
 
-	// Render the system ready message
-	TerminalSerialPrintString(ready_text, SHELL_COL_POSITION, READY_ROW_POSITION);
+	// Render the system ready message and hint message
+	TerminalSerialPrintString(shell_boot[8], SHELL_COL_POSITION, READY_ROW_POSITION);
+	TerminalSerialPrintString(shell_boot[9], SHELL_COL_POSITION, HINT_ROW_POSITION);
+	HAL_Delay(200);
 
 	// Render the interaction prompt
-	TerminalSerialPrintString(hint_message, SHELL_COL_POSITION, HINT_ROW_POSITION);
-	HAL_Delay(200);
 	__PrintInputPrompt(INPUT_ROW_POSITION);
+
+	// Set the initial input row position for user commands
+	input_row = INPUT_ROW_POSITION;
 }
 
 /**
@@ -417,80 +461,23 @@ void ShellCommandParser(char *rx_buffer)
 	}
 
 	// Parse the command and call the appropriate handler function based on the command text
-	if (strncmp(rx_buffer, "run", 3) == 0) {
+	/* --- Case: RUN command --- */
+	if ((strncmp(rx_buffer, run_command_text, RUN_COMMAND_TEXT_LEN) == 0) && (rx_buffer[RUN_COMMAND_TEXT_LEN] == SPACE_CHAR ||
+	    rx_buffer[RUN_COMMAND_TEXT_LEN] == '\0')) {
 		// Call the run command parser function to handle the run command arguments and execute the appropriate action
-		__ParseRunCommand(rx_buffer, 3);
-	} else if (strncmp(rx_buffer, "help", 4) == 0) {
-		// Call the help command parser function to handle the help command arguments and display the appropriate help
-		// information
-		__ParseHelpCommand(rx_buffer, 4);
-	} else {
-		// Command does not match, display an error message
-		__DisplayErrorMessage(rx_buffer, SHELL_ERROR_BAD_COMMAND);
+		__ParseRunCommand(rx_buffer, RUN_COMMAND_TEXT_LEN);
+	}
+	/* --- Case: HELP command --- */
+	else if ((strncmp(rx_buffer, help_command_text, HELP_COMMAND_TEXT_LEN) == 0) &&
+	         (rx_buffer[HELP_COMMAND_TEXT_LEN] == SPACE_CHAR || rx_buffer[HELP_COMMAND_TEXT_LEN] == '\0')) {
+		// Call the help command parser function to handle the help command arguments and display the appropriate
+		// help information
+		__ParseHelpCommand(rx_buffer, HELP_COMMAND_TEXT_LEN);
+	}
+	/* --- Case: UNKNOWN command --- */
+	else {
+		// Command not recognized (e.g., "FLY DEMO")
+		__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_COMMAND);
 		return;
 	}
-
-	// static const char command_text[] = "demo.exe"; // Expected command text to trigger the demo command parsing logic
-
-	// Argument texts for parsing the command
-	// static const char flag_help_text[] = "--help";
-	// static const char flag_short_help_text[] = "-h";
-	// static const char flag_short_question_text[] = "-?";
-
-	// static const char flag_mode_text[] = "--mode";
-	// static const char flag_short_mode_text[] = "-m";
-
-	// static const char flag_run_text[] = "--run";
-	// static const char flag_short_run_text[] = "-r";
-
-	// Parse the flags and go to the appropriate scene based on the provided flag
-	// while (flag != NULL) {
-	// 	/* --- Help Flag --- */
-	// 	if (strcmp(flag, flag_help_text) == 0 || strcmp(flag, flag_short_help_text) == 0 ||
-	// 	    strcmp(flag, flag_short_question_text) == 0) {
-	// 		// Call the help command function to display the available flags and their descriptions
-	// 		__PrintHelpMenu();
-	// 		return;
-	// 	}
-
-	// 	/* --- Mode Flag --- */
-	// 	else if (strcmp(flag, flag_mode_text) == 0 || strcmp(flag, flag_short_mode_text) == 0) {
-	// 		// Get the argument for the mode flag (e.g., "auto" or "playlist")
-	// 		char *arg = strtok(NULL, args_delimiter);
-
-	// 		if (arg != NULL) {
-	// 			// argument value (e.g., "auto" or "playlist")
-	// 			__HandleModeArgument(arg);
-	// 		} else {
-	// 			// Argument does not match, display an error message
-	// 			__DisplayErrorMessage(flag, SHELL_ERROR_MISSING_ARG);
-	// 			return;
-	// 		}
-	// 	}
-
-	// 	/* --- Run Flag --- */
-	// 	else if (strcmp(flag, flag_run_text) == 0 || strcmp(flag, flag_short_run_text) == 0) {
-	// 		// Get the argument for the run flag (e.g., "glitch" or "matrix")
-	// 		char *arg = strtok(NULL, args_delimiter);
-
-	// 		if (arg != NULL) {
-	// 			// argument value (e.g., "glitch" or "matrix")
-	// 			__HandleRunArgument(arg);
-	// 		} else {
-	// 			// Argument does not match, display an error message
-	// 			__DisplayErrorMessage(flag, SHELL_ERROR_MISSING_ARG);
-	// 			return;
-	// 		}
-	// 	}
-
-	// 	/* --- UNKNOWN Flag --- */
-	// 	else {
-	// 		// No flag was given, display an error message
-	// 		__DisplayErrorMessage(flag, SHELL_ERROR_INVALID_FLAG);
-	// 		return;
-	// 	}
-
-	// 	// Move to the next argument in the buffer
-	// 	flag = strtok(NULL, args_delimiter);
-	// }
 }

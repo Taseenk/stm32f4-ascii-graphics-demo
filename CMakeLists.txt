@@ -52,6 +52,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     App/Src/rng_util.c
     App/Src/dashboard.c
     App/Src/shell.c
+    App/Src/shell_strings.c
 )
 
 # Add include paths
