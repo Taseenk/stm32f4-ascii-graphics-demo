@@ -1,320 +1,187 @@
 /**
  ******************************************************************************
  * @file           : scene_manager.c
- * @brief          :
+ * @brief          : Scene management system for cycling through different ASCII 
+ * art scenes on an STM32F4 microcontroller. This module handles scene transitions, 
+ * timing, and state management for both automatic cycling and user-defined 
+ * playlists of scenes.
  ******************************************************************************
  */
 
 /* Includes ------------------------------------------------------------------*/
 // Project libraries
 #include "scene_manager.h"
-#include "gfx_matrix_stream.h"
-#include "rng_util.h"
-#include "serial_hw.h"
 #include "terminal.h"
 
-// Standard libraries
-#include <stdint.h>
-#include <stdio.h>
+// STM32 libraries
+#include "main.h"
 
 /* Private Variables ---------------------------------------------------------*/
-// Playlist of scenes to cycle through
-static const SceneConfig_t scene_playlist[] = {
-    {SCENE_INTRO_SCROLL, 300, SCENE_TRANSITION_CLEAR},
-    {SCENE_VISUAL_DEMO, 240, SCENE_TRANSITION_CLEAR},
-    {SCENE_ASCII_GLITCH_NOISE, ASCII_GLITCH_NOISE_DURATION, SCENE_TRANSITION_CLEAR},
-    {SCENE_RAIN_FADE_IN, RAIN_FADE_IN_DURATION, SCENE_TRANSITION_NONE},
-    {SCENE_MATRIX_RAIN, MATRIX_RAIN_DURATION, SCENE_TRANSITION_NONE},
-    {SCENE_MATRIX_RAIN_HACKED, RAIN_HACKED_DURATION, SCENE_TRANSITION_CLEAR},
-    {SCENE_BINARY_GLITCH_NOISE, BINARY_GLITCH_NOISE_DURATION, SCENE_TRANSITION_CLEAR},
+// Table with configurations for all scenes
+static const SceneConfig_t scene_table[] = {
+    
 };
 
-static SceneState_t current_state = SCENE_STATE_START; // Initialize starting scene state
-static uint8_t playlist_index = 0;                     // Current index in the scene playlist
-static uint32_t scene_frame_counter = 0;               // Frame counter for the current scene
+// Playlist of scenes to cycle through in playlist mode and total count of scenes in the playlist
+static const SceneID_t scene_playlist[] = {
+	SCENE_ASCII_GLITCH_NOISE, 
+	SCENE_RAIN_FADE_IN, 
+	SCENE_MATRIX_RAIN,                
+	SCENE_MATRIX_RAIN_HACKED,
+	SCENE_BINARY_GLITCH_NOISE,
+};
+const uint8_t scene_playlist_count = sizeof(scene_playlist) / sizeof(scene_playlist[0]);
+
+// State variables for scene management
+static SceneState_t current_state = SCENE_STATE_START;  // Initialize starting scene state
+static uint8_t scene_index = 0;                   		// Current index in the scene table 
+static uint32_t scene_frame_counter = 0;                // Frame counter for the current scene
 
 /* Private Function Prototypes -----------------------------------------------*/
-void __RunActiveScene(SceneID_t id, uint32_t frame, uint32_t global_frame);
-void __SceneIntroScroll(uint32_t frame, uint32_t global_frame);
-void __SceneVisualDemo(uint32_t frame, uint32_t global_frame);
-void __SceneAsciiGlitchNoise(uint32_t frame, uint32_t global_frame);
-void __SceneRainFadeIn(uint32_t frame, uint32_t global_frame);
-void __SceneMatrixRain(uint32_t frame);
-void __SceneMatrixRainHacked(uint32_t frame);
-void __SceneBinaryGlitchNoise(uint32_t frame, uint32_t global_frame);
+static uint8_t __GetTotalIndexCount(void);
+static const SceneConfig_t *__GetActiveScene(void);
+static uint32_t __GetSceneDuration(uint32_t scene_duration);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn void __RunActiveScene(SceneID_t id, uint32_t frame)
- * @brief Executes the logic for the currently active scene.
- * @param id The identifier of the active scene.
- * @param frame The current frame count used for timing within the scene.
+ * @fn static uint8_t __GetTotalIndexCount(void)
+ * @brief Determines the total number of scenes available based 
+ * on the current system mode (auto or playlist).
+ * @return Returns the total count of scenes to cycle through in the current mode.
  */
-void __RunActiveScene(SceneID_t id, uint32_t frame, uint32_t global_frame)
+static uint8_t __GetTotalIndexCount(void)
 {
-	switch (id) {
-		case SCENE_ASCII_GLITCH_NOISE:
-			__SceneAsciiGlitchNoise(frame, global_frame);
-			// break out of the switch
-			break;
-
-		case SCENE_RAIN_FADE_IN:
-			__SceneRainFadeIn(frame, global_frame);
-			// break out of the switch
-			break;
-
-		case SCENE_MATRIX_RAIN:
-			__SceneMatrixRain(frame);
-			// break out of the switch
-			break;
-
-		case SCENE_MATRIX_RAIN_HACKED:
-			__SceneMatrixRainHacked(frame);
-			// break out of the switch
-			break;
-
-		case SCENE_BINARY_GLITCH_NOISE:
-			__SceneBinaryGlitchNoise(frame, global_frame);
-			// break out of the switch
-			break;
-
-		default:
-			// break out of the switch
-			break;
+	// In auto mode, return the total number of scenes in the scene table
+	if (system_mode == SYSTEM_STATE_AUTO_SCENE) {
+		return (uint8_t)SCENE_TOTAL_SCENES;
 	}
+
+	// In playlist mode, return the total number of scenes defined in the playlist
+	if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
+		return (uint8_t)scene_playlist_count;
+	}
+
+	// Default return value if system mode is not recognized
+	return FALSE;
 }
 
 /**
- * @fn void __SceneAsciiGlitchNoise(uint32_t frame, uint32_t global_frame)
- * @brief Scene logic for the ASCII Glitch Noise scene, which spawns random ASCII
- * characters and dissolves them over time.
- * @param frame The current frame count used for timing within the scene.
- * @param global_frame_count The global frame count since the program started.
+ * @fn static const SceneConfig_t *__GetActiveScene(void)
+ * @brief Retrieves the configuration of the currently active scene based on the system mode (auto or playlist).
+ * In auto mode, it returns the current scene from the scene table based on the scene index. In playlist mode,
+ * it searches for the current target scene in the playlist and returns its configuration from the scene table.
+ * @return A pointer to the SceneConfig_t structure of the active scene, or FALSE if no valid scene is found.
  */
-void __SceneAsciiGlitchNoise(uint32_t frame, uint32_t global_frame)
+static const SceneConfig_t *__GetActiveScene(void)
 {
-	// Adjust text colour based on time in scene to create a dynamic visual effect
-	if (frame == GLITCH_SCENE_START)
-		TerminalSetTextColour(FG_BRIGHT_GREEN);
-	else if (frame == GLITCH_SCENE_BRIGHT)
-		TerminalSetTextColour(FG_MEDIUM_GREEN);
-	else if (frame == GLITCH_SCENE_DIM)
-		TerminalSetTextColour(FG_DARK_GREEN);
+	// Return the current active scene configuration based on the system mode
+	// System mode is auto
+	if (system_mode == SYSTEM_STATE_AUTO_SCENE) {
+		// Early exit if scene_index index is out of bouds
+		if (scene_index >= SCENE_TOTAL_SCENES)
+			return FALSE;
 
-	// Full Brightness
-	if (frame < GLITCH_SCENE_BRIGHT) {
-		// Spawn random characters
-		MatrixCharacterNoise(global_frame, GLITCH_DENSITY_HIGH, CHARACTER_ASCII_NOISE);
-
-		// Occasional light dissolving to keep the screen from getting too crowded
-		if ((global_frame & DISSOLVE_INTERVAL_MASK) == 0)
-			MatrixCharacterDissolve(global_frame, DISSOLVE_STRENGTH_LOW);
-	}
-	// Light Dimming
-	else if (frame < GLITCH_SCENE_DIM) {
-		// Spawn fewer new characters, dissolve more existing ones
-		MatrixCharacterNoise(global_frame, GLITCH_DENSITY_MEDIUM, CHARACTER_ASCII_NOISE);
-		MatrixCharacterDissolve(global_frame, DISSOLVE_STRENGTH_HIGH);
-	}
-	// Deeper Fade
-	else {
-		// Very few new characters and keep dissolving
-		MatrixCharacterNoise(global_frame, GLITCH_DENSITY_LOW, CHARACTER_ASCII_NOISE);
-		MatrixCharacterDissolve(global_frame, DISSOLVE_STRENGTH_HIGH);
-	}
-}
-
-/**
- * @fn void __SceneRainFadeIn(uint32_t frame)
- * @brief Scene logic for the Rain Fade-In scene, which creates a gradual fade-in
- * effect for the Matrix rain by adjusting text colour and rain density over time.
- * @param frame The current frame count used for timing within the scene.
- * @param global_frame_count The global frame count since the program started.
- */
-void __SceneRainFadeIn(uint32_t frame, uint32_t global_frame)
-{
-	// Adjust text colour based on time in scene
-	if (frame < RAIN_FADE_IN_SCENE_BRIGHT) {
-		TerminalSetTextColour(FG_BRIGHT_GREEN);
-	} else if (frame < RAIN_FADE_IN_SCENE_MEDIUM) {
-		TerminalSetTextColour(FG_MEDIUM_GREEN);
-	} else if (frame < RAIN_FADE_IN_SCENE_DARK) {
-		TerminalSetTextColour(FG_DARK_GREEN);
+		// Return the current active scene configuration from the scene table based on the current index
+		return &scene_table[scene_index];
 	}
 
-	// Spawn rain trails with increasing density as the scene progresses
-	if (frame < RAIN_FADE_IN_MIDPOINT)
-		MatrixRainUpdate(RAIN_DENSITY_LOW, RAIN_SPEED_DEFAULT);
-	else
-		MatrixRainUpdate(RAIN_DENSITY_HIGH, RAIN_SPEED_DEFAULT);
+	// System mode is playlist
+	if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
+		// Early exit if scene_index index is out of bouds
+		if (scene_index >= scene_playlist_count)
+			return FALSE;
 
-	// Disolving charachters at intervals
-	if (frame % DISSOLVE_INTERVAL_MASK == 0)
-		MatrixCharacterDissolve(global_frame, DISSOLVE_STRENGTH_HIGH);
-}
+		// Get the target scene ID from the playlist based on the current index
+		SceneID_t target_scene = scene_playlist[scene_index];
 
-/**
- * @fn void __SceneMatrixRain(uint32_t frame)
- * @brief Scene logic for the Matrix Falling Rain scene, which creates falling
- * rain trails and periodically dissolves characters to prevent overcrowding.
- * @param frame The current frame count used for timing within the scene.
- */
-void __SceneMatrixRain(uint32_t frame)
-{
-	// Cycle through text colours to create a dynamic visual effect
-	uint32_t color_cycle = (frame / TERMINAL_HEIGHT) % RAIN_COLOR_STAGES;
-	if (color_cycle == 0)
-		TerminalSetTextColour(FG_BRIGHT_GREEN);
-	else if (color_cycle == 1)
-		TerminalSetTextColour(FG_MEDIUM_GREEN);
-	else
-		TerminalSetTextColour(FG_DARK_GREEN);
-
-	// Create falling rain trails
-	MatrixRainUpdate(RAIN_DENSITY_HIGH, RAIN_SPEED_DEFAULT);
-
-	// Occasional light dissolving to keep the screen from getting too crowded
-	if ((frame & DISSOLVE_INTERVAL_MASK) == 0)
-		MatrixCharacterDissolve(frame, DISSOLVE_STRENGTH_LOW);
-}
-
-/**
- * @fn void __SceneMatrixRainHacked(uint32_t frame)
- * @brief Scene logic for the Matrix Falling Rain Hacked scene, which introduces
- * red "corrupted" characters as the scene progresses to simulate a system hack.
- * @param frame The current frame count used for timing within the scene.
- */
-void __SceneMatrixRainHacked(uint32_t frame)
-{
-	// Variables for color cycling and random number generation
-	static uint32_t rand_num;
-	uint32_t color_cycle = (frame / TERMINAL_HEIGHT) % RAIN_COLOR_STAGES;
-
-	// Initialize random number on first frame
-	if (frame == 0)
-		rand_num = GetRandomNumber();
-
-	// System has been hacked/taken over data is corrupt (text becomes red)
-	if (frame > RAIN_HACKED_CORRUPTED) {
-		// Cycle through red tones instead of green
-		if (color_cycle == 0)
-			TerminalSetTextColour(FG_BRIGHT_RED);
-		else if (color_cycle == 1)
-			TerminalSetTextColour(FG_MEDIUM_RED);
-		else
-			TerminalSetTextColour(FG_DARK_RED);
-	} else {
-		// Update the random number using Xorshift algorithm
-		XorshiftRandomNumber(&rand_num);
-
-		// Bitwise mask to create a small chance of red characters appearing (getting hacked)
-		if ((rand_num & RAIN_HACKED_CORRUPT_MASK) < 7) {
-			TerminalSetTextColour(FG_MEDIUM_RED);
-		} else {
-			// Initial normal green fade-in of the rain before the "hack" takes over
-			if (color_cycle == 0) {
-				TerminalSetTextColour(FG_BRIGHT_GREEN);
-			} else if (color_cycle == 1)
-				TerminalSetTextColour(FG_MEDIUM_GREEN);
-			else
-				TerminalSetTextColour(FG_DARK_GREEN);
+		// Search through all scenes in the scene table to find the configuration for the current target scene in the playlist
+		for (uint8_t i = 0; i < SCENE_TOTAL_SCENES; i++) {
+			if (scene_table[scene_index].id == target_scene)
+				return &scene_table[i];
 		}
 	}
 
-	// Create falling rain trails
-	MatrixRainUpdate(RAIN_DENSITY_HIGH, RAIN_SPEED_DEFAULT);
-
-	// Occasional light dissolving to keep the screen from getting too crowded
-	if ((frame & DISSOLVE_INTERVAL_MASK) == 0)
-		MatrixCharacterDissolve(frame, DISSOLVE_STRENGTH_LOW);
+	// Default return for unrecognized mode or no match found
+	return FALSE;
 }
 
 /**
- * @fn void __SceneBinaryGlitchNoise(uint32_t frame, uint32_t global_frame_count)
- * @brief Scene logic for the Binary Glitch Noise scene, which spawns random binary
- * characters and dissolves them over time.
- * @param frame The current frame count used for timing within the scene.
- * @param global_frame_count The global frame count since the program started.
+ * @fn static uint32_t __GetSceneDuration(uint32_t scene_duration)
+ * @brief Determines the duration of the current scene based on the system mode.
+ * In auto mode, it returns a default duration for all scenes. In playlist mode,
+ * it returns the specified duration for the scene.
+ * @param scene_duration The specified duration for the scene in frames.
+ * @return The duration to use for the current scene in frames.
  */
-void __SceneBinaryGlitchNoise(uint32_t frame, uint32_t global_frame)
+static uint32_t __GetSceneDuration(uint32_t scene_duration)
 {
-	// Adjust text colour based on time in scene to create a dynamic visual effect
-	if (frame == GLITCH_SCENE_START)
-		TerminalSetTextColour(FG_BRIGHT_GREEN);
-	else if (frame == GLITCH_SCENE_BRIGHT)
-		TerminalSetTextColour(FG_MEDIUM_GREEN);
-	else if (frame == GLITCH_SCENE_DIM)
-		TerminalSetTextColour(FG_DARK_GREEN);
+    // In auto mode use default scene duration for all scenes
+	if (system_mode == SYSTEM_STATE_AUTO_SCENE)
+		return SCENE_DEFAULT_DURATION;
 
-	// Full Brightness
-	if (frame < GLITCH_SCENE_BRIGHT) {
-		// Spawn random characters
-		MatrixCharacterNoise(global_frame, GLITCH_DENSITY_MEDIUM, CHARACTER_BINARY_NOISE);
-
-		// Occasional light dissolving to keep the screen from getting too crowded
-		if ((global_frame & DISSOLVE_INTERVAL_MASK) == 0)
-			MatrixCharacterDissolve(global_frame, DISSOLVE_STRENGTH_LOW);
-	}
-	// Light Dimming
-	else if (frame < GLITCH_SCENE_DIM) {
-		// Spawn fewer new characters, dissolve more existing ones
-		MatrixCharacterNoise(global_frame, GLITCH_DENSITY_MEDIUM, CHARACTER_BINARY_NOISE);
-		MatrixCharacterDissolve(global_frame, DISSOLVE_STRENGTH_HIGH);
-	}
-	// Deeper Fade
-	else {
-		// Very few new characters and keep dissolving
-		MatrixCharacterNoise(global_frame, GLITCH_DENSITY_LOW, CHARACTER_BINARY_NOISE);
-		MatrixCharacterDissolve(global_frame, DISSOLVE_STRENGTH_HIGH);
-	}
+    // In playlist mode use the excisting specified duration for the scene
+    return scene_duration;
 }
 
-/* Public Functions ----------------------------------------------------------*/
+/* Private Functions ---------------------------------------------------------*/
 /**
  * @fn void SceneManager(uint32_t global_frame_count)
- * @brief Manages scene transitions and execution based on the current state.
- * @param global_frame_count The global frame count since the program started.
+ * @brief 
+ * @param void This function does not take any parameters.
  */
+void SceneManagerInit(void)
+{
+	// Reset to the first scene and initialize state
+	current_state = SCENE_STATE_START;
+	scene_index = 0;
+	scene_frame_counter = 0;
+}
+
 void SceneManager(uint32_t global_frame_count)
 {
-	// Get the currently active scene
-	SceneConfig_t active_scene = scene_playlist[playlist_index];
+    // Get the currently active scene
+	const SceneConfig_t *active_scene = __GetActiveScene();
 
+	// Manage scenes based on states start, run, and exit
 	switch (current_state) {
-		/* Initialize scenes */
+		/* Initialize scenes, apply transition, run init, reset counter */
 		case SCENE_STATE_START:
-			// Reset the terminal display for the new scene
-			if (active_scene.screen_transition == SCENE_TRANSITION_CLEAR) {
+			// Always reset and clear the terminal for the new scene in auto mode
+			// In playlist mode reset and clear the terminal based on screen transition type
+			if ((active_scene->screen_transition == SCENE_TRANSITION_CLEAR &&
+			        system_mode == SYSTEM_STATE_PLAYLIST_SCENE) ||
+			    system_mode == SYSTEM_STATE_AUTO_SCENE) {
 				TerminalClearAndHome();
 			}
+
+			// Run the init function for the scene if it exists
+			if (active_scene->init != NULL)
+				active_scene->init();
 
 			// Reset scene frame counter and continue to RUN state
 			scene_frame_counter = 0;
 			current_state = SCENE_STATE_RUN;
 			break;
 
-		/* Run scene logic */
+		/* Run scene logic checking duration based on auto or playlist mode */
 		case SCENE_STATE_RUN:
-			// Run the active scene logic
-			__RunActiveScene(active_scene.id, scene_frame_counter, global_frame_count);
-
 			// Check the duration of the scene to transition to EXIT state
-			if (scene_frame_counter >= active_scene.duration) {
+			if (scene_frame_counter >= __GetSceneDuration(active_scene->duration)) {
 				current_state = SCENE_STATE_EXIT;
-			} else {
-				// Increment the scene frame counter
-				scene_frame_counter++;
+				break;
 			}
 
+			// Increment the scene frame counter
+			scene_frame_counter++;
 			break;
 
-		/* Cleanup and transition to next scene */
+		/* Cleanup and transition to next scene or return to start */
 		case SCENE_STATE_EXIT:
 			// Reset terminal styling
 			TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
 			// Move to next playlist index, wrapping back to 0 at the end of the list
-			playlist_index = (playlist_index + 1) % SCENE_TOTAL_SCENES;
+			scene_index = (scene_index + 1) % __GetTotalIndexCount();
 
 			// Move back to START state for the next scene
 			current_state = SCENE_STATE_START;
