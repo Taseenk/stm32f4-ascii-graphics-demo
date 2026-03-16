@@ -17,8 +17,8 @@
 /* Private Defines -----------------------------------------------------------*/
 #define COORDINATE_OFFSET       1       // Terminal coordinates usually start at 1,1
 
-#define CHARACTER_BINARY_NOISE  1       // Binary noise character mode
-#define CHARACTER_ASCII_NOISE   0       // ASCII noise character mode
+#define BINARY_CHARACTER 		1       // Binary noise character mode
+#define ASCII_CHARACTER 		0       // ASCII noise character mode
 
 #define BINARY_MASK             1       // Mask for binary character generation
 #define ASCII_PRINTABLE_START   33      // The '!' character
@@ -42,10 +42,32 @@
 static uint32_t rand_number;    // Global random number state for consistent RNG across functions
 
 /* Private Function Prototypes -----------------------------------------------*/
+static char __GetAsciiOrBinaryChar(uint8_t noise_mode);
 static void __CharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t noise_mode);
 static void __CharacterDissolve(uint32_t frame, uint8_t density_scale);
 
 /* Private Functions ---------------------------------------------------------*/
+/**
+ * @fn static char __GetAsciiOrBinaryChar(uint8_t noise_mode)
+ * @brief Returns a random printable character based on the noise mode.
+ * ASCII mode returns a random printable character in the range 33-96.
+ * Binary mode returns either '0' or '1'.
+ * @param noise_mode The character mode to use, either CHARACTER_ASCII_NOISE
+ * or CHARACTER_BINARY_NOISE.
+ * @return A single character determined by the noise mode.
+ */
+static char __GetAsciiOrBinaryChar(uint8_t noise_mode)
+{
+	if (noise_mode == BINARY_CHARACTER) {
+		// Return a random binary character (0 or 1) using a bitwise mask
+		return (rand_number & BINARY_MASK) + ASCII_ZERO_OFFSET;
+	}
+
+	// Return a random character using a bitwise mask
+	// Using 0x3F and adding 33 to stay between a range of printable ASCII character
+	return (rand_number & ASCII_CHAR_MASK) + ASCII_PRINTABLE_START;
+}
+
 /**
  * @fn static void __CharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t noise_mode)
  * @brief Generates random characters at random positions.
@@ -77,13 +99,10 @@ static void __CharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t nois
 		XorshiftRandomNumber(&rand_number);
 
 		// Determine the character to draw based on the noise mode
-		if (noise_mode == CHARACTER_ASCII_NOISE) {
-			// Generate a random character using a bitwise mask
-			// Using 0x3F and adding 33 to stay between a range of printable ASCII character
-			char_buffer[0] = (rand_number & ASCII_CHAR_MASK) + ASCII_PRINTABLE_START;
-		} else if (noise_mode == CHARACTER_BINARY_NOISE) {
-			// Generate a random binary character (0 or 1) using a bitwise mask
-			char_buffer[0] = (rand_number & BINARY_MASK) + ASCII_ZERO_OFFSET;
+		if (noise_mode == ASCII_CHARACTER) {
+			char_buffer[0] = __GetAsciiOrBinaryChar(ASCII_CHARACTER);
+		} else if (noise_mode == BINARY_CHARACTER) {
+			char_buffer[0] = __GetAsciiOrBinaryChar(BINARY_CHARACTER);
 		}
 
 		// Move cursor and draw the character on the terminal
