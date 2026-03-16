@@ -20,19 +20,7 @@
 #define MATRIX_RAIN_DENSITY_MASK        0x3FF   // Mask to normalize RNG for density comparison (0-1023) in matrix rain
 #define COLUMN_INACTIVE                 0       // Indicator for inactive column
 
-// Random Character Set Configuration
-#define ASCII_PRINTABLE_START           33      // The '!' character
-#define ASCII_CHAR_MASK                 0x3F    // Mask to get 64 printable ASCII characters
-#define STRING_TERMINATOR               '\0'    // Null terminator for strings
-#define ASCII_ZERO_OFFSET               48      // Offset for ASCII code '0' character
-#define BINARY_MASK                     1       // Mask for binary character generation
-#define CHARACTER_BINARY_NOISE          1       // Binary noise character mode
-#define CHARACTER_ASCII_NOISE           0       // ASCII noise character mode
-
 /* Function prototypes -------------------------------------------------------*/
-void MatrixCharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t noise_mode);
-void MatrixCharacterDissolve(uint32_t frame, uint8_t density_scale);
-
 void MatrixRainUpdate(uint8_t density, uint8_t speed);
 
 #endif /* __GFX_MATRIX_STREAM_H */
