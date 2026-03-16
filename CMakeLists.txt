@@ -47,18 +47,23 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     App/Src/terminal.c
     App/Src/serial_hw.c
-    App/Src/gfx_matrix_stream.c
-    App/Src/scene_manager.c
-    App/Src/rng_util.c
     App/Src/dashboard.c
+    App/Src/scene_manager.c
+
+    App/Src/rng_util.c
     App/Src/shell.c
     App/Src/shell_strings.c
+
+    # Scene source files
+    App/Src/Scenes/scene_glitch.c
+    App/Src/Scenes/scene_matrix_rain.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     App/Inc
+    App/Inc/Scenes
 )
 
 # Add project symbols (macros)
