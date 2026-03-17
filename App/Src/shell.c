@@ -187,7 +187,7 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 		if (qualifier == NULL) {
 			// Call the dashboard page launcher swithing to the auto mode page by default if no qualifier is provided to
 			// run demo
-			__NavigateToDashboard(DASHBOARD_PLAYLIST);
+			__NavigateToDashboard(DASHBOARD_AUTO);
 		}
 
 		/* --- Case: Mode qualifier (e.g., "RUN DEMO /MODE=auto") --- */
