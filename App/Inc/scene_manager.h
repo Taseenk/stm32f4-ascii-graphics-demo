@@ -1,8 +1,11 @@
 /**
  ******************************************************************************
  * @file           : scene_manager.h
- * @brief          :
- *
+ * @brief          : Header file for the scene management system that handles 
+ * cycling through different ASCII art scenes on an STM32F4 microcontroller. 
+ * This module defines the structures, enumerations, and function prototypes 
+ * for managing scene transitions, timing, and state management for both automatic 
+ * cycling and user-defined playlists of scenes.
  ******************************************************************************
  */
 
@@ -55,6 +58,7 @@ typedef enum {
 } SceneState_t;
 
 /* Function prototypes -------------------------------------------------------*/
+void SceneManagerInit(void);
 void SceneManager(uint32_t frame_count);
 
 #endif /* __SCENE_MANAGER_H */
