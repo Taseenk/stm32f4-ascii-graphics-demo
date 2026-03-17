@@ -163,6 +163,11 @@ int main(void)
 				SceneManager(frame_counter);
 			}
 
+			// While in auto scene mode, Let SceneManager Handle scene logic based on the current frame
+			if (system_mode == SYSTEM_STATE_AUTO_SCENE) {
+				SceneManager(frame_counter);
+			}
+			
 			// Increment trackers and maintain a consistent time for the next frame
 			last_heartbeat += FRAME_INTERVAL_MS;
 			frame_counter++;
