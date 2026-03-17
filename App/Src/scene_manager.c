@@ -13,21 +13,21 @@
 #include "scene_manager.h"
 #include "terminal.h"
 
+#include "scene_glitch.h"
+
 // STM32 libraries
 #include "main.h"
 
 /* Private Variables ---------------------------------------------------------*/
 // Table with configurations for all scenes
 static const SceneConfig_t scene_table[] = {
-    
+    {SCENE_BINARY_GLITCH_NOISE, 150, SCENE_TRANSITION_CLEAR, GlitchInit, BinaryGlitchRender},
+    {SCENE_ASCII_GLITCH_NOISE, 150, SCENE_TRANSITION_CLEAR, GlitchInit, AsciiGlitchRender},
 };
 
 // Playlist of scenes to cycle through in playlist mode and total count of scenes in the playlist
 static const SceneID_t scene_playlist[] = {
-	SCENE_ASCII_GLITCH_NOISE, 
-	SCENE_RAIN_FADE_IN, 
-	SCENE_MATRIX_RAIN,                
-	SCENE_MATRIX_RAIN_HACKED,
+	SCENE_ASCII_GLITCH_NOISE,
 	SCENE_BINARY_GLITCH_NOISE,
 };
 const uint8_t scene_playlist_count = sizeof(scene_playlist) / sizeof(scene_playlist[0]);
@@ -96,7 +96,7 @@ static const SceneConfig_t *__GetActiveScene(void)
 
 		// Search through all scenes in the scene table to find the configuration for the current target scene in the playlist
 		for (uint8_t i = 0; i < SCENE_TOTAL_SCENES; i++) {
-			if (scene_table[scene_index].id == target_scene)
+			if (scene_table[i].id == target_scene)
 				return &scene_table[i];
 		}
 	}
@@ -170,6 +170,8 @@ void SceneManager(uint32_t global_frame_count)
 				current_state = SCENE_STATE_EXIT;
 				break;
 			}
+			if (active_scene->render != NULL)
+				active_scene->render(scene_frame_counter);
 
 			// Increment the scene frame counter
 			scene_frame_counter++;
