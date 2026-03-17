@@ -12,6 +12,7 @@
 #include "dashboard.h"
 #include "serial_hw.h"
 #include "terminal.h"
+#include "scene_manager.h"
 
 // STM32 libraries
 #include "main.h"
@@ -250,8 +251,10 @@ void DashboardMenuSelection(uint32_t global_frame)
 
 			// Switch the global system mode to the auto scene
 			if (time_in_scene == (MENU_SELECTION_INTERVAL - 1)) {
+				SceneManagerInit();
 				system_mode = SYSTEM_STATE_AUTO_SCENE;
 				TerminalClearAndHome();
+				break;
 			}
 
 			// break out of the switch
@@ -266,8 +269,10 @@ void DashboardMenuSelection(uint32_t global_frame)
 
 			// Switch the global system mode to the auto scene
 			if (time_in_scene == (MENU_SELECTION_INTERVAL - 1)) {
+				SceneManagerInit();
 				system_mode = SYSTEM_STATE_PLAYLIST_SCENE;
 				TerminalClearAndHome();
+				break;
 			}
 
 			// break out of the switch
