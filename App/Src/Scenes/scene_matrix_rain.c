@@ -1,7 +1,9 @@
 /**
  ******************************************************************************
  * @file           : scene_matrix_rain.c
- * @brief          :
+ * @brief          : Implements the classic "Matrix Rain" visual effects.
+ * Includes variations for ASCII, Binary, "Hacked" (red)
+ * corruption, and smooth fade-in transitions.
  ******************************************************************************
  */
 
@@ -46,7 +48,13 @@
 #define RAIN_FADE_IN_SCENE_MEDIUM   80
 #define RAIN_FADE_IN_SCENE_DARK     160
 
+#define RAIN_FADE_IN_DURATION	300							// Duration of the rain fade-in scene in frames
 #define RAIN_FADE_IN_MIDPOINT   (RAIN_FADE_IN_DURATION / 2) // Mid-point for density swap
+
+// Dissolve configuration
+#define DISSOLVE_INTERVAL_MASK  0x04    // Used for bitwise frame frequency (frame & 4)
+#define DISSOLVE_STRENGTH_LOW   5       // Characters removed per frame (Subtle dissolve)
+#define DISSOLVE_STRENGTH_HIGH  15      // Characters removed per frame (Aggressive dissolve)
 
 /* Private Variables ---------------------------------------------------------*/
 static uint32_t rand_number; // Global random number state for consistent RNG across functions
@@ -182,24 +190,135 @@ static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
 	}
 }
 
+/**
+ * @fn static void __RenderMatrixRainFrame(uint32_t scene_frame, uint8_t noise_mode)
+ * @brief Renders a single frame of the matrix rain effect based on the current scene frame and noise mode.
+ * It cycles through text colors to create a dynamic visual effect and updates the rain trails.
+ * It also applies occasional dissolving to prevent overcrowding of characters on the screen.
+ * @param scene_frame The current frame index provided by the scene manager.
+ * @param noise_mode The mode for generating noise characters (binary or ASCII).
+ */
+static void __RenderMatrixRainFrame(uint32_t scene_frame, uint8_t noise_mode)
+{
+	// Cycle through text colours to create a dynamic visual effect
+	uint32_t color_cycle = (scene_frame / TERMINAL_HEIGHT) % RAIN_COLOR_STAGES;
+	if (color_cycle == 0)
+		TerminalSetTextColour(FG_BRIGHT_GREEN);
+	else if (color_cycle == 1)
+		TerminalSetTextColour(FG_MEDIUM_GREEN);
+	else
+		TerminalSetTextColour(FG_DARK_GREEN);
+
+	// Create falling rain trails
+	__RainUpdater(RAIN_DENSITY_HIGH, RAIN_SPEED_DEFAULT, noise_mode);
+
+	// Occasional light dissolving to keep the screen from getting too crowded
+	if ((scene_frame & DISSOLVE_INTERVAL_MASK) == 0)
+		__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_LOW);
+}
+
 /* Public Functions ----------------------------------------------------------*/
+/**
+ * @fn void MatrixRainInit(void)
+ * @brief Prepares the matrix rain state by setting up necessary variables and state.
+ * @param void This function does not take any parameters.
+ */
 void MatrixRainInit(void)
 {
 	// Initialize by generating a random number to minimise overhead when the scene starts
 	rand_number = GetRandomNumber();
 }
 
-void AsciiMatrixRainRender(uint32_t scene_frame)
+/**
+ * @fn void AsciiRainRender(uint32_t scene_frame)
+ * @brief Renders a frame of the standard ASCII matrix rain.
+ * @param scene_frame The current frame index from the scene manager.
+ */
+void AsciiRainRender(uint32_t scene_frame)
 {
-
+	// Render the matrix rain frame using ascii character mode
+	__RenderMatrixRainFrame(scene_frame, ASCII_CHARACTER);
 }
 
-void BinaryMatrixRainRender(uint32_t scene_frame)
+/**
+ * @fn void BinaryRainRender(uint32_t scene_frame)
+ * @brief Renders a frame of the binary (0 and 1) matrix rain.
+ * @param scene_frame The current frame index from the scene manager.
+ */
+void BinaryRainRender(uint32_t scene_frame)
 {
-
+	// Render the matrix rain frame using binary character mode
+	__RenderMatrixRainFrame(scene_frame, BINARY_CHARACTER);
 }
 
-void MatrixRainHackedRender(uint32_t scene_frame)
+/**
+ * @fn void AsciiRainHackedRender(uint32_t scene_frame)
+ * @brief Renders the "Hacked" rain effect where characters turn red over time.
+ * @param scene_frame The current frame index from the scene manager.
+ */
+void AsciiRainHackedRender(uint32_t scene_frame)
 {
+	uint32_t color_cycle = (scene_frame / TERMINAL_HEIGHT) % RAIN_COLOR_STAGES;
 
+	// System has been hacked/taken over data is corrupt (text becomes red)
+	if (scene_frame > RAIN_HACKED_CORRUPTED) {
+		// Cycle through red tones instead of green
+		if (color_cycle == 0)
+			TerminalSetTextColour(FG_BRIGHT_RED);
+		else if (color_cycle == 1)
+			TerminalSetTextColour(FG_MEDIUM_RED);
+		else
+			TerminalSetTextColour(FG_DARK_RED);
+	} else {
+		// Update the random number using Xorshift algorithm
+		XorshiftRandomNumber(&rand_number);
+
+		// Bitwise mask to create a small chance of red characters appearing (getting hacked)
+		if ((rand_number & RAIN_HACKED_CORRUPT_MASK) < 7) {
+			TerminalSetTextColour(FG_MEDIUM_RED);
+		} else {
+			// Initial normal green fade-in of the rain before the "hack" takes over
+			if (color_cycle == 0) {
+				TerminalSetTextColour(FG_BRIGHT_GREEN);
+			} else if (color_cycle == 1)
+				TerminalSetTextColour(FG_MEDIUM_GREEN);
+			else
+				TerminalSetTextColour(FG_DARK_GREEN);
+		}
+	}
+
+	// Create falling rain trails
+	__RainUpdater(RAIN_DENSITY_HIGH, RAIN_SPEED_DEFAULT, ASCII_CHARACTER);
+
+	// Occasional light dissolving to keep the screen from getting too crowded
+	if ((scene_frame & DISSOLVE_INTERVAL_MASK) == 0)
+		__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_LOW);
+}
+
+/**
+ * @fn void AsciiRainFadeIn(uint32_t scene_frame)
+ * @brief Renders a sequence where the rain starts sparse/bright and becomes dense/dark.
+ * Used for transitioning into the full matrix rain effect with a fade-in style.
+ * @param scene_frame The current frame index from the scene manager.
+ */
+void AsciiRainFadeIn(uint32_t scene_frame)
+{
+	// Adjust text colour based on time in scene
+	if (scene_frame < RAIN_FADE_IN_SCENE_BRIGHT) {
+		TerminalSetTextColour(FG_BRIGHT_GREEN);
+	} else if (scene_frame < RAIN_FADE_IN_SCENE_MEDIUM) {
+		TerminalSetTextColour(FG_MEDIUM_GREEN);
+	} else if (scene_frame < RAIN_FADE_IN_SCENE_DARK) {
+		TerminalSetTextColour(FG_DARK_GREEN);
+	}
+
+	// Spawn rain trails with increasing density as the scene progresses
+	if (scene_frame < RAIN_FADE_IN_MIDPOINT)
+		__RainUpdater(RAIN_DENSITY_LOW, RAIN_SPEED_DEFAULT, ASCII_CHARACTER);
+	else
+		__RainUpdater(RAIN_DENSITY_HIGH, RAIN_SPEED_DEFAULT, ASCII_CHARACTER);
+
+	// Disolving charachters at intervals
+	if (scene_frame % DISSOLVE_INTERVAL_MASK == 0)
+		__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_HIGH);
 }
