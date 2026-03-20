@@ -25,7 +25,8 @@ typedef enum {
 	SCENE_ASCII_GLITCH_NOISE,   // Random ASCII sporadic glitch
 	SCENE_BINARY_GLITCH_NOISE,  // Random binary (0/1) sporadic glitch
 
-	SCENE_MATRIX_RAIN,          // Matrix falling rain effect
+	SCENE_ASCII_MATRIX_RAIN,    // ASCII Matrix falling rain effect
+	SCENE_BINARY_MATRIX_RAIN,   // Binary Matrix falling rain effect
 	SCENE_MATRIX_RAIN_HACKED,   // Matrix falling rain effect with data corruption (hacked)
 
 	SCENE_RAIN_FADE_IN,         // Transitional scene to Matrix falling rain effect
