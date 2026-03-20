@@ -45,6 +45,7 @@ static uint32_t rand_number;    // Global random number state for consistent RNG
 static char __GetAsciiOrBinaryChar(uint8_t noise_mode);
 static void __CharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t noise_mode);
 static void __CharacterDissolve(uint32_t frame, uint8_t density_scale);
+static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
@@ -140,6 +141,48 @@ static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
 	}
 }
 
+/**
+ * @fn static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode)
+ * @brief Renders a single frame of the glitch effect based on the current scene frame and noise mode.
+ * It adjusts the text color and character density to create a dynamic glitch effect.
+ * @param scene_frame The current frame index provided by the scene manager.
+ * @param noise_mode The mode for generating noise characters (binary or ASCII).
+ */
+static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode)
+{
+	// Adjust text colour based on time in scene to create a dynamic visual effect
+	if (scene_frame == GLITCH_SCENE_START)
+		TerminalSetTextColour(FG_BRIGHT_GREEN);
+	else if (scene_frame == GLITCH_SCENE_BRIGHT)
+		TerminalSetTextColour(FG_MEDIUM_GREEN);
+	else if (scene_frame == GLITCH_SCENE_DIM)
+		TerminalSetTextColour(FG_DARK_GREEN);
+
+	// Full Brightness
+	if (scene_frame < GLITCH_SCENE_BRIGHT) {
+		// Spawn random characters
+		__CharacterNoise(scene_frame, GLITCH_DENSITY_HIGH, noise_mode);
+
+		// Occasional light dissolving to keep the screen from getting too crowded
+		if ((scene_frame & DISSOLVE_INTERVAL_MASK) == 0)
+			__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_LOW);
+	}
+
+	// Light Dimming
+	else if (scene_frame < GLITCH_SCENE_DIM) {
+		// Spawn fewer new characters, dissolve more existing ones
+		__CharacterNoise(scene_frame, GLITCH_DENSITY_MEDIUM, noise_mode);
+		__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_HIGH);
+	}
+
+	// Deeper Fade
+	else {
+		// Very few new characters and keep dissolving
+		__CharacterNoise(scene_frame, GLITCH_DENSITY_LOW, noise_mode);
+		__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_HIGH);
+	}
+}
+
 /* Public Functions ----------------------------------------------------------*/
 /**
  * @fn void GlitchInit(void)
@@ -152,12 +195,24 @@ void GlitchInit(void)
 	rand_number = GetRandomNumber();
 }
 
+/**
+ * @fn void AsciiGlitchRender(uint32_t scene_frame)
+ * @brief Renders a single frame of the ASCII noise glitch effect.
+ * @param scene_frame The current frame index provided by the scene manager.
+ */
 void AsciiGlitchRender(uint32_t scene_frame)
 {
-
+	// Render the glitch frame using ascii character mode
+	__RenderGlitchFrame(scene_frame, ASCII_CHARACTER);
 }
 
+/**
+ * @fn void BinaryGlitchRender(uint32_t scene_frame)
+ * @brief Renders a single frame of the Binary (0/1) noise glitch effect.
+ * @param scene_frame The current frame index provided by the scene manager.
+ */
 void BinaryGlitchRender(uint32_t scene_frame)
 {
-
+	// Render the glitch frame using binary character mode
+	__RenderGlitchFrame(scene_frame, BINARY_CHARACTER);
 }
