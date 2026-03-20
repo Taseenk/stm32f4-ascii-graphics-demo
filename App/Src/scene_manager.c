@@ -26,10 +26,11 @@ static const SceneConfig_t scene_table[] = {
     {SCENE_ASCII_GLITCH_NOISE, 150, SCENE_TRANSITION_CLEAR, GlitchInit, AsciiGlitchRender},
 
     {SCENE_ASCII_MATRIX_RAIN, 350, SCENE_TRANSITION_NONE, MatrixRainInit, AsciiRainRender},
-    {SCENE_ASCII_MATRIX_RAIN, 350, SCENE_TRANSITION_NONE, MatrixRainInit, BinaryRainRender},
+    {SCENE_BINARY_MATRIX_RAIN, 350, SCENE_TRANSITION_NONE, MatrixRainInit, BinaryRainRender},
     {SCENE_MATRIX_RAIN_HACKED, 350, SCENE_TRANSITION_CLEAR, MatrixRainInit, AsciiRainHackedRender},
     {SCENE_RAIN_FADE_IN, 300, SCENE_TRANSITION_NONE, MatrixRainInit, AsciiRainFadeIn},
 };
+const uint8_t scene_table_count = sizeof(scene_table) / sizeof(scene_table[0]);
 
 // Playlist of scenes to cycle through in playlist mode and total count of scenes in the playlist
 static const SceneID_t scene_playlist[] = {
@@ -61,7 +62,7 @@ static uint8_t __GetTotalIndexCount(void)
 {
 	// In auto mode, return the total number of scenes in the scene table
 	if (system_mode == SYSTEM_STATE_AUTO_SCENE) {
-		return (uint8_t)SCENE_TOTAL_SCENES;
+		return (uint8_t)scene_table_count;
 	}
 
 	// In playlist mode, return the total number of scenes defined in the playlist
@@ -78,7 +79,7 @@ static uint8_t __GetTotalIndexCount(void)
  * @brief Retrieves the configuration of the currently active scene based on the system mode (auto or playlist).
  * In auto mode, it returns the current scene from the scene table based on the scene index. In playlist mode,
  * it searches for the current target scene in the playlist and returns its configuration from the scene table.
- * @return A pointer to the SceneConfig_t structure of the active scene, or FALSE if no valid scene is found.
+ * @return A pointer to the SceneConfig_t structure of the active scene, or NULL if no valid scene is found.
  */
 static const SceneConfig_t *__GetActiveScene(void)
 {
@@ -86,8 +87,8 @@ static const SceneConfig_t *__GetActiveScene(void)
 	// System mode is auto
 	if (system_mode == SYSTEM_STATE_AUTO_SCENE) {
 		// Early exit if scene_index index is out of bouds
-		if (scene_index >= SCENE_TOTAL_SCENES)
-			return FALSE;
+		if (scene_index >= scene_table_count)
+			return NULL;
 
 		// Return the current active scene configuration from the scene table based on the current index
 		return &scene_table[scene_index];
@@ -97,20 +98,20 @@ static const SceneConfig_t *__GetActiveScene(void)
 	if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
 		// Early exit if scene_index index is out of bouds
 		if (scene_index >= scene_playlist_count)
-			return FALSE;
+			return NULL;
 
 		// Get the target scene ID from the playlist based on the current index
 		SceneID_t target_scene = scene_playlist[scene_index];
 
 		// Search through all scenes in the scene table to find the configuration for the current target scene in the playlist
-		for (uint8_t i = 0; i < SCENE_TOTAL_SCENES; i++) {
+		for (uint8_t i = 0; i < scene_table_count; i++) {
 			if (scene_table[i].id == target_scene)
 				return &scene_table[i];
 		}
 	}
 
 	// Default return for unrecognized mode or no match found
-	return FALSE;
+	return NULL;
 }
 
 /**
@@ -149,6 +150,12 @@ void SceneManager(uint32_t global_frame_count)
 {
     // Get the currently active scene
 	const SceneConfig_t *active_scene = __GetActiveScene();
+
+	// If no valid active scene is found, reset to the first scene and return
+	if (active_scene == NULL) {
+		SceneManagerInit();
+		return;
+	}
 
 	// Manage scenes based on states start, run, and exit
 	switch (current_state) {
