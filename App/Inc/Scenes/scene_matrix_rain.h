@@ -1,8 +1,10 @@
 /**
  ******************************************************************************
  * @file           : scene_matrix_rain.h
- * @brief          :
- *
+ * @brief          : Header file for the Matrix Rain scene, defining the 
+ * initialization and rendering functions for the classic "Matrix" rain effect, 
+ * including variations for ASCII, Binary, "Hacked" (red) corruption, and 
+ * fade-in transitions.
  ******************************************************************************
  */
 
@@ -14,8 +16,9 @@
 
 /* Function prototypes -------------------------------------------------------*/
 void MatrixRainInit(void);
-void AsciiMatrixRainRender(uint32_t scene_frame);
-void BinaryMatrixRainRender(uint32_t scene_frame);
-void MatrixRainHackedRender(uint32_t scene_frame);
+void AsciiRainRender(uint32_t scene_frame);
+void BinaryRainRender(uint32_t scene_frame);
+void AsciiRainHackedRender(uint32_t scene_frame);
+void AsciiRainFadeIn(uint32_t scene_frame);
 
 #endif /* __SCENE_MATRIX_RAIN_H */
