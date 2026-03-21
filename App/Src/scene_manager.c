@@ -19,16 +19,21 @@
 // STM32 libraries
 #include "main.h"
 
+/* Private Defines -----------------------------------------------------------*/
+// Scene Durations (in frames)
+#define GLITCH_NOISE_DURATION			150
+#define MATRIX_RAIN_DURATION			350
+#define RAIN_FADE_IN_DURATION			300
+
 /* Private Variables ---------------------------------------------------------*/
 // Table with configurations for all scenes
 static const SceneConfig_t scene_table[] = {
-    {SCENE_BINARY_GLITCH_NOISE, 150, SCENE_TRANSITION_CLEAR, GlitchInit, BinaryGlitchRender},
-    {SCENE_ASCII_GLITCH_NOISE, 150, SCENE_TRANSITION_CLEAR, GlitchInit, AsciiGlitchRender},
-
-    {SCENE_ASCII_MATRIX_RAIN, 350, SCENE_TRANSITION_NONE, MatrixRainInit, AsciiRainRender},
-    {SCENE_BINARY_MATRIX_RAIN, 350, SCENE_TRANSITION_NONE, MatrixRainInit, BinaryRainRender},
-    {SCENE_MATRIX_RAIN_HACKED, 350, SCENE_TRANSITION_CLEAR, MatrixRainInit, AsciiRainHackedRender},
-    {SCENE_RAIN_FADE_IN, 300, SCENE_TRANSITION_NONE, MatrixRainInit, AsciiRainFadeIn},
+	{SCENE_ASCII_GLITCH_NOISE, GLITCH_NOISE_DURATION, SCENE_TRANSITION_CLEAR, GlitchInit, AsciiGlitchRender},
+    {SCENE_BINARY_GLITCH_NOISE, GLITCH_NOISE_DURATION, SCENE_TRANSITION_CLEAR, GlitchInit, BinaryGlitchRender},
+    {SCENE_ASCII_MATRIX_RAIN, MATRIX_RAIN_DURATION, SCENE_TRANSITION_NONE, MatrixRainInit, AsciiRainRender},
+    {SCENE_BINARY_MATRIX_RAIN, MATRIX_RAIN_DURATION, SCENE_TRANSITION_NONE, MatrixRainInit, BinaryRainRender},
+    {SCENE_MATRIX_RAIN_HACKED, MATRIX_RAIN_DURATION, SCENE_TRANSITION_CLEAR, MatrixRainInit, AsciiRainHackedRender},
+    {SCENE_RAIN_FADE_IN, RAIN_FADE_IN_DURATION, SCENE_TRANSITION_NONE, MatrixRainInit, AsciiRainFadeIn},
 };
 const uint8_t scene_table_count = sizeof(scene_table) / sizeof(scene_table[0]);
 
