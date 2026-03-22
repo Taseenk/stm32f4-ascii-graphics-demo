@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "serial_hw.h"
+#include "shell.h"
 
 // STM32 specific libraries
 #include "main.h"
@@ -189,15 +190,19 @@ void SerialProcessData(void)
 		return;
 
 	// Variables used to calculate and track positions within the circular buffer
-	size_t message_length, buffer_index;
+	size_t buffer_index, message_length = 0;
+	char current_char;
 
 	// Iterate through the newly received data
-	for (message_length = 0; message_length < rx_received_length; message_length++) {
+	for (int i = 0; i < rx_received_length; i++) {
 		// Calculate the absolute index for the circular buffer
-		buffer_index = (s_uart_rx.read_index + message_length) % UART_BUFFER_SIZE;
+		buffer_index = (s_uart_rx.read_index + i) % UART_BUFFER_SIZE;
+
+		// The current character being processed from the buffer
+		current_char = (char)s_uart_rx.buffer[buffer_index];
 
 		// Check if the message is too long for the buffer to hold
-		if (message_length > (sizeof(rx_message.message) - 1)) {
+		if (message_length >= (sizeof(rx_message.message) - 1)) {
 			// Log a warning message
 			SerialPrint("WARNING: Received message was too long");
 
@@ -208,27 +213,44 @@ void SerialProcessData(void)
 			return;
 		}
 
+		// If the first character(s) are spaces, skip them and update the read index to the first non-space character
+		if (current_char == SPACE_CHAR && message_length == 0) {
+			// Continue to the next character in the buffer
+			continue;
+		}
+
+		// Handle user spelling mistakes, if a backspace character ('\b') is found
+		// Remove the last character from the message buffer (if there is one) and continue to the next character
+		if (current_char == BACKSPACE) {
+			// Handle backspace: if message_length > 0, remove the last character from the message buffer
+			if (message_length > 0)
+				message_length--;
+
+			// Continue to the next character in the buffer
+			continue;
+		}
+
 		// Check if the end-of-message ('\r') delimiter is found
-		if (s_uart_rx.buffer[buffer_index] == CARRIAGE_RETURN) {
+		if (current_char == CARRIAGE_RETURN) {
 			// Null-terminate the message in the buffer at the location of the \r
 			rx_message.message[message_length] = NULL_TERMINATOR;
 
 			// Store the length of the received message with null terminator
 			rx_message.length = message_length + 1;
 
-			// Print the received string
-			SerialPrint("DEBUG: Received: ");
-			SerialPrintLn(rx_message.message);
-
 			// Update and save the new start reading position
-			// Wrap the circular buffer back to the start using modulo (remainder)
+			// Wrap the circular buffer back to the start using modulo 
 			s_uart_rx.read_index = (buffer_index + 1) % UART_BUFFER_SIZE;
+
+			// Send the received message to the command parser for processing
+			ShellCommandParser(rx_message.message);
 
 			// Exit loop safely
 			return;
 		}
 
+		// Increment the message length and store the character in the message buffer
 		// If it no delimiter found, copy the character into the new buffer
-		rx_message.message[message_length] = (char)s_uart_rx.buffer[buffer_index];
+		rx_message.message[message_length++] = (char)s_uart_rx.buffer[buffer_index];
 	}
 }

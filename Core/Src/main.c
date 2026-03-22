@@ -30,9 +30,11 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 // Project libraries
+#include "dashboard.h"
 #include "scene_manager.h"
 #include "serial_hw.h"
 #include "terminal.h"
+#include "shell.h"
 
 /* USER CODE END Includes */
 
@@ -54,6 +56,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+SystemMode_t system_mode = SYSTEM_STATE_USER_INPUT; // Initialize the system mode to user input by default
 
 /* USER CODE END PV */
 
@@ -106,23 +109,21 @@ int main(void)
 	MX_USB_HOST_Init();
 	MX_USART2_UART_Init();
 	MX_RNG_Init();
+
 	/* USER CODE BEGIN 2 */
-
 	// Initialize all user modules
-	TerminalInit(FALSE); // Initialize terminal (disable cursor to prevent flickering)
-	SerialReceiveInit(); // Begin UART data reception using DMA
-
-	TerminalClearScreen(); // Clear the terminal to start of clean
+	TerminalInit(FALSE);	// Initialize terminal (disable cursor blinking)
+	SerialReceiveInit();			// Begin UART data reception using DMA
+	TerminalClearScreen();		    // Clear the terminal
+	ShellInit();					// Initialize the CLI shell interface
 
 	// Timing and Frame Rate Control
-	uint32_t last_heartbeat = HAL_GetTick(); // Tracks the last time a frame was processed
-	static uint32_t frame_interval = 33;     // Target ~30 FPS (1s/f = 1s/30fps = 1000ms / 30 ≈ 33ms)
-	uint32_t frame_counter = 0;              // Incremental count of elapsed frames
+	uint32_t last_heartbeat = HAL_GetTick();	// Tracks the last time a frame was processed
+	uint32_t frame_counter = 0;              	// Incremental count of elapsed frames
 
 	// FPS Calculation Variables
-	uint32_t last_fps = HAL_GetTick();   // Timestamp for the last FPS calculation
-	uint32_t fps_counter = 0;            // Tracks frames rendered in the current second
-	static uint32_t seconds_time = 1000; // Period for FPS update (1000ms)
+	uint32_t last_fps = HAL_GetTick();			// Timestamp for the last FPS calculation
+	uint32_t fps_counter = 0;					// Tracks frames rendered in the current second
 
 	/* USER CODE END 2 */
 
@@ -136,21 +137,39 @@ int main(void)
 		MX_USB_HOST_Process();
 
 		/* USER CODE BEGIN 3 */
+		// Process incoming serial data if the system is in user input mode
+		if (system_mode == SYSTEM_STATE_USER_INPUT) {
+			SerialProcessData();
+		} 
 
-		// Check if one second has passed to update the FPS display
-		if (current_time - last_fps >= seconds_time) {
-			FPSDisplay(fps_counter);
+		// While in dashboard mode, check if one second has passed to update the FPS display
+		if (system_mode == SYSTEM_STATE_DASHBOARD && (current_time - last_fps >= ONE_SECOND_MS)) {
+			DashboardFPSRefresh(fps_counter, TARGET_FPS);
+
+			// Increment the FPS counter and reset the timer for the next second
 			fps_counter = 0;
 			last_fps = current_time;
 		}
 
-		// Check if it's time to process the next frame
-		if (current_time - last_heartbeat >= frame_interval) {
-			// Let SceneManager Handle scene logic based on the current frame
-			SceneManager(frame_counter);
+		// Check if it's time to process the next frame based on the target frame interval
+		if (current_time - last_heartbeat >= FRAME_INTERVAL_MS) {
+			// While in dashboard mode, update the menu selection highlight based on the current frame count to create a blinking effect
+			if (system_mode == SYSTEM_STATE_DASHBOARD) {
+				DashboardMenuSelection(frame_counter);
+			}
 
+			// While in playlist mode, Let SceneManager Handle scene logic based on the current frame
+			if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
+				SceneManager(frame_counter);
+			}
+
+			// While in auto scene mode, Let SceneManager Handle scene logic based on the current frame
+			if (system_mode == SYSTEM_STATE_AUTO_SCENE) {
+				SceneManager(frame_counter);
+			}
+			
 			// Increment trackers and maintain a consistent time for the next frame
-			last_heartbeat += frame_interval;
+			last_heartbeat += FRAME_INTERVAL_MS;
 			frame_counter++;
 			fps_counter++;
 		}
