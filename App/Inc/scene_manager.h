@@ -22,6 +22,8 @@
 /* typedefs ------------------------------------------------------------------*/
 // Scene Identifiers
 typedef enum {
+	SCENE_VISUAL_DEMO,          // Terminal capabilities (styles & graphics)
+	
 	SCENE_ASCII_GLITCH_NOISE,   // Random ASCII sporadic glitch
 	SCENE_BINARY_GLITCH_NOISE,  // Random binary (0/1) sporadic glitch
 

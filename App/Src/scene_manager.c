@@ -15,6 +15,7 @@
 
 #include "scene_glitch.h"
 #include "scene_matrix_rain.h"
+#include "scene_visual_demo.h"
 
 // STM32 libraries
 #include "main.h"
@@ -28,7 +29,8 @@
 /* Private Variables ---------------------------------------------------------*/
 // Table with configurations for all scenes
 static const SceneConfig_t scene_table[] = {
-	{SCENE_ASCII_GLITCH_NOISE, GLITCH_NOISE_DURATION, SCENE_TRANSITION_CLEAR, GlitchInit, AsciiGlitchRender},
+    {SCENE_VISUAL_DEMO, NULL, SCENE_TRANSITION_CLEAR, VisualDemoInit, VisualDemoRender},
+    {SCENE_ASCII_GLITCH_NOISE, GLITCH_NOISE_DURATION, SCENE_TRANSITION_CLEAR, GlitchInit, AsciiGlitchRender},
     {SCENE_BINARY_GLITCH_NOISE, GLITCH_NOISE_DURATION, SCENE_TRANSITION_CLEAR, GlitchInit, BinaryGlitchRender},
     {SCENE_ASCII_MATRIX_RAIN, MATRIX_RAIN_DURATION, SCENE_TRANSITION_NONE, MatrixRainInit, AsciiRainRender},
     {SCENE_BINARY_MATRIX_RAIN, MATRIX_RAIN_DURATION, SCENE_TRANSITION_NONE, MatrixRainInit, BinaryRainRender},
@@ -39,7 +41,8 @@ const uint8_t scene_table_count = sizeof(scene_table) / sizeof(scene_table[0]);
 
 // Playlist of scenes to cycle through in playlist mode and total count of scenes in the playlist
 static const SceneID_t scene_playlist[] = {
-    SCENE_ASCII_GLITCH_NOISE,
+    SCENE_VISUAL_DEMO,
+	SCENE_ASCII_GLITCH_NOISE,
     SCENE_RAIN_FADE_IN,
     SCENE_ASCII_MATRIX_RAIN,
     SCENE_MATRIX_RAIN_HACKED,
