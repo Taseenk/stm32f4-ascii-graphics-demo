@@ -1,4 +1,5 @@
 views {
+    /* System & Deployment ---------------------------------- */
     deployment view index {
         title "Physical Deployment"
         include stm32f4, host_pc
@@ -8,15 +9,16 @@ views {
     view systemView of terminal_system {
         title "System Overview"
         include *
-        // Show external incoming and outgoing relationships
+        // External incoming and outgoing relationships
         include user, firmware
         autoLayout BottomTop
     }
 
+    /* 3-Tier Firmware Architecture ------------------------- */
     view architectureView of firmware {
         title "3-Tier Firmware Architecture"
         include *, user
-        // Show external incoming and outgoing relationships
+        // External incoming and outgoing relationships
         include terminal_system.terminal
         style application_layer {
             color blue
@@ -35,9 +37,10 @@ views '3-Tier Layer / Application Layer' {
     view applicationView of firmware.application_layer {
         title "Application Layer"
         include *, firmware
-        // Show external incoming and outgoing relationships
+        // External incoming and outgoing relationships
         include firmware.presentation_layer
-        include firmware.hardware_layer.peripheral_config.rng_util_module
+        include firmware.hardware_layer.main_module
+        include firmware.hardware_layer.peripheral_config.rng_module
         style firmware.application_layer {
             color blue
         }
@@ -49,7 +52,7 @@ views '3-Tier Layer / Presentation Layer' {
     view presentationView of firmware.presentation_layer {
         title "Presentation Layer"
         include *, firmware
-        // Show external incoming and outgoing relationships
+        // External incoming and outgoing relationships
         include firmware.application_layer
         include firmware.hardware_layer
         style presentation_layer {
@@ -63,21 +66,25 @@ views '3-Tier Layer / Presentation Layer' {
 views '3-Tier Layer / Hardware Layer' {
     view hardwareView of firmware.hardware_layer {
         title "Hardware Layer"
-        include *, firmware
-        // Show external incoming and outgoing relationships
+        include *
+        // External
+        include firmware.application_layer
+        include firmware.presentation_layer
         include terminal_system
         style firmware.hardware_layer {
             color green
             opacity 50%
         }
-        autoLayout TopBottom
+        autoLayout LeftRight
     }
 
     view ConfigurationView of firmware.hardware_layer.peripheral_config {
+        title "Peripheral Configuration"
         include *, firmware.hardware_layer, terminal_system
-        // Show external incoming and outgoing relationships
+        // External incoming and outgoing relationships
         include firmware.hardware_layer.main_module
         include firmware.hardware_layer.hal_library.*
+        include firmware.application_layer.rng_util_module
         style firmware.hardware_layer {
             color green
         }
@@ -85,10 +92,12 @@ views '3-Tier Layer / Hardware Layer' {
     }
 
     view hal_libraryView of firmware.hardware_layer.hal_library {
+        title "STM32F4 HAL Library"
         include *, firmware.hardware_layer, terminal_system
-        // Show external incoming and outgoing relationships
+        // External incoming and outgoing relationships
         include firmware.hardware_layer.main_module
         include firmware.hardware_layer.peripheral_config.*
+        include firmware.application_layer.rng_util_module
         style firmware.hardware_layer {
             color green
         }
@@ -96,14 +105,186 @@ views '3-Tier Layer / Hardware Layer' {
     }
 }
 
-views 'Data Flows' {
+views 'Modules' {
+    view scenesView of firmware.application_layer.scenes_group {
+        title "Scene Modules"
+        include *, firmware.hardware_layer, firmware.application_layer, firmware.presentation_layer
+        // External incoming and outgoing relationships
+        include firmware.application_layer.scene_manager_module
+        include firmware.application_layer.rng_util_module
+        include firmware.presentation_layer.terminal_module
+        style firmware.application_layer {
+            color blue
+        }
+        style firmware.presentation_layer {
+            color red
+        }
+        style firmware.hardware_layer {
+            color green
+        }
+        autoLayout TopBottom
+    }
+
+    view shellView of firmware.application_layer.shell_module {
+        title "CLI Shell Module"
+        include *, firmware.application_layer
+        // External incoming and outgoing relationships
+        include firmware.hardware_layer.main_module
+        include firmware.application_layer.scene_manager_module
+        include firmware.application_layer.dashboard_module
+        style firmware.application_layer {
+            color blue
+        }
+        style firmware.presentation_layer {
+            color red
+        }
+        style firmware.hardware_layer {
+            color green
+        }
+        autoLayout TopBottom
+    }
+
+    view sceneManagerView of firmware.application_layer.scene_manager_module {
+        title "Scene Manager"
+        include *, firmware.application_layer, firmware.application_layer, firmware.presentation_layer
+        // External incoming and outgoing relationships
+        include firmware.hardware_layer.main_module
+        include firmware.application_layer.scenes_group
+        include firmware.presentation_layer.terminal_module
+        style firmware.application_layer {
+            color blue
+        }
+        style firmware.presentation_layer {
+            color red
+        }
+        style firmware.hardware_layer {
+            color green
+        }
+        autoLayout TopBottom
+    }
+
+    view dashboardView of firmware.application_layer.dashboard_module {
+        title "Dashboard Module"
+        include *, firmware.application_layer, firmware.application_layer, firmware.presentation_layer
+        // External incoming and outgoing relationships
+        include firmware.hardware_layer.main_module
+        include firmware.application_layer.scene_manager_module
+        include firmware.application_layer.shell_module
+        style firmware.application_layer {
+            color blue
+        }
+        style firmware.presentation_layer {
+            color red
+        }
+        style firmware.hardware_layer {
+            color green
+        }
+        autoLayout TopBottom
+    }
+}
+
+views 'Sequences' {
     dynamic view rngFlowView {
-        title "Hardware to Animation"
-        
-        firmware.application_layer.gfx_matrix_stream_module -> firmware.hardware_layer.peripheral_config.rng_util_module "Requests random seed"
-        firmware.hardware_layer.peripheral_config.rng_util_module -> firmware.hardware_layer.peripheral_config.rng_module "Fetches raw value"
-        firmware.hardware_layer.peripheral_config.rng_module -> firmware.hardware_layer.hal_library.hal_rng "Polls DR register"
-        
+        title "Hardware RNG to Scene"
+        firmware.application_layer.scene_glitch_module -> firmware.application_layer.rng_util_module "Requests a random seed at scene init"
+        firmware.application_layer.rng_util_module -> firmware.hardware_layer.peripheral_config.rng_module "Fetches a raw value from the hardware peripheral"
+        firmware.hardware_layer.peripheral_config.rng_module -> firmware.hardware_layer.hal_library.hal_rng "Reads from the TRNG peripheral"
+        firmware.hardware_layer.hal_library.hal_rng -> firmware.application_layer.rng_util_module "Returns raw seed value"
+        firmware.application_layer.rng_util_module -> firmware.application_layer.scene_glitch_module "Returns seed; scene uses software RNG for subsequent frames"
+        autoLayout LeftRight
+    }
+
+    dynamic view uartTxFlowView {
+        title "Scene Render to Terminal"
+        firmware.hardware_layer.main_module -> firmware.application_layer.scene_manager_module "Drives the scene each frame"
+        firmware.application_layer.scene_manager_module -> firmware.application_layer.scene_matrix_rain_module "Delegates render to the active scene"
+        firmware.application_layer.scene_matrix_rain_module -> firmware.presentation_layer.terminal_module "Sends character and position to the terminal layer"
+        firmware.presentation_layer.terminal_module -> firmware.presentation_layer.serial_hw_module "Passes formatted display data for transmission"
+        firmware.presentation_layer.serial_hw_module -> firmware.hardware_layer.hal_library.hal_uart "Hands off byte stream to the UART driver"
+        firmware.hardware_layer.hal_library.hal_uart -> terminal_system.terminal "Transmits bytes over the serial link"
+        autoLayout LeftRight
+    }
+
+    dynamic view rxCommandFlowView {
+        title "User Input to System Mode"
+        terminal_system.terminal -> firmware.hardware_layer.hal_library.hal_uart "User types a command in the terminal"
+        firmware.hardware_layer.hal_library.hal_uart -> firmware.presentation_layer.serial_hw_module "Bytes land in the circular DMA receive buffer"
+        firmware.presentation_layer.serial_hw_module -> firmware.application_layer.shell_module "Complete message extracted and sent to the command parser"
+        firmware.application_layer.shell_module -> firmware.application_layer.scene_manager_module "Valid run command activates scene playback"
+        firmware.application_layer.scene_manager_module -> firmware.hardware_layer.main_module "System mode change takes effect on the next loop iteration"
+        autoLayout LeftRight
+    }
+}
+
+views 'Sequences / State Machines' {
+    dynamic view systemModeStateMachine {
+        title "Top-Level System Control"
+
+        // BOOT → SYSTEM_STATE_DASHBOARD
+        firmware.hardware_layer.main_module -> firmware.application_layer.shell_module "Boot: shell initialises and prints the boot sequence — system enters DASHBOARD mode"
+
+        // SYSTEM_STATE_DASHBOARD → SYSTEM_STATE_AUTO_SCENE (via dashboard)
+        firmware.application_layer.dashboard_module -> firmware.application_layer.scene_manager_module "DASHBOARD_AUTO confirmed: scene manager reset → system_mode = SYSTEM_STATE_AUTO_SCENE"
+
+        // SYSTEM_STATE_DASHBOARD → SYSTEM_STATE_PLAYLIST_SCENE (via dashboard)
+        firmware.application_layer.dashboard_module -> firmware.application_layer.scene_manager_module "DASHBOARD_PLAYLIST confirmed: scene manager reset → system_mode = SYSTEM_STATE_PLAYLIST_SCENE"
+
+        // SYSTEM_STATE_DASHBOARD → SYSTEM_STATE_AUTO_SCENE (via shell)
+        firmware.application_layer.shell_module -> firmware.application_layer.scene_manager_module "CLI RUN DEMO /MODE=AUTO received: scene manager reset → system_mode = SYSTEM_STATE_AUTO_SCENE"
+
+        // SYSTEM_STATE_DASHBOARD → SYSTEM_STATE_PLAYLIST_SCENE (via shell)
+        firmware.application_layer.shell_module -> firmware.application_layer.scene_manager_module "CLI RUN DEMO /MODE=PLAYLIST received: scene manager reset → system_mode = SYSTEM_STATE_PLAYLIST_SCENE"
+
+        // AUTO / PLAYLIST — main loop dispatch
+        firmware.hardware_layer.main_module -> firmware.application_layer.scene_manager_module "Each frame: scene manager is driven while system_mode is AUTO or PLAYLIST"
+
+        autoLayout LeftRight
+    }
+
+    dynamic view sceneStateStateMachine {
+        title "Scene Playback"
+
+        // SCENE_STATE_START — clear screen if required by transition type
+        firmware.application_layer.scene_manager_module -> firmware.presentation_layer.terminal_module "START: screen cleared if the scene's transition type requires it"
+
+        // SCENE_STATE_START — run scene init
+        firmware.application_layer.scene_manager_module -> firmware.application_layer.scenes_group "START: scene init called once to reset all scene-local variables"
+
+        // SCENE_STATE_START → SCENE_STATE_RUN
+        firmware.application_layer.scene_manager_module -> firmware.application_layer.scene_manager_module "START → RUN: frame counter reset to zero"
+
+        // SCENE_STATE_RUN — render each frame
+        firmware.application_layer.scene_manager_module -> firmware.application_layer.scenes_group "RUN: scene render called every frame with the current scene frame count"
+
+        // SCENE_STATE_RUN — scene draws to terminal
+        firmware.application_layer.scenes_group -> firmware.presentation_layer.terminal_module "RUN: scene writes characters and positions to the terminal layer"
+
+        // SCENE_STATE_RUN → SCENE_STATE_EXIT
+        firmware.application_layer.scene_manager_module -> firmware.application_layer.scene_manager_module "RUN → EXIT: frame counter has reached the scene duration"
+
+        // SCENE_STATE_EXIT — reset terminal style
+        firmware.application_layer.scene_manager_module -> firmware.presentation_layer.terminal_module "EXIT: terminal colours reset to default"
+
+        // SCENE_STATE_EXIT → SCENE_STATE_START (next scene)
+        firmware.application_layer.scene_manager_module -> firmware.application_layer.scene_manager_module "EXIT → START: scene index advanced with wrap-around, ready for next scene"
+
+        autoLayout LeftRight
+    }
+
+    dynamic view dashboardStateMachine {
+        title "Main Menu Navigation"
+
+        // Entry — dashboard initialised
+        firmware.hardware_layer.main_module -> firmware.application_layer.dashboard_module "DASHBOARD mode entered: screen cleared and full menu rendered once"
+
+        // Per-frame — highlight active page
+        firmware.application_layer.dashboard_module -> firmware.application_layer.dashboard_module "Each frame: blinking highlight applied to the currently selected page"
+
+        // DASHBOARD_AUTO → scene playback
+        firmware.application_layer.dashboard_module -> firmware.application_layer.scene_manager_module "DASHBOARD_AUTO: selection confirmed after blink timer → system_mode = SYSTEM_STATE_AUTO_SCENE"
+
+        // DASHBOARD_PLAYLIST → scene playback
+        firmware.application_layer.dashboard_module -> firmware.application_layer.scene_manager_module "DASHBOARD_PLAYLIST: selection confirmed after blink timer → system_mode = SYSTEM_STATE_PLAYLIST_SCENE"
         autoLayout LeftRight
     }
 }
