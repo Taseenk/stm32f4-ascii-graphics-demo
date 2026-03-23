@@ -83,13 +83,19 @@ void TerminalFlush(void);
 void TerminalCursorHome(void);
 void TerminalClearScreen(void);
 void TerminalClearAndHome(void);
+
+void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row);
+
+// Cursor functions
 void TerminalInvisibleCursor(void);
 void TerminalVisibleCursor(void);
-void TerminalResetStyle(void);
 void TerminalSetCursorPos(uint16_t col, uint16_t row);
-void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row);
+
+// Style and color control functions
+void TerminalResetStyle(void);
 void TerminalSetColour(ForegroundColour_t text_colour, BackgroundColour_t background_colour);
 void TerminalSetTextColour(ForegroundColour_t text_colour);
+void TerminalSetBackgroundColour(BackgroundColour_t background_colour);
 
 // Framebuffer management functions
 void TerminalClearBuffer(void);
