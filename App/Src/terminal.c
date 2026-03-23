@@ -456,6 +456,42 @@ void TerminalSetTextColour(ForegroundColour_t text_colour)
 }
 
 /**
+ * @fn void TerminalSetBackgroundColour(BackgroundColour_t background_colour)
+ * @brief Sets the terminal background colour using ANSI escape sequences.
+ * This function sends the appropriate ANSI command to change only the background colour.
+ * @param background_colour The desired background colour from the BackgroundColour_t enum.
+ */
+void TerminalSetBackgroundColour(BackgroundColour_t background_colour)
+{
+	// Temporary buffer to hold the ANSI escape sequence
+	char buffer[16];
+
+	// Length of the formatted string
+	int len = 0;
+
+	// Check if the colour is a standard ANSI colour or an extended colour
+	// Format the escape sequence to move the cursor and return the length
+	// The length here is without the string terminator (\0)
+	if (background_colour >= EXTENDED_COLOURS_OFFSET) {
+		// Adjust the colour value for extended colours
+		background_colour -= EXTENDED_COLOURS_OFFSET;
+
+		// Format based on the extended ANSI background colour \x1b[48;5;82m
+		len = snprintf(buffer, sizeof(buffer), ANSI_ESC "48;5;%dm", background_colour);
+	} else {
+		// Format based on the Standard ANSI background colour \x1b[32m
+		len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%dm", background_colour);
+	} 
+
+	// Check if sprintf failed (len < 0) or if the formatted string exceeded the buffer size
+	if (len <= 0 || (size_t)len >= sizeof(buffer))
+		return;
+
+	// Transmit the escape sequence
+	SerialPrintN(buffer, (uint16_t)len);
+}
+
+/**
  * @fn void TerminalClearBuffer(void)
  * @brief Clears the internal terminal framebuffer by filling it with space characters.
  * This function does NOT send any data to the terminal; it only updates the internal framebuffer.
