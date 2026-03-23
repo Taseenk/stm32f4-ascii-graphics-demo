@@ -193,6 +193,9 @@ void GlitchInit(void)
 {
     // Initialize by generating a random number to minimise overhead when the scene starts
 	rand_number = GetRandomNumber();
+
+	// Reset all previous styles
+	TerminalResetStyle();
 }
 
 /**
