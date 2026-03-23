@@ -19,10 +19,24 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y gcc-arm-none-eabi ninja-build
+          sudo apt-get install -y gcc-arm-none-eabi ninja-build clang-tidy clang-format
  
       - name: Configure
         run: cmake --preset Release
  
       - name: Build
         run: cmake --build --preset Release
+
+      - name: Print binary size
+        run: arm-none-eabi-size build/Release/stm32f4-ascii-graphics-demo.elf
+
+      - name: Check formatting
+        run: |
+          find App/Src App/Inc -name '*.c' -o -name '*.h' | \
+            xargs clang-format --dry-run --Werror
+ 
+      - name: Run clang-tidy
+        run: |
+          clang-tidy App/Src/*.c App/Src/Scenes/*.c \
+            -p build/Release/compile_commands.json
+
