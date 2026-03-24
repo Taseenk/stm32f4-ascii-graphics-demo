@@ -27,12 +27,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Private Defines -----------------------------------------------------------*/
+#define COLOUR_SEGMENT_MAX_LEN   12   	// Enough for "48;5;255\0"
+#define COLOUR_BUFFER_SIZE       32  	// Enough for "\x1b[38;5;255;48;5;255m\0"
+
 /* Private Variables ---------------------------------------------------------*/
 static uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
 
 /* Private Function Prototypes -----------------------------------------------*/
 static void __NormalizeCoordinates(uint16_t *col, uint16_t *row);
 static uint8_t __IsValidPos(uint16_t col, uint16_t row);
+static int __BuildColourSequence(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg);
 static void __DrawChar(char c, uint16_t col, uint16_t row);
 static void __DrawLineHorizontal(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
@@ -70,6 +75,37 @@ static uint8_t __IsValidPos(uint16_t col, uint16_t row)
 
 	// Return position is valid
 	return TRUE;
+}
+
+/**
+ * @fn static int __BuildColourSequence(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg)
+ * @brief Internal function to build an ANSI escape sequence for setting either foreground or background colour.
+ * This function handles both standard ANSI colours and extended 256-colour mode by checking the colour value against 
+ * the EXTENDED_COLOURS_OFFSET. It formats the appropriate ANSI command into the provided buffer and returns the length of the formatted string.
+ * @param buffer The character buffer to write the ANSI escape sequence into.
+ * @param buf_size The size of the provided buffer to prevent overflow.
+ * @param colour The colour value, which can be a standard ANSI colour or an extended colour (offset by EXTENDED_COLOURS_OFFSET).
+ * @param is_fg TRUE if the colour is for the foreground (text), FALSE if it is for the background.
+ * @return The length of the formatted ANSI escape sequence string, or a negative value if formatting failed or the buffer was too small.
+ */
+static int __BuildColourSequence(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg)
+{
+	if (colour >= EXTENDED_COLOURS_OFFSET) {
+		// Adjust the colour value for extended colours
+		colour -= EXTENDED_COLOURS_OFFSET;
+
+		if (is_fg == TRUE) {
+			// Format based on the extended ANSI forground text colour \x1b[38;5;82m
+			return snprintf(buffer, buf_size, "38;5;%d", colour);
+		} else {
+			// Format based on the extended ANSI background colour \x1b[48;5;82m
+			return snprintf(buffer, buf_size, "48;5;%d", colour);
+		}
+
+	} else {
+		// Format based on the Standard ANSI background colour \x1b[32m
+		return snprintf(buffer, buf_size, "%d", colour);
+	} 
 }
 
 /**
@@ -405,12 +441,18 @@ void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row)
  */
 void TerminalSetColour(ForegroundColour_t text_colour, BackgroundColour_t background_colour)
 {
-	// Temporary buffer to hold the ANSI escape sequence
-	char buffer[16];
+	// Temporary buffers to hold the ANSI escape sequences for foreground and background colours
+	char buffer[COLOUR_BUFFER_SIZE];
+    char fg_seg[COLOUR_SEGMENT_MAX_LEN];
+    char bg_seg[COLOUR_SEGMENT_MAX_LEN];
 
-	// Format the escape sequence to move the cursor and return the length
+	// Build the ANSI escape sequences for foreground and background colours
+	__BuildColourSequence(fg_seg, sizeof(fg_seg), (int)text_colour, TRUE);
+	__BuildColourSequence(bg_seg, sizeof(bg_seg), (int)background_colour, FALSE);
+	
+	// Combine the foreground and background escape sequence into a single ANSI escape sequence
 	// The length here is without the string terminator (\0)
-	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%d;%dm", text_colour, background_colour);
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%s;%sm", fg_seg, bg_seg);
 
 	// Check if sprintf failed (len < 0) or if the formatted string exceeded the buffer size
 	if (len <= 0 || (size_t)len >= sizeof(buffer))
@@ -427,25 +469,16 @@ void TerminalSetColour(ForegroundColour_t text_colour, BackgroundColour_t backgr
  */
 void TerminalSetTextColour(ForegroundColour_t text_colour)
 {
-	// Temporary buffer to hold the ANSI escape sequence
-	char buffer[16];
+	// Temporary buffers to hold the ANSI escape sequences for foreground
+	char buffer[COLOUR_BUFFER_SIZE];
+    char fg_seg[COLOUR_SEGMENT_MAX_LEN];
 
-	// Length of the formatted string
-	int len = 0;
-
-	// Check if the colour is a standard ANSI colour or an extended colour
-	// Format the escape sequence to move the cursor and return the length
+	// Build the ANSI escape sequences for foreground
+	__BuildColourSequence(fg_seg, sizeof(fg_seg), (int)text_colour, TRUE);
+	
+	// Format the escape sequence to set the foreground text colour
 	// The length here is without the string terminator (\0)
-	if (text_colour >= EXTENDED_COLOURS_OFFSET) {
-		// Adjust the colour value for extended colours
-		text_colour -= EXTENDED_COLOURS_OFFSET;
-
-		// Format based on the extended ANSI forground text colour \x1b[38;5;82m
-		len = snprintf(buffer, sizeof(buffer), ANSI_ESC "38;5;%dm", text_colour);
-	} else {
-		// Format based on the Standard ANSI forground text colour \x1b[32m
-		len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%dm", text_colour);
-	} 
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%sm", fg_seg);
 
 	// Check if sprintf failed (len < 0) or if the formatted string exceeded the buffer size
 	if (len <= 0 || (size_t)len >= sizeof(buffer))
@@ -463,25 +496,16 @@ void TerminalSetTextColour(ForegroundColour_t text_colour)
  */
 void TerminalSetBackgroundColour(BackgroundColour_t background_colour)
 {
-	// Temporary buffer to hold the ANSI escape sequence
-	char buffer[16];
+	// Temporary buffers to hold the ANSI escape sequences for background colours
+	char buffer[COLOUR_BUFFER_SIZE];
+    char bg_seg[COLOUR_SEGMENT_MAX_LEN];
 
-	// Length of the formatted string
-	int len = 0;
-
-	// Check if the colour is a standard ANSI colour or an extended colour
-	// Format the escape sequence to move the cursor and return the length
+	// Build the ANSI escape sequences for background colours
+	__BuildColourSequence(bg_seg, sizeof(bg_seg), (int)background_colour, FALSE);
+	
+	// Format the escape sequence to set the foreground text colour
 	// The length here is without the string terminator (\0)
-	if (background_colour >= EXTENDED_COLOURS_OFFSET) {
-		// Adjust the colour value for extended colours
-		background_colour -= EXTENDED_COLOURS_OFFSET;
-
-		// Format based on the extended ANSI background colour \x1b[48;5;82m
-		len = snprintf(buffer, sizeof(buffer), ANSI_ESC "48;5;%dm", background_colour);
-	} else {
-		// Format based on the Standard ANSI background colour \x1b[32m
-		len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%dm", background_colour);
-	} 
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%sm", bg_seg);
 
 	// Check if sprintf failed (len < 0) or if the formatted string exceeded the buffer size
 	if (len <= 0 || (size_t)len >= sizeof(buffer))
