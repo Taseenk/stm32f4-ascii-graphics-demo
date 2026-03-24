@@ -17,10 +17,14 @@
 #include "main.h"
 
 /* Private Defines -----------------------------------------------------------*/
+// Timing and duration parameters for the different phases of the visual demo scene
+#define SMPTE_MUTED_DURATION        100
+#define BACKGROUND_CYCLE_DURATION   (SMPTE_MUTED_DURATION + (2 * (BACKGROUND_COLOUR_COUNT * BACKGROUND_CYCLE_SPEED)) )    // Total frames for two full cycles through all background colours
+#define SMPTE_DURATION              (BACKGROUND_CYCLE_DURATION + 50)
+
 // Background colour cycling parameters
 #define BACKGROUND_COLOUR_COUNT     (BG_DEFAULT - BG_BLACK)     // Total number of standard background colours available to cycle through
 #define BACKGROUND_CYCLE_SPEED      9                           // Number of frames each background colour is held before advancing to the next
-#define BACKGROUND_CYCLE_DURATION   (2 * (BACKGROUND_COLOUR_COUNT * BACKGROUND_CYCLE_SPEED))    // Total frames for two full cycles through all background colours
 
 // SMPTE colour bar parameters
 #define SMPTE_BAR_WIDTH             11      // Standard width (in characters) for a vertical bar
@@ -39,6 +43,7 @@
 
 /* Private Function Prototypes -----------------------------------------------*/
 static void __CycleBackgroundColour(uint32_t frame, uint8_t speed);
+static void __ColourBarsStaticMuted(void);
 static void __ColourBarsStatic(void);
 
 /* Private Functions ---------------------------------------------------------*/
@@ -94,6 +99,37 @@ static void __DrawSmpteStrip(const BackgroundColour_t *colours, uint8_t count, u
 }
 
 /**
+ * @fn static void __ColourBarsStaticMuted(void)
+ * @brief Renders a "malfunctioning" or "uncalibrated" SMPTE test pattern.
+ * This function mimics this by replacing the standard high-saturation SMPTE 
+ * colors with grayscale and low-luminance equivalents (Grays, Blacks, and Near-Blacks). 
+ * It is used as the initial state in the visual demo to simulate a system error 
+ * or boot-up sequence before calibration occurs.
+ */
+static void __ColourBarsStaticMuted(void)
+{
+    // These colors represent the uncalibrated version
+    // Using mostly grays and blacks to simulate a low-luminance
+    static const BackgroundColour_t muted_main_colours[] = {
+        BG_DARK_GRAY, BG_BLACK, BG_DARK_GRAY, BG_BLACK, BG_DARK_GRAY, BG_BLACK, BG_DARK_GRAY
+    };
+    static const BackgroundColour_t muted_complement_colours[] = {
+        BG_BLACK, BG_DARK_GRAY, BG_BLACK, BG_DARK_GRAY, BG_BLACK, BG_DARK_GRAY, BG_BLACK
+    };
+    static const BackgroundColour_t muted_pluge_colours[] = {
+        BG_BLACK, BG_NEAR_BLACK_1, BG_DARK_GRAY, BG_BLACK, BG_BLACK, BG_NEAR_BLACK_2, BG_BLACK
+    };
+
+    // Draw the top SMPTE bars using the defined colours and dimensions
+    __DrawSmpteStrip(muted_main_colours, SMPTE_BAR_COUNT, TERMINAL_STARTING_POS, SMPTE_BAR_HEIGHT);
+    __DrawSmpteStrip(muted_complement_colours, SMPTE_BAR_COUNT, SMPTE_COMPLEMENT_HEIGHT, SMPTE_COMPLEMENT_HEIGHT);
+    __DrawSmpteStrip(muted_pluge_colours, SMPTE_BAR_COUNT, SMPTE_PLUGE_HEIGHT, TERMINAL_HEIGHT);
+
+    // Reset terminal colours to default after rendering the test pattern
+    TerminalResetStyle();
+}
+
+/**
  * @fn static void __ColourBarsStatic(void)
  * @brief Renders a static SMPTE-style colour bar test card filling the entire
  * terminal. The top 18 rows display 7 equal vertical bars of the standard
@@ -132,5 +168,20 @@ static void __ColourBarsStatic(void)
  */
 void VisualDemoRender(uint32_t scene_frame)
 {
-    __ColourBarsStatic();
+    if (scene_frame < SMPTE_MUTED_DURATION) 
+    {
+        __ColourBarsStaticMuted();
+    } 
+    else if (scene_frame < BACKGROUND_CYCLE_DURATION) 
+    {
+        __CycleBackgroundColour(scene_frame, BACKGROUND_CYCLE_SPEED);
+    } 
+    else if (scene_frame < SMPTE_DURATION)  
+    {
+        __ColourBarsStatic();
+    }
+    else
+    {
+        return;
+    }
 }
