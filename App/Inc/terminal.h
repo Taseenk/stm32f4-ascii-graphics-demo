@@ -20,6 +20,7 @@
 /* Defines -------------------------------------------------------------------*/
 #define TERMINAL_WIDTH 				80                                      // Width of the terminal in characters
 #define TERMINAL_HEIGHT 			24                                      // Height of the terminal in characters
+#define TERMINAL_STARTING_POS		1										// Starting position for cursor (1,1) in 1-based coordinates
 #define TERMINAL_BUFFER_SIZE 		(TERMINAL_WIDTH * TERMINAL_HEIGHT)		// Total size of the terminal buffer
 #define EXTENDED_COLOURS_OFFSET 	256                             		// Offset number of extended ANSI colours supported
 
@@ -50,7 +51,14 @@ typedef enum {
 	BG_MAGENTA,
 	BG_CYAN,
 	BG_WHITE,
-	BG_DEFAULT = 49
+	BG_DEFAULT = 49,
+
+	// Extended colours (offset by 256)
+    BG_DARK_BLUE    = EXTENDED_COLOURS_OFFSET + 17,   // xterm-256 index 17  — deep navy
+    BG_DARK_PURPLE  = EXTENDED_COLOURS_OFFSET + 54,   // xterm-256 index 54  — deep purple
+    BG_NEAR_BLACK_1 = EXTENDED_COLOURS_OFFSET + 232,  // xterm-256 index 232 — just below black (PLUGE -)
+    BG_NEAR_BLACK_2 = EXTENDED_COLOURS_OFFSET + 234,  // xterm-256 index 234 — just above black (PLUGE +)
+    BG_DARK_GRAY    = EXTENDED_COLOURS_OFFSET + 238,  // xterm-256 index 238 — visible dark grey
 } BackgroundColour_t;
 
 typedef enum {
