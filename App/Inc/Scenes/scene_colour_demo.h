@@ -15,6 +15,6 @@
 
 /* Function prototypes -------------------------------------------------------*/
 void ColourDemoInit(void);
-void ColourDemoRender(uint32_t scene_frame);
+void SmpteCalibrationRender(uint32_t scene_frame);
 
 #endif /* __SCENE_COLOUR_DEMO_H */
