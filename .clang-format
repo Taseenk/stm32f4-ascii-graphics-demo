@@ -1,15 +1,50 @@
-BreakBeforeBraces: Linux
+---
+Language: Cpp
 
-# General Style & Layout -------------------------------------------------------------- #
+# Core Base & Layout -------------------------------------------------------------- #
 # Inherit a base style (like LLVM, Google, WebKit, etc.)
 BasedOnStyle: Microsoft
 
+# The maximum allowed line length for the formatted code. Lines longer than this will be wrapped.
+ColumnLimit: 120
+
+# Indentation & Spacing ----------------------------------------------------------- #
 # The number of spaces used for a single level of indentation
 IndentWidth: 4
 UseTab: ForIndentation
 
+# The indentation width used for wrapped lines (e.g., arguments split across multiple lines).
+ContinuationIndentWidth: 4
+
 # Indent the "case" labels relative to the "switch" statement
 IndentCaseLabels: true
 
-# The indentation width used for wrapped lines (e.g., arguments split across multiple lines).
-ContinuationIndentWidth: 4
+# Brace Handling ------------------------------------------------------------------ #
+# Control the placement of braces for different constructs
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterControlStatement: true
+  AfterFunction: true 
+  AfterStruct: false
+  AfterEnum: false
+  AfterClass: false
+  BeforeCatch: false
+  BeforeElse: false
+
+  SplitEmptyRecord: true
+  IndentBraces: false
+  SplitEmptyFunction: true
+
+# Alignment Logic------------------------------------------------------------------ #
+# parameters get split across multiple lines when the line length exceeds the ColumnLimit.
+AlignAfterOpenBracket: AlwaysBreak
+
+# Pointer alignment Right (e.g., int* ptr) instead of left (e.g., int *ptr) or middle (e.g., int * ptr).
+PointerAlignment: Right
+DerivePointerAlignment: false
+
+# Defines how to align the values of consecutive macro definitions (#define).
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: false
