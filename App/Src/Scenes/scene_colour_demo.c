@@ -16,13 +16,11 @@
 // STM32 libraries
 #include "main.h"
 
-// Standard libraries
-
 /* Private Defines -----------------------------------------------------------*/
 // Timing parameters for the colour sequence phases
-#define BACKGROUND_CYCLE_DURATION (SMPTE_MUTED_DURATION + (2 * (BACKGROUND_COLOUR_COUNT * BACKGROUND_CYCLE_SPEED)))
 #define SMPTE_MUTED_DURATION      100
-#define SMPTE_DURATION            (BACKGROUND_CYCLE_DURATION + 50)
+#define BACKGROUND_CYCLE_DURATION (SMPTE_MUTED_DURATION + (2 * (BACKGROUND_COLOUR_COUNT * BACKGROUND_CYCLE_SPEED)))
+#define SMPTE_DURATION            (BACKGROUND_CYCLE_DURATION + 100)
 
 // Background colour cycling parameters
 #define BACKGROUND_COLOUR_COUNT                                                                                        \
@@ -45,28 +43,15 @@
 /* Private Variables ---------------------------------------------------------*/
 
 /* Private Function Prototypes -----------------------------------------------*/
-static void __CycleBackgroundColour(uint32_t frame, uint8_t speed);
+// Helper functions
 static void __DrawSmpteStrip(const BackgroundColour_t *colours, uint8_t count, uint8_t start_row, uint8_t end_row);
+
+// Rendering functions
+static void __CycleBackgroundColour(uint32_t frame, uint8_t speed);
 static void __DrawSmpteMuted(void);
 static void __DrawSmpteStandard(void);
 
 /* Private Functions ---------------------------------------------------------*/
-/**
- * @fn static void __CycleBackgroundColour(uint32_t frame, uint8_t speed)
- * @brief Cycles the terminal background colour based on the current frame,
- * advancing one colour every `speed` frames and wrapping back to the first
- * colour on completion of a full cycle.
- * @param frame The current scene frame count used to derive the active colour.
- * @param speed The number of frames each colour is held before advancing.
- */
-static void __CycleBackgroundColour(uint32_t frame, uint8_t speed)
-{
-	uint8_t colour_index = ((frame / speed) % BACKGROUND_COLOUR_COUNT) + BG_BLACK;
-
-	TerminalSetColour(FG_DEFAULT, colour_index);
-	TerminalClearScreen();
-}
-
 /**
  * @fn static void __DrawSmpteStrip(const BackgroundColour_t *colours, uint8_t count, uint8_t start_row, uint8_t
  * end_row)
@@ -86,7 +71,8 @@ static void __DrawSmpteStrip(const BackgroundColour_t *colours, uint8_t count, u
 	// Starting column for the first bar
 	uint16_t col = 1;
 
-	for (uint8_t i = 0; i < count; i++) {
+	for (uint8_t i = 0; i < count; i++)
+	{
 		TerminalSetColour(FG_DEFAULT, colours[i]);
 
 		// Specific indices (0, 3, 6) are wider to align with terminal widths
@@ -95,13 +81,30 @@ static void __DrawSmpteStrip(const BackgroundColour_t *colours, uint8_t count, u
 		uint16_t bar_width = is_wide ? SMPTE_WIDE_BAR_WIDTH : SMPTE_BAR_WIDTH;
 
 		// Fill the vertical strip for the current bar across the specified row range
-		for (uint8_t row = start_row; row <= end_row; row++) {
+		for (uint8_t row = start_row; row <= end_row; row++)
+		{
 			TerminalSerialPrintString(row_block, col, row);
 		}
 
 		// Move the column position for the next bar based on the width of the current bar
 		col += bar_width;
 	}
+}
+
+/**
+ * @fn static void __CycleBackgroundColour(uint32_t frame, uint8_t speed)
+ * @brief Cycles the terminal background colour based on the current frame,
+ * advancing one colour every `speed` frames and wrapping back to the first
+ * colour on completion of a full cycle.
+ * @param frame The current scene frame count used to derive the active colour.
+ * @param speed The number of frames each colour is held before advancing.
+ */
+static void __CycleBackgroundColour(uint32_t frame, uint8_t speed)
+{
+	uint8_t colour_index = ((frame / speed) % BACKGROUND_COLOUR_COUNT) + BG_BLACK;
+
+	TerminalSetColour(FG_DEFAULT, colour_index);
+	TerminalClearScreen();
 }
 
 /**
@@ -172,8 +175,8 @@ void ColourDemoInit(void)
 }
 
 /**
- * @fn void ColourDemoRender(uint32_t scene_frame)
- * @brief Orchestrates the time-based colour demo sequence.
+ * @fn void SmpteCalibrationRender(uint32_t scene_frame)
+ * @brief Orchestrates the time-based SMPTE colour calibration demo render.
  * Uses the `scene_frame` counter to transition between three distinct phases:
  * `muted SMPTE bars` (simulating an uncalibrated display), `background colour cycling`,
  * and `standard SMPTE bars` (showcasing the full colour capabilities). Each phase is
@@ -181,14 +184,26 @@ void ColourDemoInit(void)
  * of terminal colour rendering over time.
  * @param scene_frame The current frame index provided by the scene manager.
  */
-void ColourDemoRender(uint32_t scene_frame)
+void SmpteCalibrationRender(uint32_t scene_frame)
 {
-	if (scene_frame < SMPTE_MUTED_DURATION)
-		__DrawSmpteMuted();
-	else if (scene_frame < BACKGROUND_CYCLE_DURATION)
-		__CycleBackgroundColour(scene_frame, BACKGROUND_CYCLE_SPEED);
-	else if (scene_frame < SMPTE_DURATION)
-		__DrawSmpteStandard();
-	else
+	// Early exit if we've exceeded the total duration of the demo to prevent unnecessary rendering
+	if (scene_frame >= SMPTE_DURATION)
 		return;
+
+	// Phase 1: Display muted SMPTE bars for the initial duration to simulate an uncalibrated display
+	if (scene_frame < SMPTE_MUTED_DURATION)
+	{
+		__DrawSmpteMuted();
+		return;
+	}
+
+	// Phase 2: Cycle through background colours as calibration process
+	if (scene_frame < BACKGROUND_CYCLE_DURATION)
+	{
+		__CycleBackgroundColour(scene_frame, BACKGROUND_CYCLE_SPEED);
+		return;
+	}
+
+	// Phase 3: Display the standard SMPTE bars for the remainder of the demo to showcase full colour reproduction
+	__DrawSmpteStandard();
 }
