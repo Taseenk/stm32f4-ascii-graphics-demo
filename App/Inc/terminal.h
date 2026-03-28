@@ -18,27 +18,27 @@
 #include "main.h"
 
 /* Defines -------------------------------------------------------------------*/
-#define TERMINAL_WIDTH 				80                                      // Width of the terminal in characters
-#define TERMINAL_HEIGHT 			24                                      // Height of the terminal in characters
-#define TERMINAL_STARTING_POS		1										// Starting position for cursor (1,1) in 1-based coordinates
-#define TERMINAL_BUFFER_SIZE 		(TERMINAL_WIDTH * TERMINAL_HEIGHT)		// Total size of the terminal buffer
-#define EXTENDED_COLOURS_OFFSET 	256                             		// Offset number of extended ANSI colours supported
+#define TERMINAL_WIDTH          80 // Width of the terminal in characters
+#define TERMINAL_HEIGHT         24 // Height of the terminal in characters
+#define TERMINAL_STARTING_POS   1  // Starting position for cursor (1,1) in 1-based coordinates
+#define TERMINAL_BUFFER_SIZE    (TERMINAL_WIDTH * TERMINAL_HEIGHT) // Total size of the terminal buffer
+#define EXTENDED_COLOURS_OFFSET 256                                // Offset number of extended ANSI colours supported
 
-#define SPACE_CHAR 					' ' 		// Space character used for clearing the terminal buffer
+#define SPACE_CHAR              ' ' // Space character used for clearing the terminal buffer
 
 // Standard ANSI terminal control codes
-#define ANSI_ESC 				"\x1b["				// The standard ANSI Escape sequence initiator
-#define ANSI_CURSOR_HOME 		ANSI_ESC "H"		// Move cursor to home (1,1): ESC [ H
-#define ANSI_CLEAR_SCREEN 		ANSI_ESC "2J"       // Clear the entire screen: ESC [ 2 J
-#define ANSI_CLEAR_LINE 		ANSI_ESC "2K"		// Clear the entire current line: ESC [ 2 K
-#define ANSI_CURSOR_INVISIBLE 	ANSI_ESC "?25l" 	// Hide the cursor: ESC [ ? 25 l
-#define ANSI_CURSOR_VISIBLE 	ANSI_ESC "?25h"   	// Show the cursor: ESC [ ? 25 h
-#define ANSI_RESET_STYLE 		ANSI_ESC "0m"		// Reset all text formatting and colors: ESC [ 0 m
-#define ANSI_REVERSE_MODE 		ANSI_ESC "7m"		// Enable reverse mode (swap foreground and background colors): ESC [ 7 m
-#define ANSI_RESET_REVERSE_MODE ANSI_ESC "27m"		// Disable reverse mode: ESC [ 27 m
+#define ANSI_ESC                "\x1b["         // The standard ANSI Escape sequence initiator
+#define ANSI_CURSOR_HOME        ANSI_ESC "H"    // Move cursor to home (1,1): ESC [ H
+#define ANSI_CLEAR_SCREEN       ANSI_ESC "2J"   // Clear the entire screen: ESC [ 2 J
+#define ANSI_CLEAR_LINE         ANSI_ESC "2K"   // Clear the entire current line: ESC [ 2 K
+#define ANSI_CURSOR_INVISIBLE   ANSI_ESC "?25l" // Hide the cursor: ESC [ ? 25 l
+#define ANSI_CURSOR_VISIBLE     ANSI_ESC "?25h" // Show the cursor: ESC [ ? 25 h
+#define ANSI_RESET_STYLE        ANSI_ESC "0m"   // Reset all text formatting and colors: ESC [ 0 m
+#define ANSI_REVERSE_MODE       ANSI_ESC "7m"  // Enable reverse mode (swap foreground and background colors): ESC [ 7 m
+#define ANSI_RESET_REVERSE_MODE ANSI_ESC "27m" // Disable reverse mode: ESC [ 27 m
 
 // ANSI Common combination control codes
-#define ANSI_CLS_HOME ANSI_CLEAR_SCREEN ANSI_CURSOR_HOME
+#define ANSI_CLS_HOME      ANSI_CLEAR_SCREEN ANSI_CURSOR_HOME
 #define ANSI_HIDE_CLS_HOME ANSI_CURSOR_INVISIBLE ANSI_CLS_HOME
 
 /* typedefs ------------------------------------------------------------------*/
@@ -54,11 +54,11 @@ typedef enum {
 	BG_DEFAULT = 49,
 
 	// Extended colours (offset by 256)
-    BG_DARK_BLUE    = EXTENDED_COLOURS_OFFSET + 17,   // xterm-256 index 17  — deep navy
-    BG_DARK_PURPLE  = EXTENDED_COLOURS_OFFSET + 54,   // xterm-256 index 54  — deep purple
-    BG_NEAR_BLACK_1 = EXTENDED_COLOURS_OFFSET + 232,  // xterm-256 index 232 — just below black (PLUGE -)
-    BG_NEAR_BLACK_2 = EXTENDED_COLOURS_OFFSET + 234,  // xterm-256 index 234 — just above black (PLUGE +)
-    BG_DARK_GRAY    = EXTENDED_COLOURS_OFFSET + 238,  // xterm-256 index 238 — visible dark grey
+	BG_DARK_BLUE = EXTENDED_COLOURS_OFFSET + 17,     // xterm-256 index 17  — deep navy
+	BG_DARK_PURPLE = EXTENDED_COLOURS_OFFSET + 54,   // xterm-256 index 54  — deep purple
+	BG_NEAR_BLACK_1 = EXTENDED_COLOURS_OFFSET + 232, // xterm-256 index 232 — just below black (PLUGE -)
+	BG_NEAR_BLACK_2 = EXTENDED_COLOURS_OFFSET + 234, // xterm-256 index 234 — just above black (PLUGE +)
+	BG_DARK_GRAY = EXTENDED_COLOURS_OFFSET + 238,    // xterm-256 index 238 — visible dark grey
 } BackgroundColour_t;
 
 typedef enum {
@@ -77,9 +77,9 @@ typedef enum {
 	FG_DARK_GREEN = EXTENDED_COLOURS_OFFSET + 22,
 	FG_MEDIUM_GREEN = EXTENDED_COLOURS_OFFSET + 34,
 	FG_BRIGHT_GREEN = EXTENDED_COLOURS_OFFSET + 82,
-	FG_DARK_RED     = EXTENDED_COLOURS_OFFSET + 88,
-    FG_MEDIUM_RED   = EXTENDED_COLOURS_OFFSET + 124,
-    FG_BRIGHT_RED   = EXTENDED_COLOURS_OFFSET + 196 
+	FG_DARK_RED = EXTENDED_COLOURS_OFFSET + 88,
+	FG_MEDIUM_RED = EXTENDED_COLOURS_OFFSET + 124,
+	FG_BRIGHT_RED = EXTENDED_COLOURS_OFFSET + 196
 } ForegroundColour_t;
 
 /* Function prototypes -------------------------------------------------------*/

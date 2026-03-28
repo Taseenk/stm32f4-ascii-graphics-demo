@@ -1,9 +1,9 @@
 /**
  ******************************************************************************
  * @file           : scene_manager.c
- * @brief          : Scene management system for cycling through different ASCII 
- * art scenes on an STM32F4 microcontroller. This module handles scene transitions, 
- * timing, and state management for both automatic cycling and user-defined 
+ * @brief          : Scene management system for cycling through different ASCII
+ * art scenes on an STM32F4 microcontroller. This module handles scene transitions,
+ * timing, and state management for both automatic cycling and user-defined
  * playlists of scenes.
  ******************************************************************************
  */
@@ -22,9 +22,9 @@
 
 /* Private Defines -----------------------------------------------------------*/
 // Scene Durations (in frames)
-#define GLITCH_NOISE_DURATION			150
-#define MATRIX_RAIN_DURATION			350
-#define RAIN_FADE_IN_DURATION			300
+#define GLITCH_NOISE_DURATION 150
+#define MATRIX_RAIN_DURATION  350
+#define RAIN_FADE_IN_DURATION 300
 
 /* Private Variables ---------------------------------------------------------*/
 // Table with configurations for all scenes
@@ -41,18 +41,14 @@ const uint8_t scene_table_count = sizeof(scene_table) / sizeof(scene_table[0]);
 
 // Playlist of scenes to cycle through in playlist mode and total count of scenes in the playlist
 static const SceneID_t scene_playlist[] = {
-    SCENE_VISUAL_DEMO,
-	SCENE_ASCII_GLITCH_NOISE,
-    SCENE_RAIN_FADE_IN,
-    SCENE_ASCII_MATRIX_RAIN,
-    SCENE_MATRIX_RAIN_HACKED,
+    SCENE_VISUAL_DEMO, SCENE_ASCII_GLITCH_NOISE, SCENE_RAIN_FADE_IN, SCENE_ASCII_MATRIX_RAIN, SCENE_MATRIX_RAIN_HACKED,
 };
 const uint8_t scene_playlist_count = sizeof(scene_playlist) / sizeof(scene_playlist[0]);
 
 // State variables for scene management
-static SceneState_t current_state = SCENE_STATE_START;  // Initialize starting scene state
-static uint8_t scene_index = 0;                   		// Current index in the scene table 
-static uint32_t scene_frame_counter = 0;                // Frame counter for the current scene
+static SceneState_t current_state = SCENE_STATE_START; // Initialize starting scene state
+static uint8_t scene_index = 0;                        // Current index in the scene table
+static uint32_t scene_frame_counter = 0;               // Frame counter for the current scene
 
 /* Private Function Prototypes -----------------------------------------------*/
 static uint8_t __GetTotalIndexCount(void);
@@ -62,19 +58,21 @@ static uint32_t __GetSceneDuration(uint32_t scene_duration);
 /* Private Functions ---------------------------------------------------------*/
 /**
  * @fn static uint8_t __GetTotalIndexCount(void)
- * @brief Determines the total number of scenes available based 
+ * @brief Determines the total number of scenes available based
  * on the current system mode (auto or playlist).
  * @return Returns the total count of scenes to cycle through in the current mode.
  */
 static uint8_t __GetTotalIndexCount(void)
 {
 	// In auto mode, return the total number of scenes in the scene table
-	if (system_mode == SYSTEM_STATE_AUTO_SCENE) {
+	if (system_mode == SYSTEM_STATE_AUTO_SCENE)
+	{
 		return (uint8_t)scene_table_count;
 	}
 
 	// In playlist mode, return the total number of scenes defined in the playlist
-	if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
+	if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE)
+	{
 		return (uint8_t)scene_playlist_count;
 	}
 
@@ -93,7 +91,8 @@ static const SceneConfig_t *__GetActiveScene(void)
 {
 	// Return the current active scene configuration based on the system mode
 	// System mode is auto
-	if (system_mode == SYSTEM_STATE_AUTO_SCENE) {
+	if (system_mode == SYSTEM_STATE_AUTO_SCENE)
+	{
 		// Early exit if scene_index index is out of bouds
 		if (scene_index >= scene_table_count)
 			return NULL;
@@ -103,7 +102,8 @@ static const SceneConfig_t *__GetActiveScene(void)
 	}
 
 	// System mode is playlist
-	if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
+	if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE)
+	{
 		// Early exit if scene_index index is out of bouds
 		if (scene_index >= scene_playlist_count)
 			return NULL;
@@ -111,8 +111,10 @@ static const SceneConfig_t *__GetActiveScene(void)
 		// Get the target scene ID from the playlist based on the current index
 		SceneID_t target_scene = scene_playlist[scene_index];
 
-		// Search through all scenes in the scene table to find the configuration for the current target scene in the playlist
-		for (uint8_t i = 0; i < scene_table_count; i++) {
+		// Search through all scenes in the scene table to find the configuration for the current target scene in the
+		// playlist
+		for (uint8_t i = 0; i < scene_table_count; i++)
+		{
 			if (scene_table[i].id == target_scene)
 				return &scene_table[i];
 		}
@@ -132,18 +134,18 @@ static const SceneConfig_t *__GetActiveScene(void)
  */
 static uint32_t __GetSceneDuration(uint32_t scene_duration)
 {
-    // In auto mode use default scene duration for all scenes
+	// In auto mode use default scene duration for all scenes
 	if (system_mode == SYSTEM_STATE_AUTO_SCENE)
 		return SCENE_DEFAULT_DURATION;
 
-    // In playlist mode use the excisting specified duration for the scene
-    return scene_duration;
+	// In playlist mode use the excisting specified duration for the scene
+	return scene_duration;
 }
 
 /* Private Functions ---------------------------------------------------------*/
 /**
  * @fn void SceneManager(uint32_t global_frame_count)
- * @brief 
+ * @brief
  * @param void This function does not take any parameters.
  */
 void SceneManagerInit(void)
@@ -156,24 +158,27 @@ void SceneManagerInit(void)
 
 void SceneManager(uint32_t global_frame_count)
 {
-    // Get the currently active scene
+	// Get the currently active scene
 	const SceneConfig_t *active_scene = __GetActiveScene();
 
 	// If no valid active scene is found, reset to the first scene and return
-	if (active_scene == NULL) {
+	if (active_scene == NULL)
+	{
 		SceneManagerInit();
 		return;
 	}
 
 	// Manage scenes based on states start, run, and exit
-	switch (current_state) {
+	switch (current_state)
+	{
 		/* Initialize scenes, apply transition, run init, reset counter */
 		case SCENE_STATE_START:
 			// Always reset and clear the terminal for the new scene in auto mode
 			// In playlist mode reset and clear the terminal based on screen transition type
 			if ((active_scene->screen_transition == SCENE_TRANSITION_CLEAR &&
-			        system_mode == SYSTEM_STATE_PLAYLIST_SCENE) ||
-			    system_mode == SYSTEM_STATE_AUTO_SCENE) {
+			     system_mode == SYSTEM_STATE_PLAYLIST_SCENE) ||
+			    system_mode == SYSTEM_STATE_AUTO_SCENE)
+			{
 				TerminalClearAndHome();
 			}
 
@@ -189,7 +194,8 @@ void SceneManager(uint32_t global_frame_count)
 		/* Run scene logic checking duration based on auto or playlist mode */
 		case SCENE_STATE_RUN:
 			// Check the duration of the scene to transition to EXIT state
-			if (scene_frame_counter >= __GetSceneDuration(active_scene->duration)) {
+			if (scene_frame_counter >= __GetSceneDuration(active_scene->duration))
+			{
 				current_state = SCENE_STATE_EXIT;
 				break;
 			}

@@ -47,7 +47,8 @@ uint8_t SerialPrintN(const char *str, uint16_t len)
 	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)str, len, 5);
 
 	// Check if the transmission was successful
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return FALSE;
 	}
 
@@ -102,7 +103,8 @@ uint8_t SerialPrintLn(const char *str)
 	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)buffer, len, 5);
 
 	// Check if the transmission was successful
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return FALSE;
 	}
 
@@ -132,7 +134,8 @@ uint8_t SerialTransmitDMA(const char *str, uint16_t len)
 	HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(p_uart, (uint8_t *)str, len);
 
 	// Check if the DMA started correctly
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		// Return transmission failed or UART is already busy with another DMA transmission
 		return FALSE;
 	}
@@ -194,7 +197,8 @@ void SerialProcessData(void)
 	char current_char;
 
 	// Iterate through the newly received data
-	for (int i = 0; i < rx_received_length; i++) {
+	for (int i = 0; i < rx_received_length; i++)
+	{
 		// Calculate the absolute index for the circular buffer
 		buffer_index = (s_uart_rx.read_index + i) % UART_BUFFER_SIZE;
 
@@ -202,7 +206,8 @@ void SerialProcessData(void)
 		current_char = (char)s_uart_rx.buffer[buffer_index];
 
 		// Check if the message is too long for the buffer to hold
-		if (message_length >= (sizeof(rx_message.message) - 1)) {
+		if (message_length >= (sizeof(rx_message.message) - 1))
+		{
 			// Log a warning message
 			SerialPrint("WARNING: Received message was too long");
 
@@ -214,14 +219,16 @@ void SerialProcessData(void)
 		}
 
 		// If the first character(s) are spaces, skip them and update the read index to the first non-space character
-		if (current_char == SPACE_CHAR && message_length == 0) {
+		if (current_char == SPACE_CHAR && message_length == 0)
+		{
 			// Continue to the next character in the buffer
 			continue;
 		}
 
 		// Handle user spelling mistakes, if a backspace character ('\b') is found
 		// Remove the last character from the message buffer (if there is one) and continue to the next character
-		if (current_char == BACKSPACE) {
+		if (current_char == BACKSPACE)
+		{
 			// Handle backspace: if message_length > 0, remove the last character from the message buffer
 			if (message_length > 0)
 				message_length--;
@@ -231,7 +238,8 @@ void SerialProcessData(void)
 		}
 
 		// Check if the end-of-message ('\r') delimiter is found
-		if (current_char == CARRIAGE_RETURN) {
+		if (current_char == CARRIAGE_RETURN)
+		{
 			// Null-terminate the message in the buffer at the location of the \r
 			rx_message.message[message_length] = NULL_TERMINATOR;
 
@@ -239,7 +247,7 @@ void SerialProcessData(void)
 			rx_message.length = message_length + 1;
 
 			// Update and save the new start reading position
-			// Wrap the circular buffer back to the start using modulo 
+			// Wrap the circular buffer back to the start using modulo
 			s_uart_rx.read_index = (buffer_index + 1) % UART_BUFFER_SIZE;
 
 			// Send the received message to the command parser for processing
