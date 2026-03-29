@@ -16,5 +16,7 @@
 /* Function prototypes -------------------------------------------------------*/
 void ColourDemoInit(void);
 void SmpteCalibrationRender(uint32_t scene_frame);
+void RadialGreyscaleRender(uint32_t scene_frame);
+void RadialColourRender(uint32_t scene_frame);
 
 #endif /* __SCENE_COLOUR_DEMO_H */

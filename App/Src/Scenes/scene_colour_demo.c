@@ -1,20 +1,24 @@
 /**
  ******************************************************************************
  * @file           : scene_colour_demo.c
- * @brief          : Implements the Colour Demo scene, focusing on terminal
- * colour reproduction. It cycles through background colour palettes and
- * renders both muted and standard SMPTE colour bars to demonstrate
- * ANSI/VT100 colour depth and calibration.
+ * @brief          : Terminal visual demo showcasing ANSI colour depth. Focusing on terminal
+ * colour reproduction. Includes SMPTE calibration patterns, cycling background palettes, and dynamic
+ * radial gradients rendered via character-shading LUTs.
  ******************************************************************************
  */
 
 /* Includes ------------------------------------------------------------------*/
 // Project libraries
 #include "scene_colour_demo.h"
+#include "serial_hw.h"
 #include "terminal.h"
 
 // STM32 libraries
 #include "main.h"
+
+// Standard libraries
+#include "math.h"
+#include <stdint.h>
 
 /* Private Defines -----------------------------------------------------------*/
 // Timing parameters for the colour sequence phases
@@ -40,16 +44,24 @@
 #define SMPTE_MIDDLE_INDEX      3 // Index of the middle bar that is wide (12 chars) in the SMPTE pattern
 #define SMPTE_RIGHT_INDEX       6 // Index of the right bar that is wide (12 chars) in the SMPTE pattern
 
+// Shade LUT parameters for character-based gradients
+#define CHADE_LUT_TOTAL_SIZE (sizeof(shade_lut) - 1)
+#define CHADE_LUT_MAX_INDEX  (CHADE_LUT_TOTAL_SIZE - 1)
+
 /* Private Variables ---------------------------------------------------------*/
+static const char shade_lut[] = "&$XXXXxxxxxx====++++;;;;::::....";
 
 /* Private Function Prototypes -----------------------------------------------*/
 // Helper functions
 static void __DrawSmpteStrip(const BackgroundColour_t *colours, uint8_t count, uint8_t start_row, uint8_t end_row);
+static char __GetShadeChar(uint8_t radius);
 
 // Rendering functions
 static void __CycleBackgroundColour(uint32_t frame, uint8_t speed);
 static void __DrawSmpteMuted(void);
 static void __DrawSmpteStandard(void);
+static void __RenderRadialPattern(
+    uint32_t frame, uint16_t pos_x, uint16_t pos_y, uint8_t is_greyscale, uint8_t is_bg, uint8_t use_lut);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
@@ -89,6 +101,26 @@ static void __DrawSmpteStrip(const BackgroundColour_t *colours, uint8_t count, u
 		// Move the column position for the next bar based on the width of the current bar
 		col += bar_width;
 	}
+}
+
+/**
+ * @fn static char __GetShadeChar(uint8_t radius)
+ * @brief Retrieves a character from the shade lookup table based on the provided radius value.
+ * The radius is used to determine the appropriate shade character for rendering gradients or patterns.
+ * @param radius The distance from a central point, used to index into the shade LUT.
+ * @return The corresponding shade character from the LUT, or the darkest shade if the radius exceeds the LUT size.
+ */
+static char __GetShadeChar(uint8_t radius)
+{
+	// The LUT has 32 characters (0-31 index)
+	uint8_t index = radius;
+
+	if (index >= CHADE_LUT_TOTAL_SIZE)
+	{
+		index = CHADE_LUT_MAX_INDEX;
+	}
+
+	return shade_lut[index];
 }
 
 /**
@@ -162,6 +194,62 @@ static void __DrawSmpteStandard(void)
 	TerminalResetStyle();
 }
 
+/**
+ * @fn static void __RenderRadialPattern(uint32_t frame, uint16_t pos_x, uint16_t pos_y, uint8_t is_greyscale, uint8_t
+ * is_bg, uint8_t use_lut)
+ * @brief Renders a dynamic radial gradient to the terminal by mapping colors or characters to their distance from a
+ * central origin. It supports both greyscale and color modes, with output rendered as solid blocks or character-based
+ * shading for either the foreground or background.
+ * @param frame The current frame index.
+ * @param pos_x The x-coordinate of the center position.
+ * @param pos_y The y-coordinate of the center position.
+ * @param is_greyscale Flag indicating whether to use greyscale or colour.
+ * @param is_bg Flag indicating whether to render as background or foreground.
+ * @param use_lut Flag indicating whether to use the lookup table for shading.
+ */
+static void __RenderRadialPattern(
+    uint32_t frame, uint16_t pos_x, uint16_t pos_y, uint8_t is_greyscale, uint8_t is_bg, uint8_t use_lut)
+{
+	// Move the cursor to the home position before starting the render
+	TerminalCursorHome();
+
+	for (uint16_t y = 1; y <= TERMINAL_HEIGHT; y++)
+	{
+		for (uint16_t x = 1; x <= TERMINAL_WIDTH; x++)
+		{
+			// Calculate the distance from the center point to determine the shade or colour for this position
+			float dx = (float)(x - pos_x);
+			float dy = ((float)y - (float)pos_y) * 1.5f;
+			float distance = sqrtf(dx * dx + dy * dy);
+
+			// Determine the colour value based on the distance and frame count to create a dynamic pattern
+			// Can be either greyscale or colour depending on the mode, and uses the extended colour range
+			uint16_t color_val;
+			if (is_greyscale == TRUE)
+				color_val = EXTENDED_COLOURS_OFFSET + (232 + (((uint32_t)distance + frame) % 24));
+			else
+				color_val = EXTENDED_COLOURS_OFFSET + (((uint32_t)distance + frame) % 216);
+
+			// Set the appropriate layer based on whether we're rendering a background or foreground pattern
+			if (is_bg == TRUE)
+				TerminalSetBackgroundColour((BackgroundColour_t)color_val);
+			else
+				TerminalSetTextColour((ForegroundColour_t)color_val);
+
+			// If using the LUT, print the corresponding shade character based on the distance
+			//  otherwise, print a space for a block colour effect
+			if (use_lut == TRUE)
+			{
+				char shade = __GetShadeChar((uint8_t)distance);
+				SerialPrintN(&shade, 1);
+			} else
+			{
+				SerialPrintN(" ", 1);
+			}
+		}
+	}
+}
+
 /* Public Functions ----------------------------------------------------------*/
 /**
  * @fn void ColourDemoInit(void)
@@ -206,4 +294,14 @@ void SmpteCalibrationRender(uint32_t scene_frame)
 
 	// Phase 3: Display the standard SMPTE bars for the remainder of the demo to showcase full colour reproduction
 	__DrawSmpteStandard();
+}
+
+void RadialGreyscaleRender(uint32_t scene_frame)
+{
+	__RenderRadialPattern(scene_frame, TERMINAL_WIDTH / 2, TERMINAL_HEIGHT / 2, TRUE, FALSE, TRUE);
+}
+
+void RadialColourRender(uint32_t scene_frame)
+{
+	__RenderRadialPattern(scene_frame, TERMINAL_WIDTH / 2, TERMINAL_HEIGHT / 2, FALSE, TRUE, FALSE);
 }
