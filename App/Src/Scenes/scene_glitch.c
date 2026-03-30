@@ -195,7 +195,6 @@ static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode)
 /**
  * @fn void GlitchInit(void)
  * @brief Initializes the glitch scene by setting up necessary variables and state.
- * @param void This function does not take any parameters.
  */
 void GlitchInit(void)
 {

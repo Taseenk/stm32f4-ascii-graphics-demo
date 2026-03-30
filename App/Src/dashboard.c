@@ -14,7 +14,6 @@
 #include "serial_hw.h"
 #include "terminal.h"
 
-
 // STM32 libraries
 #include "main.h"
 
@@ -103,7 +102,6 @@ static void __ApplyMenuHighlight(uint32_t global_frame)
  * @fn void MainPageInit(void)
  * @brief Initializes the dashboard by rendering the status bar and setting up
  * any necessary state for the dashboard pages.
- * @param void This function does not take any parameters.
  */
 void MainPageInit(void)
 {
@@ -154,7 +152,6 @@ void DashboardFPSRefresh(uint32_t fps, uint8_t fps_range)
  * @fn void DashboardHeader(void)
  * @brief Renders a static dashboard status bar at the top of the terminal,
  * displaying system information, the current page, and a placeholder for FPS.
- * @param void This function does not take any parameters.
  */
 void DashboardHeader(void)
 {
@@ -192,7 +189,6 @@ void DashboardHeader(void)
  * @fn void DashboardMenuList(void)
  * @brief Renders the main body of the dashboard, displaying the available mock
  * options for the user to interact with.
- * @param void This function does not take any parameters.
  */
 void DashboardMenuList(void)
 {
@@ -211,7 +207,6 @@ void DashboardMenuList(void)
  * @fn void DashboardFooter(void)
  * @brief Renders the dashboard footer at the bottom of the terminal, displaying
  * mock navigation instructions and credits.
- * @param void This function does not take any parameters.
  */
 void DashboardFooter(void)
 {

@@ -388,7 +388,7 @@ void TerminalResetStyle(void)
 /**
  * @fn void TerminalSetCursorPos(uint16_t col, uint16_t row)
  * @brief Sends the ANSI escape sequence to explicitly set the terminal cursor position.
- * The ANSI command format is ESC[<row>;<col>H.
+ * The ANSI command format is `ESC[<row>;<col>H`.
  * @param col The target column number (1-based index).
  * @param row The target row number (1-based index).
  */

@@ -236,7 +236,6 @@ static void __RenderMatrixRainFrame(uint32_t scene_frame, uint8_t noise_mode)
 /**
  * @fn void MatrixRainInit(void)
  * @brief Prepares the matrix rain state by setting up necessary variables and state.
- * @param void This function does not take any parameters.
  */
 void MatrixRainInit(void)
 {

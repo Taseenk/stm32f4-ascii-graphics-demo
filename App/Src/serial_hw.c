@@ -172,7 +172,7 @@ void SerialReceiveInit(void)
 /**
  * @fn void SerialProcessData(void)
  * @brief Processes received data from the UART circular buffer.
- * Iterates through the buffer to find delimiters (in this case, '\r').
+ * Iterates through the buffer to find delimiters (in this case, `'\r'`).
  * When a delimiter is found, it performs associated data processing and
  * updates the buffer's read position.
  */

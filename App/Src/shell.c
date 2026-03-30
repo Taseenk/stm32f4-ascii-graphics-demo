@@ -319,7 +319,6 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
  * @brief Handles the logic for displaying help information about the "run"
  * topic. When the user types "HELP RUN" in the dashboard shell, including usage
  * instructions,
- * @param void This function does not take any parameters.
  */
 static void __PrintHelpKey1Run(void)
 {
@@ -347,7 +346,6 @@ static void __PrintHelpKey1Run(void)
  * topic. When the user types "HELP DEMO" in the dashboard shell, including
  * usage instructions, description, and available qualifier for the demo
  * command.
- * @param void This function does not take any parameters.
  */
 static void __PrintHelpKey1Demo(void)
 {
@@ -375,7 +373,6 @@ static void __PrintHelpKey1Demo(void)
  * scenes for the demo command when the user types "HELP DEMO /SCENE" in the
  * dashboard shell, including usage instructions and descriptions for each scene
  * option.
- * @param void This function does not take any parameters.
  */
 static void __PrintHelpKey2Scene(void)
 {
@@ -402,7 +399,6 @@ static void __PrintHelpKey2Scene(void)
  * modes for the demo command when the user types "HELP DEMO /MODE" in the
  * dashboard shell, including usage instructions and descriptions for each mode
  * option.
- * @param void This function does not take any parameters.
  */
 static void __PrintHelpKey2Mode(void)
 {
@@ -444,7 +440,6 @@ static void __NavigateToDashboard(DashboardPages_t page)
  * @fn void ShellInit(void)
  * @brief Initializes the CLI shell by rendering the initial
  * boot sequence with system information and a prompt for user input.
- * @param void This function does not take any parameters.
  */
 void ShellInit(void)
 {
