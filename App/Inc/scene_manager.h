@@ -22,6 +22,7 @@
 /* typedefs ------------------------------------------------------------------*/
 // Scene Identifiers
 typedef enum {
+	SCENE_ATTRIBUTES_DEMO,   // VT100 attribute torture test showcasing all text attributes and combinations
 	SCENE_SMPTE_CALIBRATION, // SMPTE colour bar calibration pattern
 
 	SCENE_RADIAL_GREYSCALE, // Radial gradient pattern using greyscale characters and colours

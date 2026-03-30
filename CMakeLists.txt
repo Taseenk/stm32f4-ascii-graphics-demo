@@ -58,6 +58,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     App/Src/Scenes/scene_glitch.c
     App/Src/Scenes/scene_matrix_rain.c
     App/Src/Scenes/scene_colour_demo.c
+    App/Src/Scenes/scene_attributes_demo.c
 )
 
 # Add include paths
