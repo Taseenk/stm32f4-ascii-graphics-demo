@@ -164,24 +164,28 @@ int main(void)
 				DashboardMenuSelection(frame_counter);
 			}
 
-			// While in playlist mode, Let SceneManager Handle scene logic based on the current
-			// frame
+			// While in playlist mode, Let SceneManager Handle scene logic
 			if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE)
 			{
 				SceneManager(frame_counter);
 			}
 
-			// While in auto scene mode, Let SceneManager Handle scene logic based on the current
-			// frame
+			// While in auto scene mode, Let SceneManager Handle scene logic
 			if (system_mode == SYSTEM_STATE_AUTO_SCENE)
 			{
 				SceneManager(frame_counter);
 			}
 
 			// Increment trackers and maintain a consistent time for the next frame
-			last_heartbeat += FRAME_INTERVAL_MS;
 			frame_counter++;
 			fps_counter++;
+
+			// Update the heartbeat timestamp after a slow scene
+			// only resyncs after falling 2 full frame intervals behind
+			if (current_time - last_heartbeat > (FRAME_INTERVAL_MS * 2))
+				last_heartbeat = current_time;
+			else
+				last_heartbeat += FRAME_INTERVAL_MS;
 		}
 	}
 	/* USER CODE END 3 */
