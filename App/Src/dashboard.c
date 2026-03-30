@@ -161,7 +161,7 @@ void DashboardHeader(void)
 	// Initialize the data text buffer with spaces and null-terminate it
 	char data_buffer[TERMINAL_WIDTH + 1];
 	memset(data_buffer, ' ', TERMINAL_WIDTH);
-	data_buffer[TERMINAL_WIDTH] = NULL_TERMINATOR;
+	data_buffer[TERMINAL_WIDTH] = '\0';
 
 	// Copy the individual text into the status bar buffer at their respective positions
 	memcpy(&data_buffer[SYSTEM_TEXT_POSITION], SYSTEM_TEXT, SYSTEM_TEXT_LEN);

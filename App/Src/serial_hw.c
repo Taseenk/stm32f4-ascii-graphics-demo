@@ -16,6 +16,12 @@
 #include <stdio.h>
 #include <string.h>
 
+/* Private Defines -----------------------------------------------------------*/
+#define TERMINAL_EOL    "\r\n" // End of line characters for the terminal
+#define CARRIAGE_RETURN '\r'   // Delimiter character to signify the end of a message
+#define NULL_TERMINATOR '\0'   // String termination character
+#define BACKSPACE       '\b'   // Backspace character for handling user input corrections
+
 /* Private Variables ---------------------------------------------------------*/
 typedef struct {
 	volatile char buffer[UART_BUFFER_SIZE]; // Circular buffer to store incoming UART data via DMA
