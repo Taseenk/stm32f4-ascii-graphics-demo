@@ -17,8 +17,7 @@
 #include "main.h"
 
 // Standard libraries
-#include "math.h"
-#include <stdint.h>
+#include "arm_math.h"
 
 /* Private Defines -----------------------------------------------------------*/
 // Timing parameters for the colour sequence phases
@@ -50,6 +49,8 @@
 
 /* Private Variables ---------------------------------------------------------*/
 static const char shade_lut[] = "&$XXXXxxxxxx====++++;;;;::::....";
+static uint8_t distance_lut[TERMINAL_WIDTH * TERMINAL_HEIGHT];
+static uint8_t lut_initialized = FALSE;
 
 /* Private Function Prototypes -----------------------------------------------*/
 // Helper functions
@@ -213,14 +214,20 @@ static void __RenderRadialPattern(
 	// Move the cursor to the home position before starting the render
 	TerminalCursorHome();
 
+	// Go through each position in the terminal
 	for (uint16_t y = 1; y <= TERMINAL_HEIGHT; y++)
 	{
 		for (uint16_t x = 1; x <= TERMINAL_WIDTH; x++)
 		{
-			// Calculate the distance from the center point to determine the shade or colour for this position
-			float dx = (float)(x - pos_x);
-			float dy = ((float)y - (float)pos_y) * 1.5f;
-			float distance = sqrtf(dx * dx + dy * dy);
+			// Skip odd rows and columns
+			if ((x % 2 != 0) || (y % 2 != 0))
+			{
+				SerialPrintN(" ", 1);
+				continue;
+			}
+
+			// Retrieve pre-calculated distance
+			uint8_t distance = distance_lut[y * TERMINAL_WIDTH + x];
 
 			// Determine the colour value based on the distance and frame count to create a dynamic pattern
 			// Can be either greyscale or colour depending on the mode, and uses the extended colour range
@@ -260,6 +267,33 @@ void ColourDemoInit(void)
 {
 	// Reset all previous styles
 	TerminalResetStyle();
+
+	// Only calculate the LUT once
+	if (lut_initialized == FALSE)
+	{
+		uint16_t pos_x = TERMINAL_WIDTH / 2;
+		uint16_t pos_y = TERMINAL_HEIGHT / 2;
+
+		for (uint16_t y = 1; y <= TERMINAL_HEIGHT; y++)
+		{
+			// Vertical aspect ratio correction (1.5f)
+			float32_t dy = ((float32_t)y - (float32_t)pos_y) * 1.5f;
+			float32_t dy_sq = dy * dy;
+
+			for (uint16_t x = 1; x <= TERMINAL_WIDTH; x++)
+			{
+				float32_t dx = (float32_t)(x - pos_x);
+				float32_t sum_sq = (dx * dx) + dy_sq;
+				float32_t distance;
+
+				arm_sqrt_f32(sum_sq, &distance);
+
+				// Store the distance in the 1D array
+				distance_lut[y * TERMINAL_WIDTH + x] = (uint8_t)distance;
+			}
+		}
+		lut_initialized = TRUE;
+	}
 }
 
 /**
