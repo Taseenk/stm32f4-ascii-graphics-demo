@@ -219,7 +219,7 @@ void SerialProcessData(void)
 		}
 
 		// If the first character(s) are spaces, skip them and update the read index to the first non-space character
-		if (current_char == SPACE_CHAR && message_length == 0)
+		if (current_char == ' ' && message_length == 0)
 		{
 			// Continue to the next character in the buffer
 			continue;

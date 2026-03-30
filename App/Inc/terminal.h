@@ -25,8 +25,6 @@
 #define TERMINAL_BUFFER_SIZE    (TERMINAL_WIDTH * TERMINAL_HEIGHT) // Total size of the terminal buffer
 #define EXTENDED_COLOURS_OFFSET 256                                // Offset number of extended ANSI colours supported
 
-#define SPACE_CHAR              ' ' // Space character used for clearing the terminal buffer
-
 // Escape Sequence Base
 #define ANSI_ESC "\x1b[" // The standard ANSI Escape sequence initiator
 

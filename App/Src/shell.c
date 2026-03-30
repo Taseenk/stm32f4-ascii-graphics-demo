@@ -507,7 +507,7 @@ void ShellCommandParser(char *rx_buffer)
 	// command text
 	/* --- Case: RUN command --- */
 	if ((strncmp(rx_buffer, run_command_text, RUN_COMMAND_TEXT_LEN) == 0) &&
-	    (rx_buffer[RUN_COMMAND_TEXT_LEN] == SPACE_CHAR || rx_buffer[RUN_COMMAND_TEXT_LEN] == '\0'))
+	    (rx_buffer[RUN_COMMAND_TEXT_LEN] == ' ' || rx_buffer[RUN_COMMAND_TEXT_LEN] == '\0'))
 	{
 		// Call the run command parser function to handle the run command arguments
 		// and execute the appropriate action
@@ -516,7 +516,7 @@ void ShellCommandParser(char *rx_buffer)
 	/* --- Case: HELP command --- */
 	else if (
 	    (strncmp(rx_buffer, help_command_text, HELP_COMMAND_TEXT_LEN) == 0) &&
-	    (rx_buffer[HELP_COMMAND_TEXT_LEN] == SPACE_CHAR || rx_buffer[HELP_COMMAND_TEXT_LEN] == '\0'))
+	    (rx_buffer[HELP_COMMAND_TEXT_LEN] == ' ' || rx_buffer[HELP_COMMAND_TEXT_LEN] == '\0'))
 	{
 		// Call the help command parser function to handle the help command
 		// arguments and display the appropriate help information

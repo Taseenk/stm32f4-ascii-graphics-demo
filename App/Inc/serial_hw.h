@@ -17,7 +17,6 @@
 #define CARRIAGE_RETURN  '\r'   // Delimiter character to signify the end of a message
 #define NULL_TERMINATOR  '\0'   // String termination character
 #define BACKSPACE        '\b'   // Backspace character for handling user input corrections
-#define SPACE_CHAR       ' '    // Space character for handling leading spaces in user input
 
 /* typedefs ------------------------------------------------------------------*/
 typedef struct {

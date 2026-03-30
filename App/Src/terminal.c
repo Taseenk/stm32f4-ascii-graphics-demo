@@ -539,7 +539,7 @@ void TerminalSetBackgroundColour(BackgroundColour_t background_colour)
 void TerminalBufferClear(void)
 {
 	// Fill the entire framebuffer with space characters
-	memset(framebuffer, SPACE_CHAR, TERMINAL_BUFFER_SIZE);
+	memset(framebuffer, ' ', TERMINAL_BUFFER_SIZE);
 }
 
 /**
