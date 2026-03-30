@@ -96,7 +96,7 @@ static void __DrawSmpteStrip(const BackgroundColour_t *colours, uint8_t count, u
 		// Fill the vertical strip for the current bar across the specified row range
 		for (uint8_t row = start_row; row <= end_row; row++)
 		{
-			TerminalSerialPrintString(row_block, col, row);
+			TerminalPrintString(row_block, col, row);
 		}
 
 		// Move the column position for the next bar based on the width of the current bar

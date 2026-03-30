@@ -123,7 +123,7 @@ static void __RainUpdater(uint8_t density, uint8_t speed, uint8_t noise_mode)
 				// Only erase if the tail is actually on the screen
 				if (erase_row >= COORDINATE_OFFSET && erase_row <= TERMINAL_HEIGHT)
 				{
-					TerminalSerialPrintString(" ", i, erase_row);
+					TerminalPrintString(" ", i, erase_row);
 				}
 			}
 
@@ -146,7 +146,7 @@ static void __RainUpdater(uint8_t density, uint8_t speed, uint8_t noise_mode)
 					}
 
 					// Move cursor and draw the character on the terminal
-					TerminalSerialPrintString(char_buffer, i, draw_row);
+					TerminalPrintString(char_buffer, i, draw_row);
 				}
 			}
 
@@ -201,7 +201,7 @@ static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
 		random_row = (rand_number % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
 
 		// Move cursor and erase the character on the terminal
-		TerminalSerialPrintString(" ", random_col, random_row);
+		TerminalPrintString(" ", random_col, random_row);
 	}
 }
 

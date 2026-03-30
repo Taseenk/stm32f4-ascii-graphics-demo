@@ -107,7 +107,7 @@ typedef enum {
 /* Function prototypes -------------------------------------------------------*/
 // Initialisation and frame control
 void TerminalInit(uint8_t cursor);
-void TerminalFlush(void);
+void TerminalBufferFlush(void);
 
 // Screen control
 void TerminalClearScreen(void);
@@ -126,18 +126,18 @@ void TerminalSetTextColour(ForegroundColour_t text_colour);
 void TerminalSetBackgroundColour(BackgroundColour_t background_colour);
 
 // Direct serial output
-void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row);
+void TerminalPrintString(const char *str, uint16_t col, uint16_t row);
 
 // Framebuffer management
-void TerminalClearBuffer(void);
-void TerminalDrawChar(char c, uint16_t col, uint16_t row);
-void TerminalDrawString(const char *str, uint16_t col, uint16_t row);
+void TerminalBufferClear(void);
+void TerminalBufferDrawChar(char c, uint16_t col, uint16_t row);
+void TerminalBufferDrawString(const char *str, uint16_t col, uint16_t row);
 
 // Graphics primitives
-void TerminalDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h);
-void TerminalFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h);
-void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
-void TerminalDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
-void TerminalDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r);
+void TerminalBufferDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h);
+void TerminalBufferFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h);
+void TerminalBufferDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void TerminalBufferDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
+void TerminalBufferDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r);
 
 #endif /* __TERMINAL_H */

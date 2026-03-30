@@ -305,7 +305,7 @@ void TerminalInit(uint8_t cursor)
 	TerminalClearAndHome();
 
 	// Clear the internal framebuffer
-	TerminalClearBuffer();
+	TerminalBufferClear();
 
 	// Reset terminal styling to default
 	TerminalResetStyle();
@@ -417,13 +417,13 @@ void TerminalSetCursorPos(uint16_t col, uint16_t row)
 }
 
 /**
- * @fn void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row)
+ * @fn void TerminalPrintString(const char *str, uint16_t col, uint16_t row)
  * @brief DDraws a string directly to the terminal at the specified row and column.
  * @param str The string to draw.
  * @param col The target column number (1-based index).
  * @param row The target row number (1-based index).
  */
-void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row)
+void TerminalPrintString(const char *str, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
@@ -532,23 +532,23 @@ void TerminalSetBackgroundColour(BackgroundColour_t background_colour)
 }
 
 /**
- * @fn void TerminalClearBuffer(void)
+ * @fn void TerminalBufferClear(void)
  * @brief Clears the internal terminal framebuffer by filling it with space characters.
  * This function does NOT send any data to the terminal; it only updates the internal framebuffer.
  */
-void TerminalClearBuffer(void)
+void TerminalBufferClear(void)
 {
 	// Fill the entire framebuffer with space characters
 	memset(framebuffer, SPACE_CHAR, TERMINAL_BUFFER_SIZE);
 }
 
 /**
- * @fn void TerminalFlush(void)
+ * @fn void TerminalBufferFlush(void)
  * @brief Sends the entire terminal framebuffer to the terminal display.
  * This function moves the cursor to the home position before transmitting
  * the framebuffer content using DMA for non-blocking transmission.
  */
-void TerminalFlush(void)
+void TerminalBufferFlush(void)
 {
 	// Move cursor to home before flushing the framebuffer
 	TerminalCursorHome();
@@ -558,14 +558,14 @@ void TerminalFlush(void)
 }
 
 /**
- * @fn void TerminalDrawChar(char c, uint16_t col, uint16_t row)
+ * @fn void TerminalBufferDrawChar(char c, uint16_t col, uint16_t row)
  * @brief Draws a single character into the terminal framebuffer at the specified row and column.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param c The character to draw.
  * @param col The target column number (1-based index).
  * @param row The target row number (1-based index).
  */
-void TerminalDrawChar(char c, uint16_t col, uint16_t row)
+void TerminalBufferDrawChar(char c, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
@@ -579,14 +579,14 @@ void TerminalDrawChar(char c, uint16_t col, uint16_t row)
 }
 
 /**
- * @fn void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
+ * @fn void TerminalBufferDrawString(const char *str, uint16_t col, uint16_t row)
  * @brief Draws a null-terminated string into the terminal framebuffer at the specified row and column.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param str The string to draw.
  * @param row The target row number (1-based index).
  * @param col The target column number (1-based index).
  */
-void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
+void TerminalBufferDrawString(const char *str, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
@@ -611,7 +611,7 @@ void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
 }
 
 /**
- * @fn void TerminalDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
+ * @fn void TerminalBufferDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
  * @brief Draws a rectangle outline into the terminal framebuffer using the specified character.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param c The character to use for drawing the rectangle.
@@ -620,7 +620,7 @@ void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
  * @param w The width of the rectangle in characters.
  * @param h The height of the rectangle in characters.
  */
-void TerminalDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
+void TerminalBufferDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
@@ -652,7 +652,7 @@ void TerminalDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h
 }
 
 /**
- * @fn void TerminalFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
+ * @fn void TerminalBufferFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
  * @brief Fills a rectangle area in the terminal framebuffer using the specified character.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param c The character to use for filling the rectangle.
@@ -661,7 +661,7 @@ void TerminalDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h
  * @param w The width of the rectangle.
  * @param h The height of the rectangle.
  */
-void TerminalFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
+void TerminalBufferFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
@@ -690,7 +690,7 @@ void TerminalFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h
 }
 
 /**
- * @fn void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+ * @fn void TerminalBufferDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
  * @brief Draws a line between two points in the terminal framebuffer using Bresenham's algorithm.
  * This function determines whether to draw a horizontal or vertical line based on
  * the slope and updates the internal framebuffer array but does NOT send any data to the terminal.
@@ -700,7 +700,7 @@ void TerminalFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h
  * @param x1 The ending column (1-based index).
  * @param y1 The ending row (1-based index).
  */
-void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+void TerminalBufferDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&x0, &y0);
@@ -715,7 +715,8 @@ void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1
 }
 
 /**
- * @fn void TerminalDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+ * @fn void TerminalBufferDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t
+ * y2)
  * @brief Draws a triangle outline between three points in the terminal framebuffer using Bresenham's algorithm.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param c The character to use for drawing the triangle.
@@ -726,7 +727,7 @@ void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1
  * @param x2 The column of Vertex C (1-based index).
  * @param y2 The row of Vertex C (1-based index).
  */
-void TerminalDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+void TerminalBufferDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&x0, &y0);
@@ -749,7 +750,7 @@ void TerminalDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_
 }
 
 /**
- * @fn void TerminalDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
+ * @fn void TerminalBufferDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
  * @brief Draws a line between two points in the terminal framebuffer using Bresenham's algorithm.
  * This function determines whether to draw a horizontal or vertical line based on
  * the slope and updates the internal framebuffer array but does NOT send any data to the terminal.
@@ -758,7 +759,7 @@ void TerminalDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_
  * @param row The target center row number (1-based index).
  * @param r The radius of the circle in characters.
  */
-void TerminalDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
+void TerminalBufferDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);

@@ -111,7 +111,7 @@ static void __CharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t nois
 		}
 
 		// Move cursor and draw the character on the terminal
-		TerminalSerialPrintString(char_buffer, random_col, random_row);
+		TerminalPrintString(char_buffer, random_col, random_row);
 	}
 }
 
@@ -142,7 +142,7 @@ static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
 		random_row = (rand_number % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
 
 		// Move cursor and erase the character on the terminal
-		TerminalSerialPrintString(" ", random_col, random_row);
+		TerminalPrintString(" ", random_col, random_row);
 	}
 }
 

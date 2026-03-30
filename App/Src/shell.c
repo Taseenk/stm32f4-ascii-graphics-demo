@@ -81,7 +81,7 @@ static void __NavigateToDashboard(DashboardPages_t page);
 static void __PrintInputPrompt(uint16_t row)
 {
 	// Print the input prompt at the current input row
-	TerminalSerialPrintString(prompt, SHELL_COL_POSITION, row);
+	TerminalPrintString(prompt, SHELL_COL_POSITION, row);
 
 	// Move the cursor to the input position and enable it for user input
 	TerminalSetCursorPos(INPUT_COL_POSITION, row);
@@ -130,27 +130,27 @@ static void __DisplayErrorMessage(ShellError_t error_type)
 	switch (error_type)
 	{
 		case SHELL_ERROR_UNKNOWN_COMMAND:
-			TerminalSerialPrintString(shell_error[SHELL_ERROR_UNKNOWN_COMMAND], SHELL_COL_POSITION, input_row++);
+			TerminalPrintString(shell_error[SHELL_ERROR_UNKNOWN_COMMAND], SHELL_COL_POSITION, input_row++);
 			break;
 
 		case SHELL_ERROR_MISSING_TOPIC:
-			TerminalSerialPrintString(shell_error[SHELL_ERROR_MISSING_TOPIC], SHELL_COL_POSITION, input_row++);
+			TerminalPrintString(shell_error[SHELL_ERROR_MISSING_TOPIC], SHELL_COL_POSITION, input_row++);
 			break;
 
 		case SHELL_ERROR_UNKNOWN_TOPIC:
-			TerminalSerialPrintString(shell_error[SHELL_ERROR_UNKNOWN_TOPIC], SHELL_COL_POSITION, input_row++);
+			TerminalPrintString(shell_error[SHELL_ERROR_UNKNOWN_TOPIC], SHELL_COL_POSITION, input_row++);
 			break;
 
 		case SHELL_ERROR_UNKNOWN_QUALIFIER:
-			TerminalSerialPrintString(shell_error[SHELL_ERROR_UNKNOWN_QUALIFIER], SHELL_COL_POSITION, input_row++);
+			TerminalPrintString(shell_error[SHELL_ERROR_UNKNOWN_QUALIFIER], SHELL_COL_POSITION, input_row++);
 			break;
 
 		case SHELL_ERROR_INVALID_PARAMETER:
-			TerminalSerialPrintString(shell_error[SHELL_ERROR_INVALID_PARAMETER], SHELL_COL_POSITION, input_row++);
+			TerminalPrintString(shell_error[SHELL_ERROR_INVALID_PARAMETER], SHELL_COL_POSITION, input_row++);
 			break;
 
 		default:
-			TerminalSerialPrintString(shell_error[6], SHELL_COL_POSITION, input_row++);
+			TerminalPrintString(shell_error[6], SHELL_COL_POSITION, input_row++);
 			break;
 	}
 
@@ -333,7 +333,7 @@ static void __PrintHelpKey1Run(void)
 	// module
 	for (uint8_t i = 0; i < shell_help_run_len; i++)
 	{
-		TerminalSerialPrintString(shell_help_run[i], SHELL_COL_POSITION, input_row++);
+		TerminalPrintString(shell_help_run[i], SHELL_COL_POSITION, input_row++);
 	}
 
 	// Prompt the user for the next command
@@ -360,7 +360,7 @@ static void __PrintHelpKey1Demo(void)
 	// module
 	for (uint8_t i = 0; i < shell_help_demo_len; i++)
 	{
-		TerminalSerialPrintString(shell_help_demo[i], SHELL_COL_POSITION, input_row++);
+		TerminalPrintString(shell_help_demo[i], SHELL_COL_POSITION, input_row++);
 	}
 
 	// Prompt the user for the next command
@@ -386,7 +386,7 @@ static void __PrintHelpKey2Scene(void)
 	// shell strings module
 	for (uint8_t i = 0; i < shell_help_subkey_scene_len; i++)
 	{
-		TerminalSerialPrintString(shell_help_subkey_scene[i], SHELL_COL_POSITION, input_row++);
+		TerminalPrintString(shell_help_subkey_scene[i], SHELL_COL_POSITION, input_row++);
 	}
 
 	// Prompt the user for the next command
@@ -413,7 +413,7 @@ static void __PrintHelpKey2Mode(void)
 	// the shell strings module
 	for (uint8_t i = 0; i < shell_help_subkey_mode_len; i++)
 	{
-		TerminalSerialPrintString(shell_help_subkey_mode[i], SHELL_COL_POSITION, input_row++);
+		TerminalPrintString(shell_help_subkey_mode[i], SHELL_COL_POSITION, input_row++);
 	}
 
 	// Prompt the user for the next command
@@ -447,29 +447,29 @@ void ShellInit(void)
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
 	// Render the system header
-	TerminalSerialPrintString(shell_boot[0], SHELL_COL_POSITION, NAME_ROW_POSITION);
-	TerminalSerialPrintString(shell_boot[1], SHELL_COL_POSITION, COPYRIGHT_ROW_POSITION);
+	TerminalPrintString(shell_boot[0], SHELL_COL_POSITION, NAME_ROW_POSITION);
+	TerminalPrintString(shell_boot[1], SHELL_COL_POSITION, COPYRIGHT_ROW_POSITION);
 	HAL_Delay(150);
 
 	// Render the hardware specs with delays to simulate a boot sequence
-	TerminalSerialPrintString(shell_boot[2], SHELL_COL_POSITION, CPU_ROW_POSITION);
+	TerminalPrintString(shell_boot[2], SHELL_COL_POSITION, CPU_ROW_POSITION);
 	HAL_Delay(300);
-	TerminalSerialPrintString(shell_boot[3], SHELL_COL_POSITION, SRAM_ROW_POSITION);
+	TerminalPrintString(shell_boot[3], SHELL_COL_POSITION, SRAM_ROW_POSITION);
 	HAL_Delay(1000);
-	TerminalSerialPrintString(shell_boot[4], SHELL_COL_POSITION, FLASH_ROW_POSITION);
+	TerminalPrintString(shell_boot[4], SHELL_COL_POSITION, FLASH_ROW_POSITION);
 	HAL_Delay(300);
 
 	// Render the peripheral checks with delays to simulate a boot sequence
-	TerminalSerialPrintString(shell_boot[5], SHELL_COL_POSITION, DMA_ROW_POSITION);
+	TerminalPrintString(shell_boot[5], SHELL_COL_POSITION, DMA_ROW_POSITION);
 	HAL_Delay(450);
-	TerminalSerialPrintString(shell_boot[6], SHELL_COL_POSITION, UART_ROW_POSITION);
+	TerminalPrintString(shell_boot[6], SHELL_COL_POSITION, UART_ROW_POSITION);
 	HAL_Delay(300);
-	TerminalSerialPrintString(shell_boot[7], SHELL_COL_POSITION, TERMINAL_ROW_POSITION);
+	TerminalPrintString(shell_boot[7], SHELL_COL_POSITION, TERMINAL_ROW_POSITION);
 	HAL_Delay(1000);
 
 	// Render the system ready message and hint message
-	TerminalSerialPrintString(shell_boot[8], SHELL_COL_POSITION, READY_ROW_POSITION);
-	TerminalSerialPrintString(shell_boot[9], SHELL_COL_POSITION, HINT_ROW_POSITION);
+	TerminalPrintString(shell_boot[8], SHELL_COL_POSITION, READY_ROW_POSITION);
+	TerminalPrintString(shell_boot[9], SHELL_COL_POSITION, HINT_ROW_POSITION);
 	HAL_Delay(200);
 
 	// Render the interaction prompt

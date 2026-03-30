@@ -145,7 +145,7 @@ void DashboardFPSRefresh(uint32_t fps, uint8_t fps_range)
 		return;
 
 	// Print the formatted FPS value at the correct position in the status bar
-	TerminalSerialPrintString(fps_value_buffer, FPS_VALUE_POSITION, 1);
+	TerminalPrintString(fps_value_buffer, FPS_VALUE_POSITION, 1);
 }
 
 /**
@@ -177,12 +177,12 @@ void DashboardHeader(void)
 	if (status_bar_len <= 0 || (size_t)status_bar_len >= sizeof(status_bar_buffer))
 	{
 		// If formatting failed, print a fallback status bar without styling to ensure the dashboard is still usable
-		TerminalSerialPrintString(data_buffer, 1, 1);
+		TerminalPrintString(data_buffer, 1, 1);
 		return;
 	}
 
 	// Output the entire status bar as a single string
-	TerminalSerialPrintString(status_bar_buffer, 1, 1);
+	TerminalPrintString(status_bar_buffer, 1, 1);
 }
 
 /**
@@ -196,11 +196,11 @@ void DashboardMenuList(void)
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
 	// Print each dashboard option text at its respective position
-	TerminalSerialPrintString(HELP_TEXT, OPTIONS_COL_POSITION, HELP_ROW_POSITION);
-	TerminalSerialPrintString(AUTO_TEXT, OPTIONS_COL_POSITION, AUTO_ROW_POSITION);
-	TerminalSerialPrintString(PLAYLIST_TEXT, OPTIONS_COL_POSITION, PLAYLIST_ROW_POSITION);
-	TerminalSerialPrintString(INFO_TEXT, OPTIONS_COL_POSITION, INFO_ROW_POSITION);
-	TerminalSerialPrintString(QUIT_TEXT, OPTIONS_COL_POSITION, QUIT_ROW_POSITION);
+	TerminalPrintString(HELP_TEXT, OPTIONS_COL_POSITION, HELP_ROW_POSITION);
+	TerminalPrintString(AUTO_TEXT, OPTIONS_COL_POSITION, AUTO_ROW_POSITION);
+	TerminalPrintString(PLAYLIST_TEXT, OPTIONS_COL_POSITION, PLAYLIST_ROW_POSITION);
+	TerminalPrintString(INFO_TEXT, OPTIONS_COL_POSITION, INFO_ROW_POSITION);
+	TerminalPrintString(QUIT_TEXT, OPTIONS_COL_POSITION, QUIT_ROW_POSITION);
 }
 
 /**
@@ -217,7 +217,7 @@ void DashboardFooter(void)
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
 	// Output the entire footer as a single string
-	TerminalSerialPrintString(footer_content, FOOTER_COL, FOOTER_ROW);
+	TerminalPrintString(footer_content, FOOTER_COL, FOOTER_ROW);
 }
 
 /**
@@ -239,7 +239,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 			__ApplyMenuHighlight(global_frame);
 
 			// Print the menu option text with the blinking effect
-			TerminalSerialPrintString(HELP_TEXT, OPTIONS_COL_POSITION, HELP_ROW_POSITION);
+			TerminalPrintString(HELP_TEXT, OPTIONS_COL_POSITION, HELP_ROW_POSITION);
 
 			// break out of the switch
 			break;
@@ -249,7 +249,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 			__ApplyMenuHighlight(global_frame);
 
 			// Print the menu option text with the blinking effect
-			TerminalSerialPrintString(AUTO_TEXT, OPTIONS_COL_POSITION, AUTO_ROW_POSITION);
+			TerminalPrintString(AUTO_TEXT, OPTIONS_COL_POSITION, AUTO_ROW_POSITION);
 
 			// Switch the global system mode to the auto scene
 			if (time_in_scene == (MENU_SELECTION_INTERVAL - 1))
@@ -268,7 +268,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 			__ApplyMenuHighlight(global_frame);
 
 			// Print the menu option text with the blinking effect
-			TerminalSerialPrintString(PLAYLIST_TEXT, OPTIONS_COL_POSITION, PLAYLIST_ROW_POSITION);
+			TerminalPrintString(PLAYLIST_TEXT, OPTIONS_COL_POSITION, PLAYLIST_ROW_POSITION);
 
 			// Switch the global system mode to the auto scene
 			if (time_in_scene == (MENU_SELECTION_INTERVAL - 1))
@@ -287,7 +287,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 			__ApplyMenuHighlight(global_frame);
 
 			// Print the menu option text with the blinking effect
-			TerminalSerialPrintString(INFO_TEXT, OPTIONS_COL_POSITION, INFO_ROW_POSITION);
+			TerminalPrintString(INFO_TEXT, OPTIONS_COL_POSITION, INFO_ROW_POSITION);
 
 			// break out of the switch
 			break;
@@ -297,7 +297,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 			__ApplyMenuHighlight(global_frame);
 
 			// Print the menu option text with the blinking effect
-			TerminalSerialPrintString(QUIT_TEXT, OPTIONS_COL_POSITION, QUIT_ROW_POSITION);
+			TerminalPrintString(QUIT_TEXT, OPTIONS_COL_POSITION, QUIT_ROW_POSITION);
 
 			// break out of the switch
 			break;
