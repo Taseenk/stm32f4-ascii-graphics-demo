@@ -330,11 +330,29 @@ void SmpteCalibrationRender(uint32_t scene_frame)
 	__DrawSmpteStandard();
 }
 
+/**
+ * @fn void RadialGreyscaleRender(uint32_t scene_frame)
+ * @brief Renders an animated radial gradient centered in the terminal using grey tones.
+ * This function calculates the distance from the center of the terminal to every
+ * individual character position. It then assigns a specific character from a
+ * greyscale lookup table based on that distance. By incorporating the frame count,
+ * the gradient shifts and pulses, creating a sense of movement across the screen.
+ * @param scene_frame
+ */
 void RadialGreyscaleRender(uint32_t scene_frame)
 {
 	__RenderRadialPattern(scene_frame, TERMINAL_WIDTH / 2, TERMINAL_HEIGHT / 2, TRUE, FALSE, TRUE);
 }
 
+/**
+ * @fn void RadialColourRender(uint32_t scene_frame)
+ * @brief Renders an animated radial gradient centered in the terminal using vibrant colours.
+ * Similar to the greyscale version, this function calculates the distance from the center
+ * to each character position and assigns a colour from the extended ANSI palette based on
+ * that distance. The colours shift dynamically with the frame count, creating a lively,
+ * pulsating radial pattern that showcases the terminal's colour capabilities.
+ * @param scene_frame
+ */
 void RadialColourRender(uint32_t scene_frame)
 {
 	__RenderRadialPattern(scene_frame, TERMINAL_WIDTH / 2, TERMINAL_HEIGHT / 2, FALSE, TRUE, FALSE);
