@@ -315,18 +315,6 @@ void TerminalInit(uint8_t cursor)
 }
 
 /**
- * @fn void TerminalCursorHome(void)
- * @brief Sends the ANSI escape sequence to move the terminal cursor to the home position (1,1).
- * This function uses the ANSI_CURSOR_HOME (ESC[H) to quickly reposition
- * the cursor to the top-left corner of the terminal screen.
- */
-void TerminalCursorHome(void)
-{
-	// Transmit the ANSI command string for moving the cursor to (1,1)
-	SerialPrint(ANSI_CURSOR_HOME);
-}
-
-/**
  * @fn void TerminalClearScreen(void)
  * @brief Sends the ANSI escape sequence to clear the entire terminal screen.
  * This function uses the CLEAR_SCREEN (ESC[2J) to erase all content
@@ -347,6 +335,18 @@ void TerminalClearAndHome(void)
 {
 	// Transmit the combined ANSI command string for clearing the screen and setting the cursor to home (1,1)
 	SerialPrint(ANSI_CLS_HOME);
+}
+
+/**
+ * @fn void TerminalCursorHome(void)
+ * @brief Sends the ANSI escape sequence to move the terminal cursor to the home position (1,1).
+ * This function uses the ANSI_CURSOR_HOME (ESC[H) to quickly reposition
+ * the cursor to the top-left corner of the terminal screen.
+ */
+void TerminalCursorHome(void)
+{
+	// Transmit the ANSI command string for moving the cursor to (1,1)
+	SerialPrint(ANSI_CURSOR_HOME);
 }
 
 /**
@@ -371,18 +371,6 @@ void TerminalVisibleCursor(void)
 {
 	// Transmit the ANSI command string for showing the cursor
 	SerialPrint(ANSI_CURSOR_VISIBLE);
-}
-
-/**
- * @fn void TerminalResetStyle(void)
- * @brief Sends the ANSI escape sequence to reset all terminal styles to default.
- * This function uses the ANSI_RESET_STYLE (ESC[0m) to clear any applied
- * text formatting, colours, or other styles and return to the default terminal appearance.
- */
-void TerminalResetStyle(void)
-{
-	// Transmit the ANSI command string for resetting all styles to default
-	SerialPrint(ANSI_RESET_STYLE);
 }
 
 /**
@@ -417,35 +405,67 @@ void TerminalSetCursorPos(uint16_t col, uint16_t row)
 }
 
 /**
- * @fn void TerminalPrintString(const char *str, uint16_t col, uint16_t row)
- * @brief DDraws a string directly to the terminal at the specified row and column.
- * @param str The string to draw.
- * @param col The target column number (1-based index).
- * @param row The target row number (1-based index).
+ * @fn void TerminalSetAttribute(TerminalAttr_t attribute)
+ * @brief Sets a specific text attribute (e.g., bold, underline) in the terminal using ANSI escape sequences.
+ * This function takes a TerminalAttr_t enum value and sends the corresponding ANSI command to enable that attribute.
+ * @param attribute The text attribute to set, specified as a value from the TerminalAttr_t enum.
  */
-void TerminalPrintString(const char *str, uint16_t col, uint16_t row)
+void TerminalSetAttribute(TerminalAttr_t attribute)
 {
-	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	switch (attribute)
+	{
+		case TERM_ATTR_RESET:
+			SerialPrint(ANSI_RESET_STYLE);
+			break;
+		case TERM_ATTR_BOLD:
+			SerialPrint(ANSI_BOLD);
+			break;
+		case TERM_ATTR_DIM:
+			SerialPrint(ANSI_DIM);
+			break;
+		case TERM_ATTR_UNDERLINE:
+			SerialPrint(ANSI_UNDERLINE);
+			break;
+		case TERM_ATTR_BLINK:
+			SerialPrint(ANSI_BLINK);
+			break;
+		case TERM_ATTR_REVERSE:
+			SerialPrint(ANSI_REVERSE_MODE);
+			break;
+		case TERM_ATTR_STRIKE:
+			SerialPrint(ANSI_STRIKETHROUGH);
+			break;
+		case TERM_ATTR_RESET_BOLD:
+			SerialPrint(ANSI_RESET_BOLD);
+			break;
 
-	// Check if the starting position is within the screen boundaries
-	if (!__IsValidPos(col, row))
-		return;
+		case TERM_ATTR_RESET_UNDERLINE:
+			SerialPrint(ANSI_RESET_UNDERLINE);
+			break;
+		case TERM_ATTR_RESET_BLINK:
+			SerialPrint(ANSI_RESET_BLINK);
+			break;
+		case TERM_ATTR_RESET_REVERSE_MODE:
+			SerialPrint(ANSI_RESET_REVERSE_MODE);
+			break;
+		case TERM_ATTR_RESET_STRIKE:
+			SerialPrint(ANSI_RESET_STRIKETHROUGH);
+			break;
+		default:
+			break;
+	}
+}
 
-	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H) and a string for the
-	// whole terminal width
-	char buffer[TERMINAL_WIDTH + 16];
-
-	// Format the escape sequence to move the cursor and return the length
-	// The length here is without the string terminator (\0)
-	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%u;%uH%s", (unsigned int)row, (unsigned int)col, str);
-
-	// Check if sprintf failed (len < 0) or if the formatted string exceeded the terminal size
-	if (len <= 0 || (size_t)len >= sizeof(buffer))
-		return;
-
-	// Transmit the escape sequence via using the precise length calculated by sprintf
-	SerialPrintN(buffer, (uint16_t)len);
+/**
+ * @fn void TerminalResetStyle(void)
+ * @brief Sends the ANSI escape sequence to reset all terminal styles to default.
+ * This function uses the ANSI_RESET_STYLE (ESC[0m) to clear any applied
+ * text formatting, colours, or other styles and return to the default terminal appearance.
+ */
+void TerminalResetStyle(void)
+{
+	// Transmit the ANSI command string for resetting all styles to default
+	SerialPrint(ANSI_RESET_STYLE);
 }
 
 /**
@@ -532,14 +552,35 @@ void TerminalSetBackgroundColour(BackgroundColour_t background_colour)
 }
 
 /**
- * @fn void TerminalBufferClear(void)
- * @brief Clears the internal terminal framebuffer by filling it with space characters.
- * This function does NOT send any data to the terminal; it only updates the internal framebuffer.
+ * @fn void TerminalPrintString(const char *str, uint16_t col, uint16_t row)
+ * @brief DDraws a string directly to the terminal at the specified row and column.
+ * @param str The string to draw.
+ * @param col The target column number (1-based index).
+ * @param row The target row number (1-based index).
  */
-void TerminalBufferClear(void)
+void TerminalPrintString(const char *str, uint16_t col, uint16_t row)
 {
-	// Fill the entire framebuffer with space characters
-	memset(framebuffer, ' ', TERMINAL_BUFFER_SIZE);
+	// Make row and column always be 1 or greater for ANSI terminals
+	__NormalizeCoordinates(&col, &row);
+
+	// Check if the starting position is within the screen boundaries
+	if (!__IsValidPos(col, row))
+		return;
+
+	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H) and a string for the
+	// whole terminal width
+	char buffer[TERMINAL_WIDTH + 16];
+
+	// Format the escape sequence to move the cursor and return the length
+	// The length here is without the string terminator (\0)
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%u;%uH%s", (unsigned int)row, (unsigned int)col, str);
+
+	// Check if sprintf failed (len < 0) or if the formatted string exceeded the terminal size
+	if (len <= 0 || (size_t)len >= sizeof(buffer))
+		return;
+
+	// Transmit the escape sequence via using the precise length calculated by sprintf
+	SerialPrintN(buffer, (uint16_t)len);
 }
 
 /**
@@ -555,6 +596,17 @@ void TerminalBufferFlush(void)
 
 	// Send the entire framebuffer to the terminal
 	SerialTransmitDMA((const char *)framebuffer, TERMINAL_BUFFER_SIZE);
+}
+
+/**
+ * @fn void TerminalBufferClear(void)
+ * @brief Clears the internal terminal framebuffer by filling it with space characters.
+ * This function does NOT send any data to the terminal; it only updates the internal framebuffer.
+ */
+void TerminalBufferClear(void)
+{
+	// Fill the entire framebuffer with space characters
+	memset(framebuffer, ' ', TERMINAL_BUFFER_SIZE);
 }
 
 /**

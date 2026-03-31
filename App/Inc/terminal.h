@@ -63,6 +63,24 @@
 #define ANSI_HIDE_CLS_HOME ANSI_CURSOR_INVISIBLE ANSI_CLS_HOME
 
 /* typedefs ------------------------------------------------------------------*/
+// Enum for terminal text attributes
+typedef enum {
+	TERM_ATTR_RESET,
+	TERM_ATTR_BOLD,
+	TERM_ATTR_DIM,
+	TERM_ATTR_UNDERLINE,
+	TERM_ATTR_BLINK,
+	TERM_ATTR_REVERSE,
+	TERM_ATTR_STRIKE,
+
+	TERM_ATTR_RESET_BOLD,
+	TERM_ATTR_RESET_UNDERLINE,
+	TERM_ATTR_RESET_BLINK,
+	TERM_ATTR_RESET_REVERSE_MODE,
+	TERM_ATTR_RESET_STRIKE
+} TerminalAttr_t;
+
+// Enums background colours, including standard ANSI and extended 256-colour options
 typedef enum {
 	BG_BLACK = 40,
 	BG_RED,
@@ -82,6 +100,7 @@ typedef enum {
 	BG_DARK_GRAY = EXTENDED_COLOURS_OFFSET + 238,    // xterm-256 index 238 — visible dark grey
 } BackgroundColour_t;
 
+// Enums foreground colours, including standard ANSI and extended 256-colour options
 typedef enum {
 	FG_BLACK = 30,
 	FG_RED,
@@ -103,9 +122,8 @@ typedef enum {
 } ForegroundColour_t;
 
 /* Function prototypes -------------------------------------------------------*/
-// Initialisation and frame control
+// Initialisation
 void TerminalInit(uint8_t cursor);
-void TerminalBufferFlush(void);
 
 // Screen control
 void TerminalClearScreen(void);
@@ -118,6 +136,7 @@ void TerminalVisibleCursor(void);
 void TerminalSetCursorPos(uint16_t col, uint16_t row);
 
 // Style and colour control
+void TerminalSetAttribute(TerminalAttr_t attr);
 void TerminalResetStyle(void);
 void TerminalSetColour(ForegroundColour_t text_colour, BackgroundColour_t background_colour);
 void TerminalSetTextColour(ForegroundColour_t text_colour);
@@ -127,6 +146,7 @@ void TerminalSetBackgroundColour(BackgroundColour_t background_colour);
 void TerminalPrintString(const char *str, uint16_t col, uint16_t row);
 
 // Framebuffer management
+void TerminalBufferFlush(void);
 void TerminalBufferClear(void);
 void TerminalBufferDrawChar(char c, uint16_t col, uint16_t row);
 void TerminalBufferDrawString(const char *str, uint16_t col, uint16_t row);
