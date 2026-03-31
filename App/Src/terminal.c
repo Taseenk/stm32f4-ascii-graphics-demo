@@ -30,6 +30,8 @@
 /* Private Defines -----------------------------------------------------------*/
 #define COLOUR_SEGMENT_MAX_LEN 12 // Enough for "48;5;255\0"
 #define COLOUR_BUFFER_SIZE     32 // Enough for "\x1b[38;5;255;48;5;255m\0"
+#define CURSOR_BUFFER_SIZE     16 // Enough for"ESC[255;255H"
+#define DIMENSIONS_BUFFER_SIZE 20 // enough for "ESC[8;255;255t"
 
 /* Private Variables ---------------------------------------------------------*/
 static uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
@@ -315,6 +317,35 @@ void TerminalInit(uint8_t cursor)
 }
 
 /**
+ * @fn void TerminalSetDimensions(uint16_t col, uint16_t row)
+ * @brief Sets the terminal dimensions by sending the appropriate ANSI escape sequence.
+ * This function formats the ANSI command to resize the terminal window to the specified
+ * number of columns and rows. It ensures that the provided dimensions are valid and
+ * sends the command via the serial interface.
+ * @param col The desired number of columns for the terminal (1-based index).
+ * @param row The desired number of rows for the terminal (1-based index).
+ */
+void TerminalSetDimensions(uint16_t col, uint16_t row)
+{
+	// Make row and column always be 1 or greater for ANSI terminals
+	__NormalizeCoordinates(&col, &row);
+
+	// Temporary buffer to hold the ANSI escape sequence (enough for ESC[8;255;255t)
+	char buffer[DIMENSIONS_BUFFER_SIZE];
+
+	// Format the xterm resize sequence: ESC [ 8 ; <rows> ; <cols> t
+	// The length here is without the string terminator (\0)
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "8;%u;%ut", (unsigned int)row, (unsigned int)col);
+
+	// Check if snprintf failed (len < 0) or if the formatted string exceeded the buffer size
+	if (len <= 0 || (size_t)len >= sizeof(buffer))
+		return;
+
+	// Transmit the escape sequence using the precise length calculated by snprintf
+	SerialPrintN(buffer, (uint16_t)len);
+}
+
+/**
  * @fn void TerminalClearScreen(void)
  * @brief Sends the ANSI escape sequence to clear the entire terminal screen.
  * This function uses the CLEAR_SCREEN (ESC[2J) to erase all content
@@ -390,7 +421,7 @@ void TerminalSetCursorPos(uint16_t col, uint16_t row)
 		return;
 
 	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H)
-	char buffer[16];
+	char buffer[CURSOR_BUFFER_SIZE];
 
 	// Format the escape sequence to move the cursor and return the length
 	// The length here is without the string terminator (\0)
