@@ -290,13 +290,18 @@ static void __DrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 
 /* Public Functions ----------------------------------------------------------*/
 /**
- * @fn void TerminalInit(uint8_t cursor)
+ * @fn void TerminalInit(uint8_t cursor, uint16_t col, uint16_t row)
  * @brief Initializes the terminal by setting cursor visibility, clearing the screen,
  * and clearing the internal framebuffer.
  * @param cursor TRUE to show the cursor, FALSE to hide it.
+ * @param col The number of columns for the terminal (1-based index).
+ * @param row The number of rows for the terminal (1-based index).
  */
-void TerminalInit(uint8_t cursor)
+void TerminalInit(uint8_t cursor, uint16_t col, uint16_t row)
 {
+	// Set the terminal dimensions based on provided parameters
+	TerminalSetDimensions(col, row);
+
 	// Set cursor visibility based on parameter
 	if (cursor == TRUE)
 		TerminalVisibleCursor();

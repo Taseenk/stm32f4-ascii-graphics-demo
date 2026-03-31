@@ -123,7 +123,7 @@ typedef enum {
 
 /* Function prototypes -------------------------------------------------------*/
 // Initialisation
-void TerminalInit(uint8_t cursor);
+void TerminalInit(uint8_t cursor, uint16_t col, uint16_t row);
 
 // Screen control
 void TerminalSetDimensions(uint16_t col, uint16_t row);

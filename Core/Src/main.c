@@ -112,10 +112,10 @@ int main(void)
 
 	/* USER CODE BEGIN 2 */
 	// Initialize all user modules
-	TerminalInit(FALSE);   // Initialize terminal (disable cursor blinking)
-	SerialReceiveInit();   // Begin UART data reception using DMA
-	TerminalClearScreen(); // Clear the terminal
-	ShellInit();           // Initialize the CLI shell interface
+	TerminalInit(FALSE, TERMINAL_WIDTH, TERMINAL_HEIGHT); // Initialize terminal (disable cursor blinking)
+
+	SerialReceiveInit(); // Begin UART data reception using DMA
+	ShellInit();         // Initialize the CLI shell interface
 
 	// Timing and Frame Rate Control
 	uint32_t last_heartbeat = HAL_GetTick(); // Tracks the last time a frame was processed
@@ -176,16 +176,16 @@ int main(void)
 				SceneManager(frame_counter);
 			}
 
-			// Increment trackers and maintain a consistent time for the next frame
-			frame_counter++;
-			fps_counter++;
-
 			// Update the heartbeat timestamp after a slow scene
 			// only resyncs after falling 2 full frame intervals behind
 			if (current_time - last_heartbeat > (FRAME_INTERVAL_MS * 2))
 				last_heartbeat = current_time;
 			else
 				last_heartbeat += FRAME_INTERVAL_MS;
+
+			// Increment trackers and maintain a consistent time for the next frame
+			frame_counter++;
+			fps_counter++;
 		}
 	}
 	/* USER CODE END 3 */
