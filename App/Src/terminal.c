@@ -588,6 +588,32 @@ void TerminalSetBackgroundColour(BackgroundColour_t background_colour)
 }
 
 /**
+ * @fn void TerminalPrintN(const char *str, uint16_t len)
+ * @brief Transmits exactly len bytes of str to the terminal via serial_hw.
+ * This is the single gateway for sending pre-formatted data (escape sequences,
+ * raw characters) to the hardware. All application modules must use this
+ * function instead of calling serial_hw directly.
+ * @param str Pointer to the data to transmit. Does not need to be null-terminated.
+ * @param len Number of bytes to transmit.
+ */
+void TerminalPrintN(const char *str, uint16_t len)
+{
+	SerialPrintN(str, len);
+}
+
+/**
+ * @fn void TerminalPrint(const char *str)
+ * @brief Transmits a null-terminated string to the terminal via serial_hw.
+ * Convenience wrapper around TerminalPrintN for callers that have a
+ * null-terminated string and do not want to compute its length manually.
+ * @param str Null-terminated string to transmit.
+ */
+void TerminalPrint(const char *str)
+{
+	SerialPrint(str);
+}
+
+/**
  * @fn void TerminalPrintString(const char *str, uint16_t col, uint16_t row)
  * @brief DDraws a string directly to the terminal at the specified row and column.
  * @param str The string to draw.
