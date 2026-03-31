@@ -170,9 +170,6 @@ void SerialReceiveInit(void)
 
 	// Start the reception of UART data in DMA mode
 	HAL_UART_Receive_DMA(p_uart, (uint8_t *)s_uart_rx.buffer, (uint16_t)UART_BUFFER_SIZE);
-
-	// Log successful initialization of the DMA transfer
-	SerialPrint("DEBUG: DMA has been started\r\n\n");
 }
 
 /**
@@ -214,9 +211,6 @@ void SerialProcessData(void)
 		// Check if the message is too long for the buffer to hold
 		if (message_length >= (sizeof(rx_message.message) - 1))
 		{
-			// Log a warning message
-			SerialPrint("WARNING: Received message was too long");
-
 			// Update and save the new start reading position
 			s_uart_rx.read_index = (buffer_index + 1) % UART_BUFFER_SIZE;
 
