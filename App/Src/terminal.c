@@ -316,9 +316,6 @@ void TerminalInit(uint8_t cursor, uint16_t col, uint16_t row)
 
 	// Reset terminal styling to default
 	TerminalResetStyle();
-
-	// Log successful initialization of the terminal
-	SerialPrint("DEBUG: Terminal initialized successfully\r\n");
 }
 
 /**
