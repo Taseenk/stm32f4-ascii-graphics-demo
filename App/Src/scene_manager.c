@@ -11,6 +11,7 @@
 /* Includes ------------------------------------------------------------------*/
 // Project libraries
 #include "scene_manager.h"
+#include "shell.h"
 #include "terminal.h"
 
 #include "scene_attributes_demo.h"
@@ -223,11 +224,21 @@ void SceneManager(uint32_t global_frame_count)
 			// Reset terminal styling
 			TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
-			// Move to next playlist index, wrapping back to 0 at the end of the list
-			scene_index = (scene_index + 1) % __GetTotalIndexCount();
+			// Increment scene index to move to the next scene in the next cycle
+			scene_index++;
 
-			// Move back to START state for the next scene
-			current_state = SCENE_STATE_START;
+			// If the end of available scenes is reached based on the current mode
+			// reset to user input mode, otherwise move back to START
+			if (scene_index >= __GetTotalIndexCount())
+			{
+				system_mode = SYSTEM_STATE_USER_INPUT;
+				ShellInit();
+			} else
+			{
+				// Move back to START state for the next scene
+				current_state = SCENE_STATE_START;
+			}
+
 			break;
 
 		/* Default case to catch unexpected states */
