@@ -10,7 +10,6 @@
 /* Includes ------------------------------------------------------------------*/
 // Project libraries
 #include "scene_colour_demo.h"
-#include "serial_hw.h"
 #include "terminal.h"
 
 // STM32 libraries
@@ -222,7 +221,7 @@ static void __RenderRadialPattern(
 			// Skip odd rows and columns
 			if ((x % 2 != 0) || (y % 2 != 0))
 			{
-				SerialPrintN(" ", 1);
+				TerminalPrintN(" ", 1);
 				continue;
 			}
 
@@ -248,10 +247,10 @@ static void __RenderRadialPattern(
 			if (use_lut == TRUE)
 			{
 				char shade = __GetShadeChar((uint8_t)distance);
-				SerialPrintN(&shade, 1);
+				TerminalPrintN(&shade, 1);
 			} else
 			{
-				SerialPrintN(" ", 1);
+				TerminalPrintN(" ", 1);
 			}
 		}
 	}
