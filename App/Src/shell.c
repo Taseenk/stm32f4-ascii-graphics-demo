@@ -443,6 +443,9 @@ static void __NavigateToDashboard(DashboardPages_t page)
  */
 void ShellInit(void)
 {
+	// Clear the terminal
+	TerminalClearScreen();
+
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
