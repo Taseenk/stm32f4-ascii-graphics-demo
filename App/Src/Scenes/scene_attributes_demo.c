@@ -20,25 +20,33 @@
 #include <string.h>
 
 /* Private Defines -----------------------------------------------------------*/
+// Constants for dynamic part of the scene
+#define ASCII_PATTERN_SPEED   15  // Number of frames before shifting the background pattern
+#define ASCII_PRINTABLE_START 32  // The '!' character
+#define ASCII_PRINTABLE_END   126 // The '~' character
+
+// UI Text Content: Header & Footer
 #define TITLE_TEXT      "STM32F4 ANSI/VT100 Attribute Demonstration"
 #define TITLE_TEXT_SIZE (sizeof(TITLE_TEXT) - 1)
+#define FOOTER_TEXT     "STM32F407VG @ 168MHz  |  ARM Cortex-M4  |  (C) 2026 Taseen"
 
-// Single attribute lines
-#define NORMAL_TEXT          "This is a normal line"
-#define BOLD_TEXT            "This is a bold line"
-#define UNDERLINE_TEXT       "This is an underlined line"
-#define BLINK_TEXT           "This is a blinking line"
-#define INVERSE_TEXT         "This is inverse video"
+// UI Text Content: Single Attribute Samples
+#define NORMAL_TEXT        "This is a normal line"
+#define BOLD_TEXT          "This is a bold line"
+#define UNDERLINE_TEXT     "This is an underlined line"
+#define BLINK_TEXT         "This is a blinking line"
+#define INVERSE_TEXT       "This is inverse video"
 
-#define DIM_TEXT             "This is dim/faint text"
-#define STRIKETHROUGH_TEXT   "This is strikethrough text"
+#define DIM_TEXT           "This is dim/faint text"
+#define STRIKETHROUGH_TEXT "This is strikethrough text"
 
+// UI Text Content: Multi-Attribute Samples
 #define BOLD_UNDERLINE_TEXT  "This is bold + underline"
 #define BOLD_BLINK_TEXT      "This is bold + blink"
 #define BOLD_INVERSE_TEXT    "This is bold + inverse"
 #define UNDERLINE_BLINK_TEXT "This is underline + blink"
 
-// Combination grid header labels
+// UI Text Content: Grid Labels
 #define GRID_SAMPLE_TEXT      "grid sample"
 #define GRID_HEADER_NORMAL    "Normal"
 #define GRID_HEADER_BOLD      "Bold"
@@ -46,50 +54,48 @@
 #define GRID_HEADER_BLINK     "Blink"
 #define GRID_HEADER_INVERSE   "Inverse"
 
-// Footer
-#define FOOTER_TEXT "STM32F407VG @ 168MHz  |  ARM Cortex-M4  |  (C) 2026 Taseen"
+// UI Layout (Rows & Columns): Rows
+#define ROW_TITLE  1
+#define ROW_FOOTER 24
 
-// Row positions for each section of the demo layout
-#define ROW_TITLE           1
+// UI Layout (Rows & Columns): Columns
+#define GRID_COL_NORMAL    1
+#define GRID_COL_BOLD      17
+#define GRID_COL_UNDERLINE 33
+#define GRID_COL_BLINK     49
+#define GRID_COL_INVERSE   65
 
-#define ROW_NORMAL          (ROW_TITLE + 2) // Skip a row before printing
-#define ROW_BOLD            (ROW_NORMAL + 1)
-#define ROW_UNDERLINE       (ROW_BOLD + 1)
-#define ROW_BLINK           (ROW_UNDERLINE + 1)
-#define ROW_INVERSE         (ROW_BLINK + 1)
-#define ROW_DIM             (ROW_INVERSE + 1)
-#define ROW_STRIKETHROUGH   (ROW_DIM + 1)
+// UI Layout (Rows & Columns): Single Attributes Section
+#define ROW_NORMAL        (ROW_TITLE + 2)
+#define ROW_BOLD          (ROW_NORMAL + 1)
+#define ROW_UNDERLINE     (ROW_BOLD + 1)
+#define ROW_BLINK         (ROW_UNDERLINE + 1)
+#define ROW_INVERSE       (ROW_BLINK + 1)
+#define ROW_DIM           (ROW_INVERSE + 1)
+#define ROW_STRIKETHROUGH (ROW_DIM + 1)
 
-#define ROW_BOLD_UNDERLINE  (ROW_STRIKETHROUGH + 2) // Skip a row before printing
+// UI Layout (Rows & Columns): Combinations Section
+#define ROW_BOLD_UNDERLINE  (ROW_STRIKETHROUGH + 2)
 #define ROW_BOLD_BLINK      (ROW_BOLD_UNDERLINE + 1)
 #define ROW_BOLD_INVERSE    (ROW_BOLD_BLINK + 1)
 #define ROW_UNDERLINE_BLINK (ROW_BOLD_INVERSE + 1)
 
-#define ROW_GRID_HEADER     (ROW_UNDERLINE_BLINK + 2) // Skip a row before printing
-#define ROW_GRID_NORMAL     (ROW_GRID_HEADER + 1)
-#define ROW_GRID_BOLD       (ROW_GRID_NORMAL + 1)
-#define ROW_GRID_INVERSE    (ROW_GRID_BOLD + 1)
+// UI Layout (Rows & Columns): Grid Section
+#define ROW_GRID_HEADER  (ROW_UNDERLINE_BLINK + 2)
+#define ROW_GRID_NORMAL  (ROW_GRID_HEADER + 1)
+#define ROW_GRID_BOLD    (ROW_GRID_NORMAL + 1)
+#define ROW_GRID_INVERSE (ROW_GRID_BOLD + 1)
 
-#define ROW_ASCII_SET       (ROW_GRID_INVERSE + 2) // Skip a row before printing
+// UI Layout (Rows & Columns): Animated Section
+#define ROW_ASCII_SET (ROW_GRID_INVERSE + 2)
 
-#define ROW_FOOTER          24
-
-// Column positions for the combination grid
-#define GRID_COL_NORMAL       1
-#define GRID_COL_BOLD         17
-#define GRID_COL_UNDERLINE    33
-#define GRID_COL_BLINK        49
-#define GRID_COL_INVERSE      65
-
-#define ASCII_PRINTABLE_START 32  // The '!' character
-#define ASCII_PRINTABLE_END   126 // The '~' character
 /* Private Variables ---------------------------------------------------------*/
 
 /* Private Function Prototypes -----------------------------------------------*/
 static void __DrawTitleBar(void);
 static void __DrawSingleAttributeLines(void);
 static void __DrawCombinationGrid(void);
-static void __DrawAsciiSet(void);
+static void __DrawAsciiSet(uint32_t frame, uint8_t speed);
 static void __DrawFooter(void);
 
 /* Private Functions ---------------------------------------------------------*/
@@ -266,27 +272,32 @@ static void __DrawCombinationGrid(void)
 }
 
 /**
- * @fn static void __DrawAsciiSet(void)
- * @brief Renders the standard printable ASCII character set (32-126) in a single
- * row, alternating the background colour of each character to visually
- * distinguish them and demonstrate how attributes interact with character output.
+ * @fn static void __DrawAsciiSet(uint32_t frame, uint8_t speed)
+ * @brief Renders the standard printable ASCII character set (32-126) in a single row at the bottom of the screen, with
+ * a dynamic alternating background pattern that shifts every few frames to demonstrate how attributes interact with
+ * character output.
+ * @param frame The current frame count, used to calculate the animation offset
+ * @param speed The number of frames to wait before shifting the background pattern
  */
-static void __DrawAsciiSet(void)
+static void __DrawAsciiSet(uint32_t frame, uint8_t speed)
 {
+	// Calculate an offset for animating the background pattern based on the frame count and speed
+	uint32_t offset = (frame / speed);
+
 	// Move to the start position for this row
 	TerminalSetCursorPos(1, ROW_ASCII_SET);
 
 	// Print the standard printable ASCII character set (32-126), streaming characters individually
 	char single_char[2] = {0, '\0'};
-	for (int c = ASCII_PRINTABLE_START; c <= ASCII_PRINTABLE_END; c++)
+	for (int ascii_char = ASCII_PRINTABLE_START; ascii_char <= ASCII_PRINTABLE_END; ascii_char++)
 	{
 		// Toggle background styling based on even/odd index
-		if (c % 2 == 0)
+		if ((ascii_char + offset) % 2 == 0)
 			TerminalSetAttribute(TERM_ATTR_REVERSE);
 		else
 			TerminalSetAttribute(TERM_ATTR_RESET_REVERSE_MODE);
 
-		single_char[0] = (char)c;
+		single_char[0] = (char)ascii_char;
 		TerminalPrint(single_char);
 	}
 
@@ -322,7 +333,6 @@ void SceneAttributesInit(void)
 	__DrawTitleBar();
 	__DrawSingleAttributeLines();
 	__DrawCombinationGrid();
-	__DrawAsciiSet();
 	__DrawFooter();
 }
 
@@ -333,7 +343,6 @@ void SceneAttributesInit(void)
  */
 void SceneAttributesRender(uint32_t scene_frame)
 {
-	// This scene is static and does not require any updates during rendering
-	// This function is intentionally left empty.
-	(void)scene_frame;
+	// Animated ASCII set at the bottom to demonstrate attributes with character output
+	__DrawAsciiSet(scene_frame, ASCII_PATTERN_SPEED);
 }
