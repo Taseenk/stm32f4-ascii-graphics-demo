@@ -11,6 +11,7 @@ Checks: >
   -hicpp-*,
   -modernize-*,
   -cert-*-cpp,
-  -performance-no-int-to-ptr
+  -performance-no-int-to-ptr,
+  -bugprone-easily-swappable-parameters,
 WarningsAsErrors: ''
 HeaderFilterRegex: "(.*(Core|Drivers).*|.*startup_.*\\.s)"
