@@ -13,10 +13,9 @@
 #include "terminal.h"
 
 // STM32 libraries
+#include "arm_math.h"
 #include "main.h"
 
-// Standard libraries
-#include "arm_math.h"
 
 /* Private Defines -----------------------------------------------------------*/
 // Timing parameters for the colour sequence phases
