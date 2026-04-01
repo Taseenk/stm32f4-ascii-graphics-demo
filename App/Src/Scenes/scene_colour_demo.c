@@ -16,7 +16,6 @@
 #include "arm_math.h"
 #include "main.h"
 
-
 /* Private Defines -----------------------------------------------------------*/
 // Timing parameters for the colour sequence phases
 #define SMPTE_MUTED_DURATION      100
@@ -59,8 +58,7 @@ static char __GetShadeChar(uint8_t radius);
 static void __CycleBackgroundColour(uint32_t frame, uint8_t speed);
 static void __DrawSmpteMuted(void);
 static void __DrawSmpteStandard(void);
-static void __RenderRadialPattern(
-    uint32_t frame, uint16_t pos_x, uint16_t pos_y, uint8_t is_greyscale, uint8_t is_bg, uint8_t use_lut);
+static void __RenderRadialPattern(uint32_t frame, uint8_t is_greyscale, uint8_t is_bg, uint8_t use_lut);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
@@ -206,8 +204,7 @@ static void __DrawSmpteStandard(void)
  * @param is_bg Flag indicating whether to render as background or foreground.
  * @param use_lut Flag indicating whether to use the lookup table for shading.
  */
-static void __RenderRadialPattern(
-    uint32_t frame, uint16_t pos_x, uint16_t pos_y, uint8_t is_greyscale, uint8_t is_bg, uint8_t use_lut)
+static void __RenderRadialPattern(uint32_t frame, uint8_t is_greyscale, uint8_t is_bg, uint8_t use_lut)
 {
 	// Move the cursor to the home position before starting the render
 	TerminalCursorHome();
@@ -225,7 +222,7 @@ static void __RenderRadialPattern(
 			}
 
 			// Retrieve pre-calculated distance
-			uint8_t distance = distance_lut[y * TERMINAL_WIDTH + x];
+			uint8_t distance = distance_lut[(y * TERMINAL_WIDTH) + x];
 
 			// Determine the colour value based on the distance and frame count to create a dynamic pattern
 			// Can be either greyscale or colour depending on the mode, and uses the extended colour range
@@ -339,7 +336,7 @@ void SmpteCalibrationRender(uint32_t scene_frame)
  */
 void RadialGreyscaleRender(uint32_t scene_frame)
 {
-	__RenderRadialPattern(scene_frame, TERMINAL_WIDTH / 2, TERMINAL_HEIGHT / 2, TRUE, FALSE, TRUE);
+	__RenderRadialPattern(scene_frame, TRUE, FALSE, TRUE);
 }
 
 /**
@@ -353,5 +350,5 @@ void RadialGreyscaleRender(uint32_t scene_frame)
  */
 void RadialColourRender(uint32_t scene_frame)
 {
-	__RenderRadialPattern(scene_frame, TERMINAL_WIDTH / 2, TERMINAL_HEIGHT / 2, FALSE, TRUE, FALSE);
+	__RenderRadialPattern(scene_frame, FALSE, TRUE, FALSE);
 }
