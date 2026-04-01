@@ -29,6 +29,8 @@ typedef enum {
 	SCENE_RADIAL_COLOUR,    // Radial gradient pattern using extended colour range without character shading for a block
 	                        // colour effect
 
+	SCENE_PRIMITIVES_DEMO, // Demo of drawing basic primitives like lines, rectangles, circles
+
 	SCENE_ASCII_GLITCH_NOISE,  // Random ASCII sporadic glitch
 	SCENE_BINARY_GLITCH_NOISE, // Random binary (0/1) sporadic glitch
 
