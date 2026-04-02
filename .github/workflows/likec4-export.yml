@@ -1,5 +1,5 @@
 name: Export LikeC4 Diagrams
- 
+
 on:
   push:
     branches: [ "master", "develop" ]
@@ -14,28 +14,23 @@ on:
 jobs:
   export:
     runs-on: ubuntu-latest
- 
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
- 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
- 
-      - name: Install LikeC4 CLI
-        run: npm install -g likec4
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+        run: bunx playwright install chromium --with-deps
 
       - name: Export diagrams to PNG
         run: |
-          likec4 export png \
+          bunx likec4 export png \
             --output Docs/Assets/Diagrams \
             Docs/LikeC4/
-    
+
       - name: Upload diagram artifacts
         uses: actions/upload-artifact@v4
         with:
