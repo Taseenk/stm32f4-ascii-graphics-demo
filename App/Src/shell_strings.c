@@ -2,7 +2,7 @@
  ******************************************************************************
  * @file           : shell_strings.c
  * @brief          : String tables and constants for the CLI shell interface,
- * including system information. All user-visible shell text is defined here 
+ * including system information. All user-visible shell text is defined here
  * in one place. To update any terminal output, edit only this file.
  ******************************************************************************
  */
@@ -75,7 +75,8 @@ const char *const shell_help_run[] = {
     "  DEMO",
 };
 
-// Help information for the "HELP DEMO /MODE" command, providing details about the mode qualifier for the demo command and the valid mode options
+// Help information for the "HELP DEMO /MODE" command, providing details about the mode qualifier for the demo command
+// and the valid mode options
 const char *const shell_help_subkey_mode[] = {
     "DEMO",
     "  /MODE",
@@ -88,7 +89,7 @@ const char *const shell_help_subkey_mode[] = {
     "      PLAYLIST  Plays a curated list of specific scenes back-to-back.",
 };
 
-// Help information for the "HELP DEMO /SCENE" command, providing details about the scene qualifier for the demo command 
+// Help information for the "HELP DEMO /SCENE" command, providing details about the scene qualifier for the demo command
 // and how it allows users to launch specific scenes directly from the CLI shell
 const char *const shell_help_subkey_scene[] = {
     "DEMO",
@@ -99,7 +100,8 @@ const char *const shell_help_subkey_scene[] = {
     "    the interactive dashboard menu.",
 };
 
-// Shell error messages for different error scenarios in the command parser, providing user-friendly feedback in the CLI shell when errors occur
+// Shell error messages for different error scenarios in the command parser, providing user-friendly feedback in the CLI
+// shell when errors occur
 const char *const shell_error[] = {
     /* [0] NONE               */ "",
     /* [1] UNKNOWN_COMMAND    */ "%SYSTEM-E-UNRECOGNIZED, command not found",
@@ -110,7 +112,8 @@ const char *const shell_error[] = {
     /* [6] UNEXPECTED_ERROR   */ "%SYSTEM-F-ANOMALY, an unexpected shell error occurred",
 };
 
-// Calculate the lengths of the string arrays for use in loops and bounds checking when printing the strings in the CLI shell
+// Calculate the lengths of the string arrays for use in loops and bounds checking when printing the strings in the CLI
+// shell
 const uint8_t shell_boot_len = sizeof(shell_boot) / sizeof(shell_boot[0]);
 const uint8_t shell_help_demo_len = sizeof(shell_help_demo) / sizeof(shell_help_demo[0]);
 const uint8_t shell_help_run_len = sizeof(shell_help_run) / sizeof(shell_help_run[0]);

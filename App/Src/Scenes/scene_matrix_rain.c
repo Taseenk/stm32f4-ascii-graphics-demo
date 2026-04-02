@@ -18,43 +18,44 @@
 
 /* Private Defines -----------------------------------------------------------*/
 // Animation Behavior & Timing
-#define COORDINATE_OFFSET           1       // Terminal coordinates usually start at 1,1
-#define TRAIL_LENGTH                8       // Default trail length for matrix rain effect
-#define MATRIX_RAIN_DENSITY_MASK    0x3FF   // Mask to normalize RNG for density comparison (0-1023) in matrix rain
-#define COLUMN_INACTIVE             0       // Indicator for inactive column
+#define COORDINATE_OFFSET        1     // Terminal coordinates usually start at 1,1
+#define TRAIL_LENGTH             8     // Default trail length for matrix rain effect
+#define MATRIX_RAIN_DENSITY_MASK 0x3FF // Mask to normalize RNG for density comparison (0-1023) in matrix rain
+#define COLUMN_INACTIVE          0     // Indicator for inactive column
 
-#define BINARY_CHARACTER    1       // Binary character mode
-#define ASCII_CHARACTER     0       // ASCII character mode
+#define BINARY_CHARACTER         1 // Binary character mode
+#define ASCII_CHARACTER          0 // ASCII character mode
 
-#define BINARY_MASK             1       // Mask for binary character generation
-#define ASCII_PRINTABLE_START   33      // The '!' character
-#define ASCII_CHAR_MASK         0x3F    // Mask to get 64 printable ASCII characters
-#define ASCII_ZERO_OFFSET       48      // Offset for ASCII code '0' character
+#define BINARY_MASK              1    // Mask for binary character generation
+#define ASCII_PRINTABLE_START    33   // The '!' character
+#define ASCII_CHAR_MASK          0x3F // Mask to get 64 printable ASCII characters
+#define ASCII_ZERO_OFFSET        48   // Offset for ASCII code '0' character
 
 // Matrix falling Rain Scene
-#define RAIN_COLOR_STAGES   3       // Number of color stages for a dynamic visual effect
-#define RAIN_DENSITY_HIGH   13      // Most dense rain trail spawn rate
-#define RAIN_DENSITY_MID    6       // Medium rain trail spawn rate
-#define RAIN_DENSITY_LOW    3       // Sparse rain trail spawn rate
+#define RAIN_COLOR_STAGES  3  // Number of color stages for a dynamic visual effect
+#define RAIN_DENSITY_HIGH  13 // Most dense rain trail spawn rate
+#define RAIN_DENSITY_MID   6  // Medium rain trail spawn rate
+#define RAIN_DENSITY_LOW   3  // Sparse rain trail spawn rate
 
-#define RAIN_SPEED_DEFAULT  1       // Number of rows characters move per update at low speed
+#define RAIN_SPEED_DEFAULT 1 // Number of rows characters move per update at low speed
 
 // Hacked Falling rain scene
-#define RAIN_HACKED_CORRUPTED       265     // Scene frame index when the "hack" takes full effect and characters become red
-#define RAIN_HACKED_CORRUPT_MASK    0x3ff   // Bitwise mask to create a small chance of red characters appearing (getting hacked)
+#define RAIN_HACKED_CORRUPTED 265 // Scene frame index when the "hack" takes full effect and characters become red
+#define RAIN_HACKED_CORRUPT_MASK                                                                                       \
+	0x3ff // Bitwise mask to create a small chance of red characters appearing (getting hacked)
 
 // Rain Fade-In Scene
-#define RAIN_FADE_IN_SCENE_BRIGHT   40
-#define RAIN_FADE_IN_SCENE_MEDIUM   80
-#define RAIN_FADE_IN_SCENE_DARK     160
+#define RAIN_FADE_IN_SCENE_BRIGHT 40
+#define RAIN_FADE_IN_SCENE_MEDIUM 80
+#define RAIN_FADE_IN_SCENE_DARK   160
 
-#define RAIN_FADE_IN_DURATION	300							// Duration of the rain fade-in scene in frames
-#define RAIN_FADE_IN_MIDPOINT   (RAIN_FADE_IN_DURATION / 2) // Mid-point for density swap
+#define RAIN_FADE_IN_DURATION     300                         // Duration of the rain fade-in scene in frames
+#define RAIN_FADE_IN_MIDPOINT     (RAIN_FADE_IN_DURATION / 2) // Mid-point for density swap
 
 // Dissolve configuration
-#define DISSOLVE_INTERVAL_MASK  0x04    // Used for bitwise frame frequency (frame & 4)
-#define DISSOLVE_STRENGTH_LOW   5       // Characters removed per frame (Subtle dissolve)
-#define DISSOLVE_STRENGTH_HIGH  15      // Characters removed per frame (Aggressive dissolve)
+#define DISSOLVE_INTERVAL_MASK 0x04 // Used for bitwise frame frequency (frame & 4)
+#define DISSOLVE_STRENGTH_LOW  5    // Characters removed per frame (Subtle dissolve)
+#define DISSOLVE_STRENGTH_HIGH 15   // Characters removed per frame (Aggressive dissolve)
 
 /* Private Variables ---------------------------------------------------------*/
 static uint32_t rand_number; // Global random number state for consistent RNG across functions
@@ -77,7 +78,8 @@ static void __CharacterDissolve(uint32_t frame, uint8_t density_scale);
  */
 static char __GetAsciiOrBinaryChar(uint8_t noise_mode)
 {
-	if (noise_mode == BINARY_CHARACTER) {
+	if (noise_mode == BINARY_CHARACTER)
+	{
 		// Return a random binary character (0 or 1) using a bitwise mask
 		return (rand_number & BINARY_MASK) + ASCII_ZERO_OFFSET;
 	}
@@ -101,7 +103,8 @@ static void __RainUpdater(uint8_t density, uint8_t speed, uint8_t noise_mode)
 	char char_buffer[2] = {0, '\0'};
 
 	// Iterate through every vertical column of the terminal
-	for (int i = 0; i < TERMINAL_WIDTH; i++) {
+	for (int i = 0; i < TERMINAL_WIDTH; i++)
+	{
 		// Update the random number using Xorshift algorithm
 		XorshiftRandomNumber(&rand_number);
 
@@ -109,34 +112,41 @@ static void __RainUpdater(uint8_t density, uint8_t speed, uint8_t noise_mode)
 		pos = matrix_rain_active_col[i];
 
 		// Column is currently active (has a charachter)
-		if (pos > COLUMN_INACTIVE) {
+		if (pos > COLUMN_INACTIVE)
+		{
 			// Iterate through the length of trail and erase characters as they move down
-			for (uint8_t s = 0; s < speed; s++) {
+			for (uint8_t s = 0; s < speed; s++)
+			{
 				// Remove the last charachter of the trail if the position is on the terminal
 				erase_row = (pos + s) - TRAIL_LENGTH;
 
 				// Only erase if the tail is actually on the screen
-				if (erase_row >= COORDINATE_OFFSET && erase_row <= TERMINAL_HEIGHT) {
-					TerminalSerialPrintString(" ", i, erase_row);
+				if (erase_row >= COORDINATE_OFFSET && erase_row <= TERMINAL_HEIGHT)
+				{
+					TerminalPrintString(" ", i, erase_row);
 				}
 			}
 
 			// Iterate through the length of the trail and draw characters as they move down
-			for (uint8_t s = 0; s < speed; s++) {
+			for (uint8_t s = 0; s < speed; s++)
+			{
 				// Add a character at the current position if it's on the terminal
 				uint16_t draw_row = pos + s;
 
 				// Only Add if the position is actually on the screen
-				if (draw_row <= TERMINAL_HEIGHT) {
+				if (draw_row <= TERMINAL_HEIGHT)
+				{
 					// Determine the character to draw based on the noise mode
-					if (noise_mode == ASCII_CHARACTER) {
+					if (noise_mode == ASCII_CHARACTER)
+					{
 						char_buffer[0] = __GetAsciiOrBinaryChar(ASCII_CHARACTER);
-					} else if (noise_mode == BINARY_CHARACTER) {
+					} else if (noise_mode == BINARY_CHARACTER)
+					{
 						char_buffer[0] = __GetAsciiOrBinaryChar(BINARY_CHARACTER);
 					}
 
 					// Move cursor and draw the character on the terminal
-					TerminalSerialPrintString(char_buffer, i, draw_row);
+					TerminalPrintString(char_buffer, i, draw_row);
 				}
 			}
 
@@ -144,15 +154,19 @@ static void __RainUpdater(uint8_t density, uint8_t speed, uint8_t noise_mode)
 			pos += speed;
 
 			// Set column to inactive if character trail has cleared the screen
-			if (pos > TERMINAL_HEIGHT + TRAIL_LENGTH) {
+			if (pos > TERMINAL_HEIGHT + TRAIL_LENGTH)
+			{
 				matrix_rain_active_col[i] = COLUMN_INACTIVE;
-			} else {
+			} else
+			{
 				matrix_rain_active_col[i] = pos;
 			}
 
-		} else {
+		} else
+		{
 			// Using bitwise mask determine probability for a new character based on the density
-			if (rand_number != FALSE && (rand_number & MATRIX_RAIN_DENSITY_MASK) < density) {
+			if (rand_number != FALSE && (rand_number & MATRIX_RAIN_DENSITY_MASK) < density)
+			{
 				// Start a new character at the top to create the raining effect
 				matrix_rain_active_col[i] = COORDINATE_OFFSET;
 			}
@@ -174,7 +188,8 @@ static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
 	// Determine density based on frame count
 	uint32_t spawn_count = (frame % density_scale) + COORDINATE_OFFSET;
 
-	for (int i = 0; i < spawn_count; i++) {
+	for (int i = 0; i < spawn_count; i++)
+	{
 		// Update the random number using Xorshift algorithm
 		// Generate random column within terminal bounds
 		XorshiftRandomNumber(&rand_number);
@@ -186,7 +201,7 @@ static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
 		random_row = (rand_number % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
 
 		// Move cursor and erase the character on the terminal
-		TerminalSerialPrintString(" ", random_col, random_row);
+		TerminalPrintString(" ", random_col, random_row);
 	}
 }
 
@@ -221,12 +236,14 @@ static void __RenderMatrixRainFrame(uint32_t scene_frame, uint8_t noise_mode)
 /**
  * @fn void MatrixRainInit(void)
  * @brief Prepares the matrix rain state by setting up necessary variables and state.
- * @param void This function does not take any parameters.
  */
 void MatrixRainInit(void)
 {
 	// Initialize by generating a random number to minimise overhead when the scene starts
 	rand_number = GetRandomNumber();
+
+	// Reset all previous styles
+	TerminalResetStyle();
 }
 
 /**
@@ -261,7 +278,8 @@ void AsciiRainHackedRender(uint32_t scene_frame)
 	uint32_t color_cycle = (scene_frame / TERMINAL_HEIGHT) % RAIN_COLOR_STAGES;
 
 	// System has been hacked/taken over data is corrupt (text becomes red)
-	if (scene_frame > RAIN_HACKED_CORRUPTED) {
+	if (scene_frame > RAIN_HACKED_CORRUPTED)
+	{
 		// Cycle through red tones instead of green
 		if (color_cycle == 0)
 			TerminalSetTextColour(FG_BRIGHT_RED);
@@ -269,16 +287,20 @@ void AsciiRainHackedRender(uint32_t scene_frame)
 			TerminalSetTextColour(FG_MEDIUM_RED);
 		else
 			TerminalSetTextColour(FG_DARK_RED);
-	} else {
+	} else
+	{
 		// Update the random number using Xorshift algorithm
 		XorshiftRandomNumber(&rand_number);
 
 		// Bitwise mask to create a small chance of red characters appearing (getting hacked)
-		if ((rand_number & RAIN_HACKED_CORRUPT_MASK) < 7) {
+		if ((rand_number & RAIN_HACKED_CORRUPT_MASK) < 7)
+		{
 			TerminalSetTextColour(FG_MEDIUM_RED);
-		} else {
+		} else
+		{
 			// Initial normal green fade-in of the rain before the "hack" takes over
-			if (color_cycle == 0) {
+			if (color_cycle == 0)
+			{
 				TerminalSetTextColour(FG_BRIGHT_GREEN);
 			} else if (color_cycle == 1)
 				TerminalSetTextColour(FG_MEDIUM_GREEN);
@@ -304,11 +326,14 @@ void AsciiRainHackedRender(uint32_t scene_frame)
 void AsciiRainFadeIn(uint32_t scene_frame)
 {
 	// Adjust text colour based on time in scene
-	if (scene_frame < RAIN_FADE_IN_SCENE_BRIGHT) {
+	if (scene_frame < RAIN_FADE_IN_SCENE_BRIGHT)
+	{
 		TerminalSetTextColour(FG_BRIGHT_GREEN);
-	} else if (scene_frame < RAIN_FADE_IN_SCENE_MEDIUM) {
+	} else if (scene_frame < RAIN_FADE_IN_SCENE_MEDIUM)
+	{
 		TerminalSetTextColour(FG_MEDIUM_GREEN);
-	} else if (scene_frame < RAIN_FADE_IN_SCENE_DARK) {
+	} else if (scene_frame < RAIN_FADE_IN_SCENE_DARK)
+	{
 		TerminalSetTextColour(FG_DARK_GREEN);
 	}
 

@@ -28,7 +28,7 @@ model {
             description "Contains the high-level animation logic and system orchestration. Calculates what happens in a scene without worrying about how data is sent."
 
             scene_manager_module = component "scene_manager.c/h" {
-                description "Orchestrates the demo by cycling through scenes, managing state transitions, and controlling playback timing in both AUTO and PLAYLIST modes."
+                description "Orchestrates the demo by cycling through scenes, managing state transitions, and controlling playback timing in both AUTO and PLAYLIST modes. When the last scene finishes, resets the system to USER_INPUT mode and re-initialises the shell."
             }
 
             // --- Shell / CLI ---
@@ -44,10 +44,16 @@ model {
                 description "Renders the interactive main-menu UI and manages page navigation, visual selection feedback, and transitions into scene playback modes."
             }
 
-           // --- Scenes ---
+            // --- Scenes ---
             scenes_group = component "Scenes/" {
                 description "One .c/.h pair per visual effect. Each scene is self-contained and registered in the scene manager's scene table."
 
+                scene_attributes_demo_module = component "scene_attributes_demo.c/h" {
+                    description "A VT100 attribute torture test that showcases every supported ANSI text attribute: bold, dim, underline, blink, inverse, strikethrough and their common two-attribute combinations across a structured static layout."
+                }
+                scene_colour_demo_module = component "scene_colour_demo.c/h" {
+                    description "Demonstrates the terminal's colour depth through three distinct effects: a sequenced SMPTE calibration pattern, an animated radial greyscale gradient using a character-shading LUT, and a radial block-colour gradient cycling through the extended 256-colour palette."
+                }
                 scene_glitch_module = component "scene_glitch.c/h" {
                     description "Renders ASCII and binary character noise with a fading brightness progression."
                 }
@@ -130,8 +136,13 @@ model {
     dashboard_module -> scene_manager_module "Initialises and activates scene playback on menu selection"
 
     // Scene Management & Rendering
+    scene_manager_module -> scene_attributes_demo_module "Initialises and renders the attributes demo scene each frame"
+    scene_manager_module -> scene_colour_demo_module "Initialises and renders colour demo scene variants each frame"
     scene_manager_module -> scene_glitch_module "Initialises and renders the glitch scene each frame"
     scene_manager_module -> scene_matrix_rain_module "Initialises and renders matrix rain scene variants each frame"
+
+    // Scene manager exit — returns to user input mode when all scenes complete
+    scene_manager_module -> shell_module "Re-initialises the shell and prompt when all scenes in the sequence have finished"
 
     // Low-Level Utilities & Logic
     scene_glitch_module -> rng_util_module "Requests random numbers for character and position generation"

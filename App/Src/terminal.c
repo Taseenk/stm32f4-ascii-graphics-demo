@@ -27,12 +27,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Private Defines -----------------------------------------------------------*/
+#define COLOUR_SEGMENT_MAX_LEN 12 // Enough for "48;5;255\0"
+#define COLOUR_BUFFER_SIZE     32 // Enough for "\x1b[38;5;255;48;5;255m\0"
+#define CURSOR_BUFFER_SIZE     16 // Enough for"ESC[255;255H"
+#define DIMENSIONS_BUFFER_SIZE 20 // enough for "ESC[8;255;255t"
+
 /* Private Variables ---------------------------------------------------------*/
 static uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
 
 /* Private Function Prototypes -----------------------------------------------*/
 static void __NormalizeCoordinates(uint16_t *col, uint16_t *row);
 static uint8_t __IsValidPos(uint16_t col, uint16_t row);
+static int __BuildColourSequence(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg);
 static void __DrawChar(char c, uint16_t col, uint16_t row);
 static void __DrawLineHorizontal(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
@@ -73,6 +80,44 @@ static uint8_t __IsValidPos(uint16_t col, uint16_t row)
 }
 
 /**
+ * @fn static int __BuildColourSequence(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg)
+ * @brief Internal function to build an ANSI escape sequence for setting either foreground or background colour.
+ * This function handles both standard ANSI colours and extended 256-colour mode by checking the colour value against
+ * the EXTENDED_COLOURS_OFFSET. It formats the appropriate ANSI command into the provided buffer and returns the length
+ * of the formatted string.
+ * @param buffer The character buffer to write the ANSI escape sequence into.
+ * @param buf_size The size of the provided buffer to prevent overflow.
+ * @param colour The colour value, which can be a standard ANSI colour or an extended colour (offset by
+ * EXTENDED_COLOURS_OFFSET).
+ * @param is_fg TRUE if the colour is for the foreground (text), FALSE if it is for the background.
+ * @return The length of the formatted ANSI escape sequence string, or a negative value if formatting failed or the
+ * buffer was too small.
+ */
+static int __BuildColourSequence(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg)
+{
+	if (colour >= EXTENDED_COLOURS_OFFSET)
+	{
+		// Adjust the colour value for extended colours
+		colour -= EXTENDED_COLOURS_OFFSET;
+
+		if (is_fg == TRUE)
+		{
+			// Format based on the extended ANSI forground text colour \x1b[38;5;82m
+			return snprintf(buffer, buf_size, "38;5;%d", colour);
+		} else
+		{
+			// Format based on the extended ANSI background colour \x1b[48;5;82m
+			return snprintf(buffer, buf_size, "48;5;%d", colour);
+		}
+
+	} else
+	{
+		// Format based on the Standard ANSI background colour \x1b[32m
+		return snprintf(buffer, buf_size, "%d", colour);
+	}
+}
+
+/**
  * @fn static void __DrawChar(char c, uint16_t col, uint16_t row)
  * @brief Internal function for drawing a single character into the
  * terminal framebuffer at the specified row and column. This is a static function and does NOT
@@ -110,7 +155,8 @@ static void __DrawChar(char c, uint16_t col, uint16_t row)
 static void __DrawLineHorizontal(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 	// Make sure to draw from left to right
-	if (x0 > x1) {
+	if (x0 > x1)
+	{
 		// Swap x0 and x1
 		uint16_t temp_x = x0;
 		x0 = x1;
@@ -136,16 +182,19 @@ static void __DrawLineHorizontal(char c, uint16_t x0, uint16_t y0, uint16_t x1, 
 	int16_t y = y0;
 
 	// Iterate across the x-axis
-	for (int16_t x = x0; x <= x1; x++) {
+	for (int16_t x = x0; x <= x1; x++)
+	{
 		// Draw the character at (x, y) in the framebuffer
 		__DrawChar(c, x, y);
 
 		// Check if decision variable is positive then move to the next y
-		if (decision_parameter > 0) {
+		if (decision_parameter > 0)
+		{
 			y += y_direction;
 			// Update error for step in both X and Y
 			decision_parameter += (2 * (dy - dx));
-		} else {
+		} else
+		{
 			// Update error for step in X only
 			decision_parameter += (2 * dy);
 		}
@@ -167,7 +216,8 @@ static void __DrawLineHorizontal(char c, uint16_t x0, uint16_t y0, uint16_t x1, 
 static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 	// Make sure to draw from top to bottom
-	if (y0 > y1) {
+	if (y0 > y1)
+	{
 		// Swap y0 and y1
 		uint16_t temp_y = y0;
 		y0 = y1;
@@ -193,16 +243,19 @@ static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, ui
 	int16_t x = x0;
 
 	// Iterate across the y-axis
-	for (int16_t y = y0; y <= y1; y++) {
+	for (int16_t y = y0; y <= y1; y++)
+	{
 		// Draw the character at (x, y) in the framebuffer
 		__DrawChar(c, x, y);
 
 		// Check if decision variable is positive then move to the next x
-		if (decision_parameter > 0) {
+		if (decision_parameter > 0)
+		{
 			x += x_direction;
 			// Update error for step in both Y and X
 			decision_parameter += (2 * (dx - dy));
-		} else {
+		} else
+		{
 			// Update error for step in Y only
 			decision_parameter += (2 * dx);
 		}
@@ -237,13 +290,18 @@ static void __DrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y
 
 /* Public Functions ----------------------------------------------------------*/
 /**
- * @fn void TerminalInit(uint8_t cursor)
+ * @fn void TerminalInit(uint8_t cursor, uint16_t col, uint16_t row)
  * @brief Initializes the terminal by setting cursor visibility, clearing the screen,
  * and clearing the internal framebuffer.
  * @param cursor TRUE to show the cursor, FALSE to hide it.
+ * @param col The number of columns for the terminal (1-based index).
+ * @param row The number of rows for the terminal (1-based index).
  */
-void TerminalInit(uint8_t cursor)
+void TerminalInit(uint8_t cursor, uint16_t col, uint16_t row)
 {
+	// Set the terminal dimensions based on provided parameters
+	TerminalSetDimensions(col, row);
+
 	// Set cursor visibility based on parameter
 	if (cursor == TRUE)
 		TerminalVisibleCursor();
@@ -254,25 +312,39 @@ void TerminalInit(uint8_t cursor)
 	TerminalClearAndHome();
 
 	// Clear the internal framebuffer
-	TerminalClearBuffer();
+	TerminalBufferClear();
 
 	// Reset terminal styling to default
 	TerminalResetStyle();
-
-	// Log successful initialization of the terminal
-	SerialPrint("DEBUG: Terminal initialized successfully\r\n");
 }
 
 /**
- * @fn void TerminalCursorHome(void)
- * @brief Sends the ANSI escape sequence to move the terminal cursor to the home position (1,1).
- * This function uses the ANSI_CURSOR_HOME (ESC[H) to quickly reposition
- * the cursor to the top-left corner of the terminal screen.
+ * @fn void TerminalSetDimensions(uint16_t col, uint16_t row)
+ * @brief Sets the terminal dimensions by sending the appropriate ANSI escape sequence.
+ * This function formats the ANSI command to resize the terminal window to the specified
+ * number of columns and rows. It ensures that the provided dimensions are valid and
+ * sends the command via the serial interface.
+ * @param col The desired number of columns for the terminal (1-based index).
+ * @param row The desired number of rows for the terminal (1-based index).
  */
-void TerminalCursorHome(void)
+void TerminalSetDimensions(uint16_t col, uint16_t row)
 {
-	// Transmit the ANSI command string for moving the cursor to (1,1)
-	SerialPrint(ANSI_CURSOR_HOME);
+	// Make row and column always be 1 or greater for ANSI terminals
+	__NormalizeCoordinates(&col, &row);
+
+	// Temporary buffer to hold the ANSI escape sequence (enough for ESC[8;255;255t)
+	char buffer[DIMENSIONS_BUFFER_SIZE];
+
+	// Format the xterm resize sequence: ESC [ 8 ; <rows> ; <cols> t
+	// The length here is without the string terminator (\0)
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "8;%u;%ut", (unsigned int)row, (unsigned int)col);
+
+	// Check if snprintf failed (len < 0) or if the formatted string exceeded the buffer size
+	if (len <= 0 || (size_t)len >= sizeof(buffer))
+		return;
+
+	// Transmit the escape sequence using the precise length calculated by snprintf
+	SerialPrintN(buffer, (uint16_t)len);
 }
 
 /**
@@ -296,6 +368,18 @@ void TerminalClearAndHome(void)
 {
 	// Transmit the combined ANSI command string for clearing the screen and setting the cursor to home (1,1)
 	SerialPrint(ANSI_CLS_HOME);
+}
+
+/**
+ * @fn void TerminalCursorHome(void)
+ * @brief Sends the ANSI escape sequence to move the terminal cursor to the home position (1,1).
+ * This function uses the ANSI_CURSOR_HOME (ESC[H) to quickly reposition
+ * the cursor to the top-left corner of the terminal screen.
+ */
+void TerminalCursorHome(void)
+{
+	// Transmit the ANSI command string for moving the cursor to (1,1)
+	SerialPrint(ANSI_CURSOR_HOME);
 }
 
 /**
@@ -323,21 +407,9 @@ void TerminalVisibleCursor(void)
 }
 
 /**
- * @fn void TerminalResetStyle(void)
- * @brief Sends the ANSI escape sequence to reset all terminal styles to default.
- * This function uses the ANSI_RESET_STYLE (ESC[0m) to clear any applied
- * text formatting, colours, or other styles and return to the default terminal appearance.
- */
-void TerminalResetStyle(void)
-{
-	// Transmit the ANSI command string for resetting all styles to default
-	SerialPrint(ANSI_RESET_STYLE);
-}
-
-/**
  * @fn void TerminalSetCursorPos(uint16_t col, uint16_t row)
  * @brief Sends the ANSI escape sequence to explicitly set the terminal cursor position.
- * The ANSI command format is ESC[<row>;<col>H.
+ * The ANSI command format is `ESC[<row>;<col>H`.
  * @param col The target column number (1-based index).
  * @param row The target row number (1-based index).
  */
@@ -351,7 +423,7 @@ void TerminalSetCursorPos(uint16_t col, uint16_t row)
 		return;
 
 	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H)
-	char buffer[16];
+	char buffer[CURSOR_BUFFER_SIZE];
 
 	// Format the escape sequence to move the cursor and return the length
 	// The length here is without the string terminator (\0)
@@ -366,34 +438,67 @@ void TerminalSetCursorPos(uint16_t col, uint16_t row)
 }
 
 /**
- * @fn void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row)
- * @brief DDraws a string directly to the terminal at the specified row and column.
- * @param str The string to draw.
- * @param col The target column number (1-based index).
- * @param row The target row number (1-based index).
+ * @fn void TerminalSetAttribute(TerminalAttr_t attribute)
+ * @brief Sets a specific text attribute (e.g., bold, underline) in the terminal using ANSI escape sequences.
+ * This function takes a TerminalAttr_t enum value and sends the corresponding ANSI command to enable that attribute.
+ * @param attribute The text attribute to set, specified as a value from the TerminalAttr_t enum.
  */
-void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row)
+void TerminalSetAttribute(TerminalAttr_t attribute)
 {
-	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	switch (attribute)
+	{
+		case TERM_ATTR_RESET:
+			SerialPrint(ANSI_RESET_STYLE);
+			break;
+		case TERM_ATTR_BOLD:
+			SerialPrint(ANSI_BOLD);
+			break;
+		case TERM_ATTR_DIM:
+			SerialPrint(ANSI_DIM);
+			break;
+		case TERM_ATTR_UNDERLINE:
+			SerialPrint(ANSI_UNDERLINE);
+			break;
+		case TERM_ATTR_BLINK:
+			SerialPrint(ANSI_BLINK);
+			break;
+		case TERM_ATTR_REVERSE:
+			SerialPrint(ANSI_REVERSE_MODE);
+			break;
+		case TERM_ATTR_STRIKE:
+			SerialPrint(ANSI_STRIKETHROUGH);
+			break;
+		case TERM_ATTR_RESET_BOLD:
+			SerialPrint(ANSI_RESET_BOLD);
+			break;
 
-	// Check if the starting position is within the screen boundaries
-	if (!__IsValidPos(col, row))
-		return;
+		case TERM_ATTR_RESET_UNDERLINE:
+			SerialPrint(ANSI_RESET_UNDERLINE);
+			break;
+		case TERM_ATTR_RESET_BLINK:
+			SerialPrint(ANSI_RESET_BLINK);
+			break;
+		case TERM_ATTR_RESET_REVERSE_MODE:
+			SerialPrint(ANSI_RESET_REVERSE_MODE);
+			break;
+		case TERM_ATTR_RESET_STRIKE:
+			SerialPrint(ANSI_RESET_STRIKETHROUGH);
+			break;
+		default:
+			break;
+	}
+}
 
-	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H) and a string for the whole terminal width
-	char buffer[TERMINAL_WIDTH + 16];
-
-	// Format the escape sequence to move the cursor and return the length
-	// The length here is without the string terminator (\0)
-	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%u;%uH%s", (unsigned int)row, (unsigned int)col, str);
-
-	// Check if sprintf failed (len < 0) or if the formatted string exceeded the terminal size
-	if (len <= 0 || (size_t)len >= sizeof(buffer))
-		return;
-
-	// Transmit the escape sequence via using the precise length calculated by sprintf
-	SerialPrintN(buffer, (uint16_t)len);
+/**
+ * @fn void TerminalResetStyle(void)
+ * @brief Sends the ANSI escape sequence to reset all terminal styles to default.
+ * This function uses the ANSI_RESET_STYLE (ESC[0m) to clear any applied
+ * text formatting, colours, or other styles and return to the default terminal appearance.
+ */
+void TerminalResetStyle(void)
+{
+	// Transmit the ANSI command string for resetting all styles to default
+	SerialPrint(ANSI_RESET_STYLE);
 }
 
 /**
@@ -405,12 +510,18 @@ void TerminalSerialPrintString(const char *str, uint16_t col, uint16_t row)
  */
 void TerminalSetColour(ForegroundColour_t text_colour, BackgroundColour_t background_colour)
 {
-	// Temporary buffer to hold the ANSI escape sequence
-	char buffer[16];
+	// Temporary buffers to hold the ANSI escape sequences for foreground and background colours
+	char buffer[COLOUR_BUFFER_SIZE];
+	char fg_seg[COLOUR_SEGMENT_MAX_LEN];
+	char bg_seg[COLOUR_SEGMENT_MAX_LEN];
 
-	// Format the escape sequence to move the cursor and return the length
+	// Build the ANSI escape sequences for foreground and background colours
+	__BuildColourSequence(fg_seg, sizeof(fg_seg), (int)text_colour, TRUE);
+	__BuildColourSequence(bg_seg, sizeof(bg_seg), (int)background_colour, FALSE);
+
+	// Combine the foreground and background escape sequence into a single ANSI escape sequence
 	// The length here is without the string terminator (\0)
-	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%d;%dm", text_colour, background_colour);
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%s;%sm", fg_seg, bg_seg);
 
 	// Check if sprintf failed (len < 0) or if the formatted string exceeded the buffer size
 	if (len <= 0 || (size_t)len >= sizeof(buffer))
@@ -427,25 +538,16 @@ void TerminalSetColour(ForegroundColour_t text_colour, BackgroundColour_t backgr
  */
 void TerminalSetTextColour(ForegroundColour_t text_colour)
 {
-	// Temporary buffer to hold the ANSI escape sequence
-	char buffer[16];
+	// Temporary buffers to hold the ANSI escape sequences for foreground
+	char buffer[COLOUR_BUFFER_SIZE];
+	char fg_seg[COLOUR_SEGMENT_MAX_LEN];
 
-	// Length of the formatted string
-	int len = 0;
+	// Build the ANSI escape sequences for foreground
+	__BuildColourSequence(fg_seg, sizeof(fg_seg), (int)text_colour, TRUE);
 
-	// Check if the colour is a standard ANSI colour or an extended colour
-	// Format the escape sequence to move the cursor and return the length
+	// Format the escape sequence to set the foreground text colour
 	// The length here is without the string terminator (\0)
-	if (text_colour >= EXTENDED_COLOURS_OFFSET) {
-		// Adjust the colour value for extended colours
-		text_colour -= EXTENDED_COLOURS_OFFSET;
-
-		// Format based on the extended ANSI forground text colour \x1b[38;5;82m
-		len = snprintf(buffer, sizeof(buffer), ANSI_ESC "38;5;%dm", text_colour);
-	} else {
-		// Format based on the Standard ANSI forground text colour \x1b[32m
-		len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%dm", text_colour);
-	} 
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%sm", fg_seg);
 
 	// Check if sprintf failed (len < 0) or if the formatted string exceeded the buffer size
 	if (len <= 0 || (size_t)len >= sizeof(buffer))
@@ -456,23 +558,97 @@ void TerminalSetTextColour(ForegroundColour_t text_colour)
 }
 
 /**
- * @fn void TerminalClearBuffer(void)
- * @brief Clears the internal terminal framebuffer by filling it with space characters.
- * This function does NOT send any data to the terminal; it only updates the internal framebuffer.
+ * @fn void TerminalSetBackgroundColour(BackgroundColour_t background_colour)
+ * @brief Sets the terminal background colour using ANSI escape sequences.
+ * This function sends the appropriate ANSI command to change only the background colour.
+ * @param background_colour The desired background colour from the BackgroundColour_t enum.
  */
-void TerminalClearBuffer(void)
+void TerminalSetBackgroundColour(BackgroundColour_t background_colour)
 {
-	// Fill the entire framebuffer with space characters
-	memset(framebuffer, SPACE_CHAR, TERMINAL_BUFFER_SIZE);
+	// Temporary buffers to hold the ANSI escape sequences for background colours
+	char buffer[COLOUR_BUFFER_SIZE];
+	char bg_seg[COLOUR_SEGMENT_MAX_LEN];
+
+	// Build the ANSI escape sequences for background colours
+	__BuildColourSequence(bg_seg, sizeof(bg_seg), (int)background_colour, FALSE);
+
+	// Format the escape sequence to set the foreground text colour
+	// The length here is without the string terminator (\0)
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%sm", bg_seg);
+
+	// Check if sprintf failed (len < 0) or if the formatted string exceeded the buffer size
+	if (len <= 0 || (size_t)len >= sizeof(buffer))
+		return;
+
+	// Transmit the escape sequence
+	SerialPrintN(buffer, (uint16_t)len);
 }
 
 /**
- * @fn void TerminalFlush(void)
+ * @fn void TerminalPrintN(const char *str, uint16_t len)
+ * @brief Transmits exactly len bytes of str to the terminal via serial_hw.
+ * This is the single gateway for sending pre-formatted data (escape sequences,
+ * raw characters) to the hardware. All application modules must use this
+ * function instead of calling serial_hw directly.
+ * @param str Pointer to the data to transmit. Does not need to be null-terminated.
+ * @param len Number of bytes to transmit.
+ */
+void TerminalPrintN(const char *str, uint16_t len)
+{
+	SerialPrintN(str, len);
+}
+
+/**
+ * @fn void TerminalPrint(const char *str)
+ * @brief Transmits a null-terminated string to the terminal via serial_hw.
+ * Convenience wrapper around TerminalPrintN for callers that have a
+ * null-terminated string and do not want to compute its length manually.
+ * @param str Null-terminated string to transmit.
+ */
+void TerminalPrint(const char *str)
+{
+	SerialPrint(str);
+}
+
+/**
+ * @fn void TerminalPrintString(const char *str, uint16_t col, uint16_t row)
+ * @brief DDraws a string directly to the terminal at the specified row and column.
+ * @param str The string to draw.
+ * @param col The target column number (1-based index).
+ * @param row The target row number (1-based index).
+ */
+void TerminalPrintString(const char *str, uint16_t col, uint16_t row)
+{
+	// Make row and column always be 1 or greater for ANSI terminals
+	__NormalizeCoordinates(&col, &row);
+
+	// Check if the starting position is within the screen boundaries
+	if (!__IsValidPos(col, row))
+		return;
+
+	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H) and a string for the
+	// whole terminal width
+	char buffer[TERMINAL_WIDTH + 16];
+
+	// Format the escape sequence to move the cursor and return the length
+	// The length here is without the string terminator (\0)
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%u;%uH%s", (unsigned int)row, (unsigned int)col, str);
+
+	// Check if sprintf failed (len < 0) or if the formatted string exceeded the terminal size
+	if (len <= 0 || (size_t)len >= sizeof(buffer))
+		return;
+
+	// Transmit the escape sequence via using the precise length calculated by sprintf
+	SerialPrintN(buffer, (uint16_t)len);
+}
+
+/**
+ * @fn void TerminalBufferFlush(void)
  * @brief Sends the entire terminal framebuffer to the terminal display.
  * This function moves the cursor to the home position before transmitting
  * the framebuffer content using DMA for non-blocking transmission.
  */
-void TerminalFlush(void)
+void TerminalBufferFlush(void)
 {
 	// Move cursor to home before flushing the framebuffer
 	TerminalCursorHome();
@@ -482,14 +658,25 @@ void TerminalFlush(void)
 }
 
 /**
- * @fn void TerminalDrawChar(char c, uint16_t col, uint16_t row)
+ * @fn void TerminalBufferClear(void)
+ * @brief Clears the internal terminal framebuffer by filling it with space characters.
+ * This function does NOT send any data to the terminal; it only updates the internal framebuffer.
+ */
+void TerminalBufferClear(void)
+{
+	// Fill the entire framebuffer with space characters
+	memset(framebuffer, ' ', TERMINAL_BUFFER_SIZE);
+}
+
+/**
+ * @fn void TerminalBufferDrawChar(char c, uint16_t col, uint16_t row)
  * @brief Draws a single character into the terminal framebuffer at the specified row and column.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param c The character to draw.
  * @param col The target column number (1-based index).
  * @param row The target row number (1-based index).
  */
-void TerminalDrawChar(char c, uint16_t col, uint16_t row)
+void TerminalBufferDrawChar(char c, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
@@ -503,14 +690,14 @@ void TerminalDrawChar(char c, uint16_t col, uint16_t row)
 }
 
 /**
- * @fn void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
+ * @fn void TerminalBufferDrawString(const char *str, uint16_t col, uint16_t row)
  * @brief Draws a null-terminated string into the terminal framebuffer at the specified row and column.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param str The string to draw.
  * @param row The target row number (1-based index).
  * @param col The target column number (1-based index).
  */
-void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
+void TerminalBufferDrawString(const char *str, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
@@ -528,13 +715,14 @@ void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
 		return;
 
 	// Store the string in the framebuffer using the internal function
-	for (uint16_t i = 0; i < len; i++) {
+	for (uint16_t i = 0; i < len; i++)
+	{
 		__DrawChar(str[i], col + i, row);
 	}
 }
 
 /**
- * @fn void TerminalDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
+ * @fn void TerminalBufferDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
  * @brief Draws a rectangle outline into the terminal framebuffer using the specified character.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param c The character to use for drawing the rectangle.
@@ -543,7 +731,7 @@ void TerminalDrawString(const char *str, uint16_t col, uint16_t row)
  * @param w The width of the rectangle in characters.
  * @param h The height of the rectangle in characters.
  */
-void TerminalDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
+void TerminalBufferDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
@@ -558,14 +746,16 @@ void TerminalDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h
 	uint32_t bottom_row = row + (uint32_t)h - 1;
 
 	// Draw Top and Bottom edges
-	for (uint16_t i = 0; i < w; i++) {
+	for (uint16_t i = 0; i < w; i++)
+	{
 		__DrawChar(c, col + i, row);
 		if (bottom_row <= TERMINAL_HEIGHT)
 			__DrawChar(c, col + i, bottom_row);
 	}
 
 	// Draw Left and Right edges
-	for (uint16_t j = 0; j < h; j++) {
+	for (uint16_t j = 0; j < h; j++)
+	{
 		__DrawChar(c, col, row + j);
 		if (right_col <= TERMINAL_WIDTH)
 			__DrawChar(c, right_col, row + j);
@@ -573,7 +763,7 @@ void TerminalDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h
 }
 
 /**
- * @fn void TerminalFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
+ * @fn void TerminalBufferFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
  * @brief Fills a rectangle area in the terminal framebuffer using the specified character.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param c The character to use for filling the rectangle.
@@ -582,7 +772,7 @@ void TerminalDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h
  * @param w The width of the rectangle.
  * @param h The height of the rectangle.
  */
-void TerminalFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
+void TerminalBufferFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
@@ -601,15 +791,17 @@ void TerminalFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h
 	h = (bottom_row > TERMINAL_HEIGHT) ? (TERMINAL_HEIGHT - row + 1) : h;
 
 	// Fill the rectangle area in the framebuffer
-	for (uint16_t j = 0; j < h; j++) {
-		for (uint16_t i = 0; i < w; i++) {
+	for (uint16_t j = 0; j < h; j++)
+	{
+		for (uint16_t i = 0; i < w; i++)
+		{
 			__DrawChar(c, col + i, row + j);
 		}
 	}
 }
 
 /**
- * @fn void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+ * @fn void TerminalBufferDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
  * @brief Draws a line between two points in the terminal framebuffer using Bresenham's algorithm.
  * This function determines whether to draw a horizontal or vertical line based on
  * the slope and updates the internal framebuffer array but does NOT send any data to the terminal.
@@ -619,7 +811,7 @@ void TerminalFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h
  * @param x1 The ending column (1-based index).
  * @param y1 The ending row (1-based index).
  */
-void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+void TerminalBufferDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&x0, &y0);
@@ -634,7 +826,8 @@ void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1
 }
 
 /**
- * @fn void TerminalDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+ * @fn void TerminalBufferDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t
+ * y2)
  * @brief Draws a triangle outline between three points in the terminal framebuffer using Bresenham's algorithm.
  * This function updates the internal framebuffer array but does NOT send any data to the terminal.
  * @param c The character to use for drawing the triangle.
@@ -645,7 +838,7 @@ void TerminalDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1
  * @param x2 The column of Vertex C (1-based index).
  * @param y2 The row of Vertex C (1-based index).
  */
-void TerminalDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+void TerminalBufferDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&x0, &y0);
@@ -668,7 +861,7 @@ void TerminalDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_
 }
 
 /**
- * @fn void TerminalDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
+ * @fn void TerminalBufferDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
  * @brief Draws a line between two points in the terminal framebuffer using Bresenham's algorithm.
  * This function determines whether to draw a horizontal or vertical line based on
  * the slope and updates the internal framebuffer array but does NOT send any data to the terminal.
@@ -677,7 +870,7 @@ void TerminalDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_
  * @param row The target center row number (1-based index).
  * @param r The radius of the circle in characters.
  */
-void TerminalDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
+void TerminalBufferDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	__NormalizeCoordinates(&col, &row);
@@ -696,7 +889,8 @@ void TerminalDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
 	// Initial midpoint probability
 	int16_t midpoint_probability = 3 - (2 * (int16_t)r);
 
-	while (y >= x) {
+	while (y >= x)
+	{
 		// --- Quadrant 1 (Upper-Right) ---
 		__DrawChar(c, (col + (x * aspect_ratio)), (row - y));
 		__DrawChar(c, (col + (y * aspect_ratio)), (row - x));
@@ -714,9 +908,11 @@ void TerminalDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
 		__DrawChar(c, (col - (y * aspect_ratio)), (row - x));
 
 		// Update the decision variable and coordinates
-		if (midpoint_probability < 0) {
+		if (midpoint_probability < 0)
+		{
 			midpoint_probability += (4 * x) + 6;
-		} else {
+		} else
+		{
 			midpoint_probability += (4 * (x - y)) + 10;
 			y--;
 		}

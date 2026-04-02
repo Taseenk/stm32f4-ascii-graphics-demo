@@ -33,8 +33,8 @@
 #include "dashboard.h"
 #include "scene_manager.h"
 #include "serial_hw.h"
-#include "terminal.h"
 #include "shell.h"
+#include "terminal.h"
 
 /* USER CODE END Includes */
 
@@ -112,24 +112,25 @@ int main(void)
 
 	/* USER CODE BEGIN 2 */
 	// Initialize all user modules
-	TerminalInit(FALSE);	// Initialize terminal (disable cursor blinking)
-	SerialReceiveInit();			// Begin UART data reception using DMA
-	TerminalClearScreen();		    // Clear the terminal
-	ShellInit();					// Initialize the CLI shell interface
+	TerminalInit(FALSE, TERMINAL_WIDTH, TERMINAL_HEIGHT); // Initialize terminal (disable cursor blinking)
+
+	SerialReceiveInit(); // Begin UART data reception using DMA
+	ShellInit();         // Initialize the CLI shell interface
 
 	// Timing and Frame Rate Control
-	uint32_t last_heartbeat = HAL_GetTick();	// Tracks the last time a frame was processed
-	uint32_t frame_counter = 0;              	// Incremental count of elapsed frames
+	uint32_t last_heartbeat = HAL_GetTick(); // Tracks the last time a frame was processed
+	uint32_t frame_counter = 0;              // Incremental count of elapsed frames
 
 	// FPS Calculation Variables
-	uint32_t last_fps = HAL_GetTick();			// Timestamp for the last FPS calculation
-	uint32_t fps_counter = 0;					// Tracks frames rendered in the current second
+	uint32_t last_fps = HAL_GetTick(); // Timestamp for the last FPS calculation
+	uint32_t fps_counter = 0;          // Tracks frames rendered in the current second
 
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	while (1) {
+	while (1)
+	{
 		// Get the current system time
 		uint32_t current_time = HAL_GetTick();
 
@@ -138,12 +139,14 @@ int main(void)
 
 		/* USER CODE BEGIN 3 */
 		// Process incoming serial data if the system is in user input mode
-		if (system_mode == SYSTEM_STATE_USER_INPUT) {
+		if (system_mode == SYSTEM_STATE_USER_INPUT)
+		{
 			SerialProcessData();
-		} 
+		}
 
 		// While in dashboard mode, check if one second has passed to update the FPS display
-		if (system_mode == SYSTEM_STATE_DASHBOARD && (current_time - last_fps >= ONE_SECOND_MS)) {
+		if (system_mode == SYSTEM_STATE_DASHBOARD && (current_time - last_fps >= ONE_SECOND_MS))
+		{
 			DashboardFPSRefresh(fps_counter, TARGET_FPS);
 
 			// Increment the FPS counter and reset the timer for the next second
@@ -152,24 +155,35 @@ int main(void)
 		}
 
 		// Check if it's time to process the next frame based on the target frame interval
-		if (current_time - last_heartbeat >= FRAME_INTERVAL_MS) {
-			// While in dashboard mode, update the menu selection highlight based on the current frame count to create a blinking effect
-			if (system_mode == SYSTEM_STATE_DASHBOARD) {
+		if (current_time - last_heartbeat >= FRAME_INTERVAL_MS)
+		{
+			// While in dashboard mode, update the menu selection highlight based on the current
+			// frame count to create a blinking effect
+			if (system_mode == SYSTEM_STATE_DASHBOARD)
+			{
 				DashboardMenuSelection(frame_counter);
 			}
 
-			// While in playlist mode, Let SceneManager Handle scene logic based on the current frame
-			if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE) {
+			// While in playlist mode, Let SceneManager Handle scene logic
+			if (system_mode == SYSTEM_STATE_PLAYLIST_SCENE)
+			{
 				SceneManager(frame_counter);
 			}
 
-			// While in auto scene mode, Let SceneManager Handle scene logic based on the current frame
-			if (system_mode == SYSTEM_STATE_AUTO_SCENE) {
+			// While in auto scene mode, Let SceneManager Handle scene logic
+			if (system_mode == SYSTEM_STATE_AUTO_SCENE)
+			{
 				SceneManager(frame_counter);
 			}
-			
+
+			// Update the heartbeat timestamp after a slow scene
+			// only resyncs after falling 2 full frame intervals behind
+			if (current_time - last_heartbeat > (FRAME_INTERVAL_MS * 2))
+				last_heartbeat = current_time;
+			else
+				last_heartbeat += FRAME_INTERVAL_MS;
+
 			// Increment trackers and maintain a consistent time for the next frame
-			last_heartbeat += FRAME_INTERVAL_MS;
 			frame_counter++;
 			fps_counter++;
 		}
@@ -202,7 +216,8 @@ void SystemClock_Config(void)
 	RCC_OscInitStruct.PLL.PLLN = 336;
 	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
 	RCC_OscInitStruct.PLL.PLLQ = 7;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+	{
 		Error_Handler();
 	}
 
@@ -214,7 +229,8 @@ void SystemClock_Config(void)
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
 	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+	{
 		Error_Handler();
 	}
 }
@@ -232,7 +248,8 @@ void Error_Handler(void)
 	/* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	__disable_irq();
-	while (1) {
+	while (1)
+	{
 	}
 	/* USER CODE END Error_Handler_Debug */
 }

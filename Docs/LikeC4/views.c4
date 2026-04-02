@@ -111,8 +111,6 @@ views 'Modules' {
         include *, firmware.hardware_layer, firmware.application_layer, firmware.presentation_layer
         // External incoming and outgoing relationships
         include firmware.application_layer.scene_manager_module
-        include firmware.application_layer.rng_util_module
-        include firmware.presentation_layer.terminal_module
         style firmware.application_layer {
             color blue
         }
@@ -129,7 +127,6 @@ views 'Modules' {
         title "CLI Shell Module"
         include *, firmware.application_layer
         // External incoming and outgoing relationships
-        include firmware.hardware_layer.main_module
         include firmware.application_layer.scene_manager_module
         include firmware.application_layer.dashboard_module
         style firmware.application_layer {
@@ -148,9 +145,7 @@ views 'Modules' {
         title "Scene Manager"
         include *, firmware.application_layer, firmware.application_layer, firmware.presentation_layer
         // External incoming and outgoing relationships
-        include firmware.hardware_layer.main_module
         include firmware.application_layer.scenes_group
-        include firmware.presentation_layer.terminal_module
         style firmware.application_layer {
             color blue
         }
@@ -167,7 +162,6 @@ views 'Modules' {
         title "Dashboard Module"
         include *, firmware.application_layer, firmware.application_layer, firmware.presentation_layer
         // External incoming and outgoing relationships
-        include firmware.hardware_layer.main_module
         include firmware.application_layer.scene_manager_module
         include firmware.application_layer.shell_module
         style firmware.application_layer {
@@ -220,8 +214,11 @@ views 'Sequences / State Machines' {
     dynamic view systemModeStateMachine {
         title "Top-Level System Control"
 
-        // BOOT → SYSTEM_STATE_DASHBOARD
-        firmware.hardware_layer.main_module -> firmware.application_layer.shell_module "Boot: shell initialises and prints the boot sequence — system enters DASHBOARD mode"
+        // BOOT → SYSTEM_STATE_USER_INPUT
+        firmware.hardware_layer.main_module -> firmware.application_layer.shell_module "Boot: shell initialises and prints the boot sequence — system enters USER_INPUT mode"
+
+        // SYSTEM_STATE_USER_INPUT → SYSTEM_STATE_DASHBOARD (via shell RUN DEMO command)
+        firmware.application_layer.shell_module -> firmware.application_layer.dashboard_module "CLI RUN DEMO received: navigates to the dashboard in the target mode page"
 
         // SYSTEM_STATE_DASHBOARD → SYSTEM_STATE_AUTO_SCENE (via dashboard)
         firmware.application_layer.dashboard_module -> firmware.application_layer.scene_manager_module "DASHBOARD_AUTO confirmed: scene manager reset → system_mode = SYSTEM_STATE_AUTO_SCENE"
@@ -237,6 +234,9 @@ views 'Sequences / State Machines' {
 
         // AUTO / PLAYLIST — main loop dispatch
         firmware.hardware_layer.main_module -> firmware.application_layer.scene_manager_module "Each frame: scene manager is driven while system_mode is AUTO or PLAYLIST"
+
+        // AUTO / PLAYLIST → SYSTEM_STATE_USER_INPUT — sequence complete
+        firmware.application_layer.scene_manager_module -> firmware.application_layer.shell_module "All scenes finished: system_mode reset to USER_INPUT and shell re-initialised with prompt"
 
         autoLayout LeftRight
     }
@@ -265,8 +265,11 @@ views 'Sequences / State Machines' {
         // SCENE_STATE_EXIT — reset terminal style
         firmware.application_layer.scene_manager_module -> firmware.presentation_layer.terminal_module "EXIT: terminal colours reset to default"
 
-        // SCENE_STATE_EXIT → SCENE_STATE_START (next scene)
-        firmware.application_layer.scene_manager_module -> firmware.application_layer.scene_manager_module "EXIT → START: scene index advanced with wrap-around, ready for next scene"
+        // SCENE_STATE_EXIT → SCENE_STATE_START (more scenes remain)
+        firmware.application_layer.scene_manager_module -> firmware.application_layer.scene_manager_module "EXIT → START: scene index advanced, more scenes remain in the sequence"
+
+        // SCENE_STATE_EXIT → SYSTEM_STATE_USER_INPUT (last scene done)
+        firmware.application_layer.scene_manager_module -> firmware.application_layer.shell_module "EXIT → USER_INPUT: last scene finished — system_mode reset and shell re-initialised"
 
         autoLayout LeftRight
     }

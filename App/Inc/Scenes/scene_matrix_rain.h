@@ -1,9 +1,9 @@
 /**
  ******************************************************************************
  * @file           : scene_matrix_rain.h
- * @brief          : Header file for the Matrix Rain scene, defining the 
- * initialization and rendering functions for the classic "Matrix" rain effect, 
- * including variations for ASCII, Binary, "Hacked" (red) corruption, and 
+ * @brief          : Header file for the Matrix Rain scene, defining the
+ * initialization and rendering functions for the classic "Matrix" rain effect,
+ * including variations for ASCII, Binary, "Hacked" (red) corruption, and
  * fade-in transitions.
  ******************************************************************************
  */

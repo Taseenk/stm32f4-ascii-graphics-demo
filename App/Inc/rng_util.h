@@ -14,9 +14,9 @@
 
 /* Defines -------------------------------------------------------------------*/
 // Xorshift RNG Constants
-#define XORSHIFT_S1         13          // Shift constant 1
-#define XORSHIFT_S2         17          // Shift constant 2
-#define XORSHIFT_S3         5           // Shift constant 3
+#define XORSHIFT_S1 13 // Shift constant 1
+#define XORSHIFT_S2 17 // Shift constant 2
+#define XORSHIFT_S3 5  // Shift constant 3
 
 /* Function prototypes -------------------------------------------------------*/
 uint32_t GetRandomNumber(void);

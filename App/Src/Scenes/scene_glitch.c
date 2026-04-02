@@ -15,31 +15,31 @@
 #include "main.h"
 
 /* Private Defines -----------------------------------------------------------*/
-#define COORDINATE_OFFSET       1       // Terminal coordinates usually start at 1,1
+#define COORDINATE_OFFSET     1 // Terminal coordinates usually start at 1,1
 
-#define BINARY_CHARACTER 		1       // Binary noise character mode
-#define ASCII_CHARACTER 		0       // ASCII noise character mode
+#define BINARY_CHARACTER      1 // Binary noise character mode
+#define ASCII_CHARACTER       0 // ASCII noise character mode
 
-#define BINARY_MASK             1       // Mask for binary character generation
-#define ASCII_PRINTABLE_START   33      // The '!' character
-#define ASCII_CHAR_MASK         0x3F    // Mask to get 64 printable ASCII characters
-#define ASCII_ZERO_OFFSET       48      // Offset for ASCII code '0' character
+#define BINARY_MASK           1    // Mask for binary character generation
+#define ASCII_PRINTABLE_START 33   // The '!' character
+#define ASCII_CHAR_MASK       0x3F // Mask to get 64 printable ASCII characters
+#define ASCII_ZERO_OFFSET     48   // Offset for ASCII code '0' character
 
 // Scene configuration
-#define GLITCH_SCENE_START      0       // Scene frame index to start full brightness
-#define GLITCH_SCENE_BRIGHT     21      // Scene frame index to start medium green
-#define GLITCH_SCENE_DIM        75      // Scene frame index to start dark green
+#define GLITCH_SCENE_START     0  // Scene frame index to start full brightness
+#define GLITCH_SCENE_BRIGHT    21 // Scene frame index to start medium green
+#define GLITCH_SCENE_DIM       75 // Scene frame index to start dark green
 
-#define GLITCH_DENSITY_HIGH     20      // Max character spawn rate
-#define GLITCH_DENSITY_MEDIUM   4       // Reduced character spawn rate
-#define GLITCH_DENSITY_LOW      2       // Low character spawn rate
+#define GLITCH_DENSITY_HIGH    20 // Max character spawn rate
+#define GLITCH_DENSITY_MEDIUM  4  // Reduced character spawn rate
+#define GLITCH_DENSITY_LOW     2  // Low character spawn rate
 
-#define DISSOLVE_INTERVAL_MASK  0x04    // Used for bitwise frame frequency (frame & 4)
-#define DISSOLVE_STRENGTH_LOW   5       // Characters removed per frame (Subtle dissolve)
-#define DISSOLVE_STRENGTH_HIGH  15      // Characters removed per frame (Aggressive dissolve)
+#define DISSOLVE_INTERVAL_MASK 0x04 // Used for bitwise frame frequency (frame & 4)
+#define DISSOLVE_STRENGTH_LOW  5    // Characters removed per frame (Subtle dissolve)
+#define DISSOLVE_STRENGTH_HIGH 15   // Characters removed per frame (Aggressive dissolve)
 
 /* Private Variables ---------------------------------------------------------*/
-static uint32_t rand_number;    // Global random number state for consistent RNG across functions
+static uint32_t rand_number; // Global random number state for consistent RNG across functions
 
 /* Private Function Prototypes -----------------------------------------------*/
 static char __GetAsciiOrBinaryChar(uint8_t noise_mode);
@@ -59,7 +59,8 @@ static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode);
  */
 static char __GetAsciiOrBinaryChar(uint8_t noise_mode)
 {
-	if (noise_mode == BINARY_CHARACTER) {
+	if (noise_mode == BINARY_CHARACTER)
+	{
 		// Return a random binary character (0 or 1) using a bitwise mask
 		return (rand_number & BINARY_MASK) + ASCII_ZERO_OFFSET;
 	}
@@ -85,7 +86,8 @@ static void __CharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t nois
 	// Determine density based on frame count
 	uint32_t spawn_count = (frame % density_scale) + COORDINATE_OFFSET;
 
-	for (int i = 0; i < spawn_count; i++) {
+	for (int i = 0; i < spawn_count; i++)
+	{
 		// Update the random number using Xorshift algorithm
 		// Generate random column within terminal bounds
 		XorshiftRandomNumber(&rand_number);
@@ -100,14 +102,16 @@ static void __CharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t nois
 		XorshiftRandomNumber(&rand_number);
 
 		// Determine the character to draw based on the noise mode
-		if (noise_mode == ASCII_CHARACTER) {
+		if (noise_mode == ASCII_CHARACTER)
+		{
 			char_buffer[0] = __GetAsciiOrBinaryChar(ASCII_CHARACTER);
-		} else if (noise_mode == BINARY_CHARACTER) {
+		} else if (noise_mode == BINARY_CHARACTER)
+		{
 			char_buffer[0] = __GetAsciiOrBinaryChar(BINARY_CHARACTER);
 		}
 
 		// Move cursor and draw the character on the terminal
-		TerminalSerialPrintString(char_buffer, random_col, random_row);
+		TerminalPrintString(char_buffer, random_col, random_row);
 	}
 }
 
@@ -125,7 +129,8 @@ static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
 	// Determine density based on frame count
 	uint32_t spawn_count = (frame % density_scale) + COORDINATE_OFFSET;
 
-	for (int i = 0; i < spawn_count; i++) {
+	for (int i = 0; i < spawn_count; i++)
+	{
 		// Update the random number using Xorshift algorithm
 		// Generate random column within terminal bounds
 		XorshiftRandomNumber(&rand_number);
@@ -137,7 +142,7 @@ static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
 		random_row = (rand_number % TERMINAL_HEIGHT) + COORDINATE_OFFSET;
 
 		// Move cursor and erase the character on the terminal
-		TerminalSerialPrintString(" ", random_col, random_row);
+		TerminalPrintString(" ", random_col, random_row);
 	}
 }
 
@@ -159,7 +164,8 @@ static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode)
 		TerminalSetTextColour(FG_DARK_GREEN);
 
 	// Full Brightness
-	if (scene_frame < GLITCH_SCENE_BRIGHT) {
+	if (scene_frame < GLITCH_SCENE_BRIGHT)
+	{
 		// Spawn random characters
 		__CharacterNoise(scene_frame, GLITCH_DENSITY_HIGH, noise_mode);
 
@@ -169,14 +175,16 @@ static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode)
 	}
 
 	// Light Dimming
-	else if (scene_frame < GLITCH_SCENE_DIM) {
+	else if (scene_frame < GLITCH_SCENE_DIM)
+	{
 		// Spawn fewer new characters, dissolve more existing ones
 		__CharacterNoise(scene_frame, GLITCH_DENSITY_MEDIUM, noise_mode);
 		__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_HIGH);
 	}
 
 	// Deeper Fade
-	else {
+	else
+	{
 		// Very few new characters and keep dissolving
 		__CharacterNoise(scene_frame, GLITCH_DENSITY_LOW, noise_mode);
 		__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_HIGH);
@@ -187,12 +195,14 @@ static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode)
 /**
  * @fn void GlitchInit(void)
  * @brief Initializes the glitch scene by setting up necessary variables and state.
- * @param void This function does not take any parameters.
  */
 void GlitchInit(void)
 {
-    // Initialize by generating a random number to minimise overhead when the scene starts
+	// Initialize by generating a random number to minimise overhead when the scene starts
 	rand_number = GetRandomNumber();
+
+	// Reset all previous styles
+	TerminalResetStyle();
 }
 
 /**

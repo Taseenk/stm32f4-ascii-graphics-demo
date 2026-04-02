@@ -60,3 +60,7 @@ Full documentation — tutorials, how-to guides, module reference, and architect
 > **[docs link — TODO](#)**
 
 ## License
+
+## Acknowledgements & Inspiration
+
+- [VT100 ASCII Animation: TortureTest](https://youtu.be/4ZeDudfzAs0?si=S6oy03UdSebeTyBo): Inspiration for Attributes demo scene

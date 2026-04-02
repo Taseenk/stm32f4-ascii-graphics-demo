@@ -57,10 +57,16 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Scene source files
     App/Src/Scenes/scene_glitch.c
     App/Src/Scenes/scene_matrix_rain.c
+    App/Src/Scenes/scene_colour_demo.c
+    App/Src/Scenes/scene_attributes_demo.c
+    App/Src/Scenes/scene_primitives_demo.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/DSP/Include
+    ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Include
+
     # Add user defined include paths
     App/Inc
     App/Inc/Scenes
@@ -69,6 +75,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add project symbols (macros)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined symbols
+    ARM_MATH_CM4    # Required for arm_math.h on STM32F4
 )
 
 # Remove wrong libob.a library dependency when using cpp files

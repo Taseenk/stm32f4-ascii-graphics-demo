@@ -13,8 +13,8 @@
 #include "main.h"
 
 /* Defines -------------------------------------------------------------------*/
-#define RUN_COMMAND_TEXT_LEN    3       // Length of the "run" command text for parsing user input
-#define HELP_COMMAND_TEXT_LEN   4       // Length of the "help" command text for parsing user input
+#define RUN_COMMAND_TEXT_LEN  3 // Length of the "run" command text for parsing user input
+#define HELP_COMMAND_TEXT_LEN 4 // Length of the "help" command text for parsing user input
 
 /* External variables --------------------------------------------------------*/
 // Prompt text for the CLI shell interface

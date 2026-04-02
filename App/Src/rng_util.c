@@ -10,7 +10,7 @@
 #include "rng_util.h"
 
 /* Private Variables ---------------------------------------------------------*/
-extern RNG_HandleTypeDef hrng;      // RNG handle defined in rng.c
+extern RNG_HandleTypeDef hrng; // RNG handle defined in rng.c
 
 /* Public Functions ----------------------------------------------------------*/
 /**
@@ -28,7 +28,8 @@ uint32_t GetRandomNumber(void)
 	HAL_StatusTypeDef status = HAL_RNG_GenerateRandomNumber(&hrng, &value);
 
 	// Check if the random number generation was successful
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return FALSE;
 	}
 
