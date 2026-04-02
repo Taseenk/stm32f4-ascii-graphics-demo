@@ -28,7 +28,9 @@ jobs:
         run: npm install -g likec4
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+        run: |
+          LIKEC4_DIR=$(npm root -g)/likec4
+          node $LIKEC4_DIR/node_modules/.bin/playwright install chromium --with-deps
 
       - name: Export diagrams to PNG
         run: |
