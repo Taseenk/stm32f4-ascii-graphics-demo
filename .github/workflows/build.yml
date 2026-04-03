@@ -7,7 +7,7 @@ on:
     branches: [ "master", "develop" ]
  
 jobs:
-  build:
+  build-debug:
     runs-on: ubuntu-latest
  
     steps:
@@ -21,14 +21,11 @@ jobs:
           sudo apt-get update -q
           sudo apt-get install -y gcc-arm-none-eabi ninja-build clang-tidy clang-format
  
-      - name: Configure
-        run: cmake --preset Release
- 
-      - name: Build
-        run: cmake --build --preset Release
+      - name: Configure (Debug)
+        run: cmake --preset Debug
 
-      - name: Print binary size
-        run: arm-none-eabi-size build/Release/stm32f4-ascii-graphics-demo.elf
+      - name: Build (Debug)
+        run: cmake --build --preset Debug
 
       - name: Check formatting
         run: |
@@ -38,5 +35,36 @@ jobs:
       - name: Run clang-tidy
         run: |
           clang-tidy App/Src/*.c App/Src/Scenes/*.c \
-            -p build/Release/compile_commands.json
+            -p build/Debug/compile_commands.json
 
+  build-release:
+    runs-on: ubuntu-latest
+    needs: build-debug
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y gcc-arm-none-eabi ninja-build
+
+      - name: Configure (Release)
+        run: cmake --preset Release
+
+      - name: Build (Release)
+        run: cmake --build --preset Release
+
+      - name: Print binary size
+        run: arm-none-eabi-size build/Release/stm32f4-ascii-graphics-demo.elf
+
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ github.sha }}
+          path: build/Release/stm32f4-ascii-graphics-demo.elf
+          retention-days: 15
