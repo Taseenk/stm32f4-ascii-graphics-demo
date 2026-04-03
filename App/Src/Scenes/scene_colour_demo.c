@@ -51,18 +51,18 @@ static uint8_t lut_initialized = FALSE;
 
 /* Private Function Prototypes -----------------------------------------------*/
 // Helper functions
-static void __DrawSmpteStrip(const BackgroundColour_t *colours, uint8_t count, uint8_t start_row, uint8_t end_row);
-static char __GetShadeChar(uint8_t radius);
+static void DrawSmpteStrip_(const BackgroundColour_t *colours, uint8_t count, uint8_t start_row, uint8_t end_row);
+static char GetShadeChar_(uint8_t radius);
 
 // Rendering functions
-static void __CycleBackgroundColour(uint32_t frame, uint8_t speed);
-static void __DrawSmpteMuted(void);
-static void __DrawSmpteStandard(void);
-static void __RenderRadialPattern(uint32_t frame, uint8_t is_greyscale, uint8_t is_bg, uint8_t use_lut);
+static void CycleBackgroundColour_(uint32_t frame, uint8_t speed);
+static void DrawSmpteMuted_(void);
+static void DrawSmpteStandard_(void);
+static void RenderRadialPattern_(uint32_t frame, uint8_t is_greyscale, uint8_t is_bg, uint8_t use_lut);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn static void __DrawSmpteStrip(const BackgroundColour_t *colours, uint8_t count, uint8_t start_row, uint8_t
+ * @fn static void DrawSmpteStrip_(const BackgroundColour_t *colours, uint8_t count, uint8_t start_row, uint8_t
  * end_row)
  * @brief Draws a vertical strip of colour bars across the terminal based on the provided colour array and dimensions,
  * used to render the SMPTE test pattern bars.
@@ -71,7 +71,7 @@ static void __RenderRadialPattern(uint32_t frame, uint8_t is_greyscale, uint8_t 
  * @param start_row Starting row for the strip.
  * @param end_row Ending row for the strip.
  */
-static void __DrawSmpteStrip(const BackgroundColour_t *colours, uint8_t count, uint8_t start_row, uint8_t end_row)
+static void DrawSmpteStrip_(const BackgroundColour_t *colours, uint8_t count, uint8_t start_row, uint8_t end_row)
 {
 	// Character blocks for filling the bars
 	static const char bar_normal[] = "           "; // 11 chars
@@ -101,13 +101,13 @@ static void __DrawSmpteStrip(const BackgroundColour_t *colours, uint8_t count, u
 }
 
 /**
- * @fn static char __GetShadeChar(uint8_t radius)
+ * @fn static char GetShadeChar_(uint8_t radius)
  * @brief Retrieves a character from the shade lookup table based on the provided radius value.
  * The radius is used to determine the appropriate shade character for rendering gradients or patterns.
  * @param radius The distance from a central point, used to index into the shade LUT.
  * @return The corresponding shade character from the LUT, or the darkest shade if the radius exceeds the LUT size.
  */
-static char __GetShadeChar(uint8_t radius)
+static char GetShadeChar_(uint8_t radius)
 {
 	// The LUT has 32 characters (0-31 index)
 	uint8_t index = radius;
@@ -121,14 +121,14 @@ static char __GetShadeChar(uint8_t radius)
 }
 
 /**
- * @fn static void __CycleBackgroundColour(uint32_t frame, uint8_t speed)
+ * @fn static void CycleBackgroundColour_(uint32_t frame, uint8_t speed)
  * @brief Cycles the terminal background colour based on the current frame,
  * advancing one colour every `speed` frames and wrapping back to the first
  * colour on completion of a full cycle.
  * @param frame The current scene frame count used to derive the active colour.
  * @param speed The number of frames each colour is held before advancing.
  */
-static void __CycleBackgroundColour(uint32_t frame, uint8_t speed)
+static void CycleBackgroundColour_(uint32_t frame, uint8_t speed)
 {
 	uint8_t colour_index = ((frame / speed) % BACKGROUND_COLOUR_COUNT) + BG_BLACK;
 
@@ -137,13 +137,13 @@ static void __CycleBackgroundColour(uint32_t frame, uint8_t speed)
 }
 
 /**
- * @fn static void __DrawSmpteMuted(void)
+ * @fn static void DrawSmpteMuted_(void)
  * @brief Renders a "malfunctioning" or "uncalibrated" SMPTE test pattern.
  * This function mimics this by replacing the standard high-saturation SMPTE
  * colours with grayscale and low-luminance equivalents (Grays, Blacks, and Near-Blacks).
  * It is used as the initial state in to simulate a system error.
  */
-static void __DrawSmpteMuted(void)
+static void DrawSmpteMuted_(void)
 {
 	// These colours represent the uncalibrated version
 	// Using mostly grays and blacks to simulate a low-luminance
@@ -155,16 +155,16 @@ static void __DrawSmpteMuted(void)
 	                                                         BG_BLACK, BG_NEAR_BLACK_2, BG_BLACK};
 
 	// Draw the top SMPTE bars using the defined colours and dimensions
-	__DrawSmpteStrip(muted_main_colours, SMPTE_BAR_COUNT, TERMINAL_STARTING_POS, SMPTE_BAR_HEIGHT);
-	__DrawSmpteStrip(muted_complement_colours, SMPTE_BAR_COUNT, SMPTE_COMPLEMENT_HEIGHT, SMPTE_COMPLEMENT_HEIGHT);
-	__DrawSmpteStrip(muted_pluge_colours, SMPTE_BAR_COUNT, SMPTE_PLUGE_HEIGHT, TERMINAL_HEIGHT);
+	DrawSmpteStrip_(muted_main_colours, SMPTE_BAR_COUNT, TERMINAL_STARTING_POS, SMPTE_BAR_HEIGHT);
+	DrawSmpteStrip_(muted_complement_colours, SMPTE_BAR_COUNT, SMPTE_COMPLEMENT_HEIGHT, SMPTE_COMPLEMENT_HEIGHT);
+	DrawSmpteStrip_(muted_pluge_colours, SMPTE_BAR_COUNT, SMPTE_PLUGE_HEIGHT, TERMINAL_HEIGHT);
 
 	// Reset terminal colours to default after rendering the test pattern
 	TerminalResetStyle();
 }
 
 /**
- * @fn static void __DrawSmpteStandard(void)
+ * @fn static void DrawSmpteStandard_(void)
  * @brief Renders a static SMPTE-style colour bar test card filling the entire
  * terminal. The top 18 rows display 7 equal vertical bars of the standard
  * SMPTE colours (white, yellow, cyan, green, magenta, red, blue). Row 19
@@ -172,7 +172,7 @@ static void __DrawSmpteMuted(void)
  * black, gray). Rows 20-24 display the PLUGE luminance strip (dark blue,
  * white, purple, black, near-black, dark-gray, black).
  */
-static void __DrawSmpteStandard(void)
+static void DrawSmpteStandard_(void)
 {
 	// SMPTE colour standard colours for each strip
 	static const BackgroundColour_t smpte_main_colours[] = {BG_WHITE,   BG_YELLOW, BG_CYAN, BG_GREEN,
@@ -183,16 +183,16 @@ static void __DrawSmpteStandard(void)
 	                                                   BG_BLACK,     BG_NEAR_BLACK_2, BG_DARK_GRAY};
 
 	// Draw the top SMPTE bars using the defined colours and dimensions
-	__DrawSmpteStrip(smpte_main_colours, SMPTE_BAR_COUNT, TERMINAL_STARTING_POS, SMPTE_BAR_HEIGHT);
-	__DrawSmpteStrip(complement_colours, SMPTE_BAR_COUNT, SMPTE_COMPLEMENT_HEIGHT, SMPTE_COMPLEMENT_HEIGHT);
-	__DrawSmpteStrip(pluge_colours, SMPTE_BAR_COUNT, SMPTE_PLUGE_HEIGHT, TERMINAL_HEIGHT);
+	DrawSmpteStrip_(smpte_main_colours, SMPTE_BAR_COUNT, TERMINAL_STARTING_POS, SMPTE_BAR_HEIGHT);
+	DrawSmpteStrip_(complement_colours, SMPTE_BAR_COUNT, SMPTE_COMPLEMENT_HEIGHT, SMPTE_COMPLEMENT_HEIGHT);
+	DrawSmpteStrip_(pluge_colours, SMPTE_BAR_COUNT, SMPTE_PLUGE_HEIGHT, TERMINAL_HEIGHT);
 
 	// Reset terminal colours to default after rendering the test pattern
 	TerminalResetStyle();
 }
 
 /**
- * @fn static void __RenderRadialPattern(uint32_t frame, uint16_t pos_x, uint16_t pos_y, uint8_t is_greyscale, uint8_t
+ * @fn static void RenderRadialPattern_(uint32_t frame, uint16_t pos_x, uint16_t pos_y, uint8_t is_greyscale, uint8_t
  * is_bg, uint8_t use_lut)
  * @brief Renders a dynamic radial gradient to the terminal by mapping colors or characters to their distance from a
  * central origin. It supports both greyscale and color modes, with output rendered as solid blocks or character-based
@@ -204,7 +204,7 @@ static void __DrawSmpteStandard(void)
  * @param is_bg Flag indicating whether to render as background or foreground.
  * @param use_lut Flag indicating whether to use the lookup table for shading.
  */
-static void __RenderRadialPattern(uint32_t frame, uint8_t is_greyscale, uint8_t is_bg, uint8_t use_lut)
+static void RenderRadialPattern_(uint32_t frame, uint8_t is_greyscale, uint8_t is_bg, uint8_t use_lut)
 {
 	// Move the cursor to the home position before starting the render
 	TerminalCursorHome();
@@ -242,7 +242,7 @@ static void __RenderRadialPattern(uint32_t frame, uint8_t is_greyscale, uint8_t 
 			//  otherwise, print a space for a block colour effect
 			if (use_lut == TRUE)
 			{
-				char shade = __GetShadeChar((uint8_t)distance);
+				char shade = GetShadeChar_((uint8_t)distance);
 				TerminalPrintN(&shade, 1);
 			} else
 			{
@@ -310,19 +310,19 @@ void SmpteCalibrationRender(uint32_t scene_frame)
 	// Phase 1: Display muted SMPTE bars for the initial duration to simulate an uncalibrated display
 	if (scene_frame < SMPTE_MUTED_DURATION)
 	{
-		__DrawSmpteMuted();
+		DrawSmpteMuted_();
 		return;
 	}
 
 	// Phase 2: Cycle through background colours as calibration process
 	if (scene_frame < BACKGROUND_CYCLE_DURATION)
 	{
-		__CycleBackgroundColour(scene_frame, BACKGROUND_CYCLE_SPEED);
+		CycleBackgroundColour_(scene_frame, BACKGROUND_CYCLE_SPEED);
 		return;
 	}
 
 	// Phase 3: Display the standard SMPTE bars for the remainder of the demo to showcase full colour reproduction
-	__DrawSmpteStandard();
+	DrawSmpteStandard_();
 }
 
 /**
@@ -336,7 +336,7 @@ void SmpteCalibrationRender(uint32_t scene_frame)
  */
 void RadialGreyscaleRender(uint32_t scene_frame)
 {
-	__RenderRadialPattern(scene_frame, TRUE, FALSE, TRUE);
+	RenderRadialPattern_(scene_frame, TRUE, FALSE, TRUE);
 }
 
 /**
@@ -350,5 +350,5 @@ void RadialGreyscaleRender(uint32_t scene_frame)
  */
 void RadialColourRender(uint32_t scene_frame)
 {
-	__RenderRadialPattern(scene_frame, FALSE, TRUE, FALSE);
+	RenderRadialPattern_(scene_frame, FALSE, TRUE, FALSE);
 }

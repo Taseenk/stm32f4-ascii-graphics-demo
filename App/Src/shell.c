@@ -56,29 +56,29 @@
 static uint16_t input_row = 16; // Row position for the user input prompt in the CLI shell
 
 /* Private Function Prototypes -----------------------------------------------*/
-static void __PrintInputPrompt(uint16_t row);
+static void PrintInputPrompt_(uint16_t row);
 
-static void __EnsureTerminalSpace(uint8_t required_space);
-static void __DisplayErrorMessage(ShellError_t error_type);
+static void EnsureTerminalSpace_(uint8_t required_space);
+static void DisplayErrorMessage_(ShellError_t error_type);
 
-static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset);
+static void ParseRunCommand_(char *rx_buffer, uint8_t command_offset);
 
-static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset);
-static void __PrintHelpKey1Run(void);
-static void __PrintHelpKey1Demo(void);
-static void __PrintHelpKey2Mode(void);
-static void __PrintHelpKey2Scene(void);
+static void ParseHelpCommand_(char *rx_buffer, uint8_t command_offset);
+static void PrintHelpKey1Run_(void);
+static void PrintHelpKey1Demo_(void);
+static void PrintHelpKey2Mode_(void);
+static void PrintHelpKey2Scene_(void);
 
-static void __NavigateToDashboard(DashboardPages_t page);
+static void NavigateToDashboard_(DashboardPages_t page);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn static void __PrintInputPrompt(uint16_t row)
+ * @fn static void PrintInputPrompt_(uint16_t row)
  * @brief Displays the input prompt at the specified row and sets the cursor
  * position for user input in the CLI shell.
  * @param row The row position where the input prompt should be displayed.
  */
-static void __PrintInputPrompt(uint16_t row)
+static void PrintInputPrompt_(uint16_t row)
 {
 	// Print the input prompt at the current input row
 	TerminalPrintString(prompt, SHELL_COL_POSITION, row);
@@ -89,14 +89,14 @@ static void __PrintInputPrompt(uint16_t row)
 }
 
 /**
- * @fn static void __EnsureTerminalSpace(uint8_t required_space)
+ * @fn static void EnsureTerminalSpace_(uint8_t required_space)
  * @brief Checks if there is enough space left in the terminal to print a new
  * message without overflowing the bottom of the screen. If there is not enough
  * space, it clears the terminal and resets the input row to prevent overflow.
  * @param required_space The number of rows required to print the new message
  * and any additional helper text.
  */
-static void __EnsureTerminalSpace(uint8_t required_space)
+static void EnsureTerminalSpace_(uint8_t required_space)
 {
 	// Check if the new messages will overflow the terminal height
 	if ((input_row + required_space) >= TERMINAL_HEIGHT)
@@ -111,7 +111,7 @@ static void __EnsureTerminalSpace(uint8_t required_space)
 }
 
 /**
- * @fn static void __DisplayErrorMessage(char *input_buffer, ShellError_t
+ * @fn static void DisplayErrorMessage_(char *input_buffer, ShellError_t
  * error_type)
  * @brief Handles the logic for displaying error messages in the CLI shell when
  * the user inputs an unrecognized command or invalid parameters. Follows
@@ -119,10 +119,10 @@ static void __EnsureTerminalSpace(uint8_t required_space)
  * @param error_type An integer representing the type of error (e.g., 1 for
  * unrecognized command, 2 for invalid parameters).
  */
-static void __DisplayErrorMessage(ShellError_t error_type)
+static void DisplayErrorMessage_(ShellError_t error_type)
 {
 	// Space for Error(1) + Gap(1)
-	__EnsureTerminalSpace(ERROR_MESSAGE_ROWS);
+	EnsureTerminalSpace_(ERROR_MESSAGE_ROWS);
 
 	// Set red text colour for error messages
 	TerminalSetColour(FG_RED, BG_DEFAULT);
@@ -158,11 +158,11 @@ static void __DisplayErrorMessage(ShellError_t error_type)
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
 
 	// Prompt the user for the next command
-	__PrintInputPrompt(++input_row);
+	PrintInputPrompt_(++input_row);
 }
 
 /**
- * @fn static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
+ * @fn static void ParseRunCommand_(char *rx_buffer, uint8_t command_offset)
  * @brief Parses the arguments provided for the run command and executes the
  * appropriate action based on the arguments.
  * @param rx_buffer The buffer containing the user input string to parse for the
@@ -170,7 +170,7 @@ static void __DisplayErrorMessage(ShellError_t error_type)
  * @param command_offset The offset in the buffer where the command arguments
  * start after the command text.
  */
-static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
+static void ParseRunCommand_(char *rx_buffer, uint8_t command_offset)
 {
 	// Argument texts for parsing the command
 	static const char args_delimiter[] = " ";
@@ -181,7 +181,7 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 	// No topic provided (e.g. user typed "RUN" with nothing after)
 	if (topic == NULL)
 	{
-		__DisplayErrorMessage(SHELL_ERROR_MISSING_TOPIC);
+		DisplayErrorMessage_(SHELL_ERROR_MISSING_TOPIC);
 		return;
 	}
 
@@ -198,7 +198,7 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 		{
 			// Call the dashboard page launcher swithing to the auto mode page by
 			// default if no qualifier is provided to run demo
-			__NavigateToDashboard(DASHBOARD_PLAYLIST);
+			NavigateToDashboard_(DASHBOARD_PLAYLIST);
 		}
 
 		/* --- Case: Mode qualifier (e.g., "RUN DEMO /MODE=auto") --- */
@@ -206,21 +206,21 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 		{
 			// Call the dashboard page launcher switching to the auto mode page if the
 			// auto mode qualifier is provided to run demo
-			__NavigateToDashboard(DASHBOARD_AUTO);
+			NavigateToDashboard_(DASHBOARD_AUTO);
 		}
 		/* --- Case: Mode qualifier (e.g., "RUN DEMO /Mode=playlist") --- */
 		else if (strcmp(qualifier, playlist_mode_qualifier_text) == 0)
 		{
 			// Call the dashboard page launcher switching to the playlist page if the
 			// playlist mode qualifier is provided to run demo
-			__NavigateToDashboard(DASHBOARD_PLAYLIST);
+			NavigateToDashboard_(DASHBOARD_PLAYLIST);
 		}
 		/* --- Case: UNKNOWN qualifier --- */
 		else
 		{
 			// Qualifier provided after the topic is not recognized, display an error
 			// message
-			__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_QUALIFIER);
+			DisplayErrorMessage_(SHELL_ERROR_UNKNOWN_QUALIFIER);
 		}
 	}
 
@@ -229,12 +229,12 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
 	{
 		// Topic provided does not match any known RUN topics, display an error
 		// message
-		__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_TOPIC);
+		DisplayErrorMessage_(SHELL_ERROR_UNKNOWN_TOPIC);
 	}
 }
 
 /**
- * @fn static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
+ * @fn static void ParseHelpCommand_(char *rx_buffer, uint8_t command_offset)
  * @brief Parses the arguments provided for the help command and displays the
  * appropriate help information based on the arguments (e.g., "demo" to show the
  * demo command flags).
@@ -243,7 +243,7 @@ static void __ParseRunCommand(char *rx_buffer, uint8_t command_offset)
  * @param command_offset The offset in the buffer where the command arguments
  * start after the command text.
  */
-static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
+static void ParseHelpCommand_(char *rx_buffer, uint8_t command_offset)
 {
 	// Argument texts for parsing the command
 	static const char args_delimiter[] = " ";
@@ -254,7 +254,7 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 	// If there is no command provided (e.g. user just typed "HELP")
 	if (topic == NULL)
 	{
-		__DisplayErrorMessage(SHELL_ERROR_MISSING_TOPIC);
+		DisplayErrorMessage_(SHELL_ERROR_MISSING_TOPIC);
 		return;
 	}
 
@@ -272,7 +272,7 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 		{
 			// Call the help command function to display the available qualifiers and
 			// their descriptions
-			__PrintHelpKey1Demo();
+			PrintHelpKey1Demo_();
 			return;
 		}
 
@@ -280,14 +280,14 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 		if (strcmp(qualifier, mode_qualifier_text) == 0)
 		{
 			// Print the MODE qualifier help information for the demo command
-			__PrintHelpKey2Mode();
+			PrintHelpKey2Mode_();
 			return;
 		}
 		/* --- Case: Scene qualifier (e.g., "HELP DEMO /SCENE") --- */
 		else if (strcmp(qualifier, scene_qualifier_text) == 0)
 		{
 			// Print the scene qualifier help information for the demo command
-			__PrintHelpKey2Scene();
+			PrintHelpKey2Scene_();
 			return;
 		}
 		/* --- Case: UNKNOWN qualifier --- */
@@ -295,14 +295,14 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 		{
 			// Qualifier provided after the topic is not recognized, display an error
 			// message
-			__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_QUALIFIER);
+			DisplayErrorMessage_(SHELL_ERROR_UNKNOWN_QUALIFIER);
 		}
 	}
 
 	/* --- Case: Run topic --- */
 	else if (strncmp(topic, run_command_text, RUN_COMMAND_TEXT_LEN) == 0)
 	{
-		__PrintHelpKey1Run();
+		PrintHelpKey1Run_();
 	}
 
 	/* --- Case: UNKNOWN topic --- */
@@ -310,21 +310,21 @@ static void __ParseHelpCommand(char *rx_buffer, uint8_t command_offset)
 	{
 		// Topic provided does not match any known help topics, display an error
 		// message
-		__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_TOPIC);
+		DisplayErrorMessage_(SHELL_ERROR_UNKNOWN_TOPIC);
 	}
 }
 
 /**
- * @fn static void __PrintHelpKey1Run(void)
+ * @fn static void PrintHelpKey1Run_(void)
  * @brief Handles the logic for displaying help information about the "run"
  * topic. When the user types "HELP RUN" in the dashboard shell, including usage
  * instructions,
  */
-static void __PrintHelpKey1Run(void)
+static void PrintHelpKey1Run_(void)
 {
 	// Ensure space for Topic(1), Gap(1), Desc(2), Gap(1), Format(1), Gap(1),
 	// Header(1), List(1)
-	__EnsureTerminalSpace(HELP_KEY1_RUN_ROWS);
+	EnsureTerminalSpace_(HELP_KEY1_RUN_ROWS);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
@@ -337,21 +337,21 @@ static void __PrintHelpKey1Run(void)
 	}
 
 	// Prompt the user for the next command
-	__PrintInputPrompt(++input_row);
+	PrintInputPrompt_(++input_row);
 }
 
 /**
- * @fn static void __PrintHelpKey1Demo(void)
+ * @fn static void PrintHelpKey1Demo_(void)
  * @brief Handles the logic for displaying help information about the "demo"
  * topic. When the user types "HELP DEMO" in the dashboard shell, including
  * usage instructions, description, and available qualifier for the demo
  * command.
  */
-static void __PrintHelpKey1Demo(void)
+static void PrintHelpKey1Demo_(void)
 {
 	// Ensure space for Topic(1), Gap(1), Desc(2), Gap(1), Format(1), Gap(1),
 	// Header(1), List(1)
-	__EnsureTerminalSpace(HELP_KEY1_DEMO_ROWS);
+	EnsureTerminalSpace_(HELP_KEY1_DEMO_ROWS);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
@@ -364,20 +364,20 @@ static void __PrintHelpKey1Demo(void)
 	}
 
 	// Prompt the user for the next command
-	__PrintInputPrompt(++input_row);
+	PrintInputPrompt_(++input_row);
 }
 
 /**
- * @fn static void __PrintHelpKey2Scene(void)
+ * @fn static void PrintHelpKey2Scene_(void)
  * @brief Handles the logic for displaying help information about the available
  * scenes for the demo command when the user types "HELP DEMO /SCENE" in the
  * dashboard shell, including usage instructions and descriptions for each scene
  * option.
  */
-static void __PrintHelpKey2Scene(void)
+static void PrintHelpKey2Scene_(void)
 {
 	// Ensure space for Path(1), qualifier(1), Gap(1), Desc(7)
-	__EnsureTerminalSpace(HELP_KEY2_SCENE_ROW);
+	EnsureTerminalSpace_(HELP_KEY2_SCENE_ROW);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
@@ -390,21 +390,21 @@ static void __PrintHelpKey2Scene(void)
 	}
 
 	// Prompt the user for the next command
-	__PrintInputPrompt(++input_row);
+	PrintInputPrompt_(++input_row);
 }
 
 /**
- * @fn static void __PrintHelpKey2Mode(void)
+ * @fn static void PrintHelpKey2Mode_(void)
  * @brief Handles the logic for displaying help information about the available
  * modes for the demo command when the user types "HELP DEMO /MODE" in the
  * dashboard shell, including usage instructions and descriptions for each mode
  * option.
  */
-static void __PrintHelpKey2Mode(void)
+static void PrintHelpKey2Mode_(void)
 {
 	// Ensure space for Path(1), qualifier(1), Gap(1), Desc(2), Gap(1), Desc(1),
 	// Options(2), Gap(1)
-	__EnsureTerminalSpace(HELP_KEY2_MODE_ROW);
+	EnsureTerminalSpace_(HELP_KEY2_MODE_ROW);
 
 	// Set default colours for the main body text
 	TerminalSetColour(FG_DEFAULT, BG_DEFAULT);
@@ -417,18 +417,18 @@ static void __PrintHelpKey2Mode(void)
 	}
 
 	// Prompt the user for the next command
-	__PrintInputPrompt(++input_row);
+	PrintInputPrompt_(++input_row);
 }
 
 /**
- * @fn static void __NavigateToDashboard(DashboardPages_t page)
+ * @fn static void NavigateToDashboard_(DashboardPages_t page)
  * @brief Handles the logic for launching different dashboard pages based on the
  * provided page parameter. It sets the system mode to the dashboard and
  * initializes the main page with the specified dashboard page.
  * @param page An integer representing the specific dashboard page to launch
  * (e.g., playlist, auto mode).
  */
-static void __NavigateToDashboard(DashboardPages_t page)
+static void NavigateToDashboard_(DashboardPages_t page)
 {
 	system_mode = SYSTEM_STATE_DASHBOARD;
 	current_page = page;
@@ -476,7 +476,7 @@ void ShellInit(void)
 	HAL_Delay(200);
 
 	// Render the interaction prompt
-	__PrintInputPrompt(INPUT_ROW_POSITION);
+	PrintInputPrompt_(INPUT_ROW_POSITION);
 
 	// Set the initial input row position for user commands
 	input_row = INPUT_ROW_POSITION;
@@ -514,7 +514,7 @@ void ShellCommandParser(char *rx_buffer)
 	{
 		// Call the run command parser function to handle the run command arguments
 		// and execute the appropriate action
-		__ParseRunCommand(rx_buffer, RUN_COMMAND_TEXT_LEN);
+		ParseRunCommand_(rx_buffer, RUN_COMMAND_TEXT_LEN);
 	}
 	/* --- Case: HELP command --- */
 	else if (
@@ -523,13 +523,13 @@ void ShellCommandParser(char *rx_buffer)
 	{
 		// Call the help command parser function to handle the help command
 		// arguments and display the appropriate help information
-		__ParseHelpCommand(rx_buffer, HELP_COMMAND_TEXT_LEN);
+		ParseHelpCommand_(rx_buffer, HELP_COMMAND_TEXT_LEN);
 	}
 	/* --- Case: UNKNOWN command --- */
 	else
 	{
 		// Command not recognized (e.g., "FLY DEMO")
-		__DisplayErrorMessage(SHELL_ERROR_UNKNOWN_COMMAND);
+		DisplayErrorMessage_(SHELL_ERROR_UNKNOWN_COMMAND);
 		return;
 	}
 }

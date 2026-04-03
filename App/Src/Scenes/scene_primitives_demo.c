@@ -51,25 +51,25 @@
 /* Private Variables ---------------------------------------------------------*/
 
 /* Private Function Prototypes -----------------------------------------------*/
-static void __DrawLines(uint8_t count);
-static void __DrawRects(uint8_t count);
-static void __DrawCircles(uint8_t count);
-static void __DrawTriangles(uint8_t count);
+static void DrawLines_(uint32_t frame);
+static void DrawRects_(uint32_t frame);
+static void DrawCircles_(uint32_t frame);
+static void DrawTriangles_(uint32_t frame);
 
 /* Private Functions ---------------------------------------------------------*/
-static void __DrawLines(uint8_t count)
+static void DrawLines_(uint32_t frame)
 {
 }
 
-static void __DrawRects(uint8_t count)
+static void DrawRects_(uint32_t frame)
 {
 }
 
-static void __DrawCircles(uint8_t count)
+static void DrawCircles_(uint32_t frame)
 {
 }
 
-static void __DrawTriangles(uint8_t count)
+static void DrawTriangles_(uint32_t frame)
 {
 }
 
@@ -88,16 +88,16 @@ void ScenePrimitivesRender(uint32_t scene_frame)
 	TerminalBufferClear();
 
 	if (scene_frame >= PHASE_LINES_START)
-		return;
+		DrawLines_(scene_frame);
 
 	if (scene_frame >= PHASE_RECTS_START)
-		return;
+		DrawRects_(scene_frame);
 
 	if (scene_frame >= PHASE_CIRCLES_START)
-		return;
+		DrawCircles_(scene_frame);
 
 	if (scene_frame >= PHASE_TRIANGLES_START)
-		return;
+		DrawTriangles_(scene_frame);
 
 	// Flush the completed framebuffer to the terminal in one DMA transfer
 	TerminalBufferFlush();

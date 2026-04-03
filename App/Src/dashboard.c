@@ -74,17 +74,17 @@
 DashboardPages_t current_page = DASHBOARD_HELP; // Initialize the current dashboard page to the help page
 
 /* Private Function Prototypes -----------------------------------------------*/
-static void __ApplyMenuHighlight(uint32_t global_frame);
+static void ApplyMenuHighlight_(uint32_t global_frame);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn static void __ApplyMenuHighlight(uint32_t global_frame)
+ * @fn static void ApplyMenuHighlight_(uint32_t global_frame)
  * @brief Applies a blinking highlight effect to the currently selected menu option
  * in the dashboard based on the global frame count to create a visual indication
  * of the active option.
  * @param global_frame The current global frame count used to calculate the blinking state.
  */
-static void __ApplyMenuHighlight(uint32_t global_frame)
+static void ApplyMenuHighlight_(uint32_t global_frame)
 {
 	// Calculate the current blink state based on the global frame count, blink rate, and number of phases
 	uint8_t blink_state = (global_frame / SELECTION_BLINK_RATE) % SELECTION_BLINK_PHASES;
@@ -236,7 +236,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 	{
 		case DASHBOARD_HELP:
 			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
-			__ApplyMenuHighlight(global_frame);
+			ApplyMenuHighlight_(global_frame);
 
 			// Print the menu option text with the blinking effect
 			TerminalPrintString(HELP_TEXT, OPTIONS_COL_POSITION, HELP_ROW_POSITION);
@@ -246,7 +246,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 
 		case DASHBOARD_AUTO:
 			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
-			__ApplyMenuHighlight(global_frame);
+			ApplyMenuHighlight_(global_frame);
 
 			// Print the menu option text with the blinking effect
 			TerminalPrintString(AUTO_TEXT, OPTIONS_COL_POSITION, AUTO_ROW_POSITION);
@@ -265,7 +265,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 
 		case DASHBOARD_PLAYLIST:
 			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
-			__ApplyMenuHighlight(global_frame);
+			ApplyMenuHighlight_(global_frame);
 
 			// Print the menu option text with the blinking effect
 			TerminalPrintString(PLAYLIST_TEXT, OPTIONS_COL_POSITION, PLAYLIST_ROW_POSITION);
@@ -284,7 +284,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 
 		case DASHBOARD_INFO:
 			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
-			__ApplyMenuHighlight(global_frame);
+			ApplyMenuHighlight_(global_frame);
 
 			// Print the menu option text with the blinking effect
 			TerminalPrintString(INFO_TEXT, OPTIONS_COL_POSITION, INFO_ROW_POSITION);
@@ -294,7 +294,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 
 		case DASHBOARD_QUIT:
 			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
-			__ApplyMenuHighlight(global_frame);
+			ApplyMenuHighlight_(global_frame);
 
 			// Print the menu option text with the blinking effect
 			TerminalPrintString(QUIT_TEXT, OPTIONS_COL_POSITION, QUIT_ROW_POSITION);

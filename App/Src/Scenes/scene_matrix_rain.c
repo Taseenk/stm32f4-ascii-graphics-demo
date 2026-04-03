@@ -62,13 +62,13 @@ static uint32_t rand_number; // Global random number state for consistent RNG ac
 static uint16_t matrix_rain_active_col[TERMINAL_WIDTH] = {0}; // Track active character positions for each column
 
 /* Private Function Prototypes -----------------------------------------------*/
-static char __GetAsciiOrBinaryChar(uint8_t noise_mode);
-static void __RainUpdater(uint8_t density, uint8_t speed, uint8_t noise_mode);
-static void __CharacterDissolve(uint32_t frame, uint8_t density_scale);
+static char GetAsciiOrBinaryChar_(uint8_t noise_mode);
+static void RainUpdater_(uint8_t density, uint8_t speed, uint8_t noise_mode);
+static void CharacterDissolve_(uint32_t frame, uint8_t density_scale);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn static char __GetAsciiOrBinaryChar(uint8_t noise_mode)
+ * @fn static char GetAsciiOrBinaryChar_(uint8_t noise_mode)
  * @brief Returns a random printable character based on the noise mode.
  * ASCII mode returns a random printable character in the range 33-96.
  * Binary mode returns either '0' or '1'.
@@ -76,7 +76,7 @@ static void __CharacterDissolve(uint32_t frame, uint8_t density_scale);
  * or CHARACTER_BINARY_NOISE.
  * @return A single character determined by the noise mode.
  */
-static char __GetAsciiOrBinaryChar(uint8_t noise_mode)
+static char GetAsciiOrBinaryChar_(uint8_t noise_mode)
 {
 	if (noise_mode == BINARY_CHARACTER)
 	{
@@ -90,13 +90,13 @@ static char __GetAsciiOrBinaryChar(uint8_t noise_mode)
 }
 
 /**
- * @fn static void __RainUpdater(uint8_t density, uint8_t speed, uint8_t noise_mode)
+ * @fn static void RainUpdater_(uint8_t density, uint8_t speed, uint8_t noise_mode)
  * @brief Updates the "Matrix" rain effect by moving characters down the screen.
  * @param density The density factor determining how frequently new characters spawn.
  * @param speed The speed factor determining how many rows characters move per update.
  * @param noise_mode The mode for generating noise characters (binary or ASCII).
  */
-static void __RainUpdater(uint8_t density, uint8_t speed, uint8_t noise_mode)
+static void RainUpdater_(uint8_t density, uint8_t speed, uint8_t noise_mode)
 {
 	// Variables for coordinate tracking and character generation
 	uint16_t pos, erase_row;
@@ -139,10 +139,10 @@ static void __RainUpdater(uint8_t density, uint8_t speed, uint8_t noise_mode)
 					// Determine the character to draw based on the noise mode
 					if (noise_mode == ASCII_CHARACTER)
 					{
-						char_buffer[0] = __GetAsciiOrBinaryChar(ASCII_CHARACTER);
+						char_buffer[0] = GetAsciiOrBinaryChar_(ASCII_CHARACTER);
 					} else if (noise_mode == BINARY_CHARACTER)
 					{
-						char_buffer[0] = __GetAsciiOrBinaryChar(BINARY_CHARACTER);
+						char_buffer[0] = GetAsciiOrBinaryChar_(BINARY_CHARACTER);
 					}
 
 					// Move cursor and draw the character on the terminal
@@ -175,12 +175,12 @@ static void __RainUpdater(uint8_t density, uint8_t speed, uint8_t noise_mode)
 }
 
 /**
- * @fn static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
+ * @fn static void CharacterDissolve_(uint32_t frame, uint8_t density_scale)
  * @brief Erases random characters at random positions.
  * @param frame The current frame count used for determining density.
  * @param density_scale The scale factor to adjust the density of characters erased.
  */
-static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
+static void CharacterDissolve_(uint32_t frame, uint8_t density_scale)
 {
 	// Variables for coordinate tracking and character generation
 	uint16_t random_col, random_row;
@@ -206,14 +206,14 @@ static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
 }
 
 /**
- * @fn static void __RenderMatrixRainFrame(uint32_t scene_frame, uint8_t noise_mode)
+ * @fn static void RenderMatrixRainFrame_(uint32_t scene_frame, uint8_t noise_mode)
  * @brief Renders a single frame of the matrix rain effect based on the current scene frame and noise mode.
  * It cycles through text colors to create a dynamic visual effect and updates the rain trails.
  * It also applies occasional dissolving to prevent overcrowding of characters on the screen.
  * @param scene_frame The current frame index provided by the scene manager.
  * @param noise_mode The mode for generating noise characters (binary or ASCII).
  */
-static void __RenderMatrixRainFrame(uint32_t scene_frame, uint8_t noise_mode)
+static void RenderMatrixRainFrame_(uint32_t scene_frame, uint8_t noise_mode)
 {
 	// Cycle through text colours to create a dynamic visual effect
 	uint32_t color_cycle = (scene_frame / TERMINAL_HEIGHT) % RAIN_COLOR_STAGES;
@@ -225,11 +225,11 @@ static void __RenderMatrixRainFrame(uint32_t scene_frame, uint8_t noise_mode)
 		TerminalSetTextColour(FG_DARK_GREEN);
 
 	// Create falling rain trails
-	__RainUpdater(RAIN_DENSITY_HIGH, RAIN_SPEED_DEFAULT, noise_mode);
+	RainUpdater_(RAIN_DENSITY_HIGH, RAIN_SPEED_DEFAULT, noise_mode);
 
 	// Occasional light dissolving to keep the screen from getting too crowded
 	if ((scene_frame & DISSOLVE_INTERVAL_MASK) == 0)
-		__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_LOW);
+		CharacterDissolve_(scene_frame, DISSOLVE_STRENGTH_LOW);
 }
 
 /* Public Functions ----------------------------------------------------------*/
@@ -254,7 +254,7 @@ void MatrixRainInit(void)
 void AsciiRainRender(uint32_t scene_frame)
 {
 	// Render the matrix rain frame using ascii character mode
-	__RenderMatrixRainFrame(scene_frame, ASCII_CHARACTER);
+	RenderMatrixRainFrame_(scene_frame, ASCII_CHARACTER);
 }
 
 /**
@@ -265,7 +265,7 @@ void AsciiRainRender(uint32_t scene_frame)
 void BinaryRainRender(uint32_t scene_frame)
 {
 	// Render the matrix rain frame using binary character mode
-	__RenderMatrixRainFrame(scene_frame, BINARY_CHARACTER);
+	RenderMatrixRainFrame_(scene_frame, BINARY_CHARACTER);
 }
 
 /**
@@ -310,11 +310,11 @@ void AsciiRainHackedRender(uint32_t scene_frame)
 	}
 
 	// Create falling rain trails
-	__RainUpdater(RAIN_DENSITY_HIGH, RAIN_SPEED_DEFAULT, ASCII_CHARACTER);
+	RainUpdater_(RAIN_DENSITY_HIGH, RAIN_SPEED_DEFAULT, ASCII_CHARACTER);
 
 	// Occasional light dissolving to keep the screen from getting too crowded
 	if ((scene_frame & DISSOLVE_INTERVAL_MASK) == 0)
-		__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_LOW);
+		CharacterDissolve_(scene_frame, DISSOLVE_STRENGTH_LOW);
 }
 
 /**
@@ -339,11 +339,11 @@ void AsciiRainFadeIn(uint32_t scene_frame)
 
 	// Spawn rain trails with increasing density as the scene progresses
 	if (scene_frame < RAIN_FADE_IN_MIDPOINT)
-		__RainUpdater(RAIN_DENSITY_LOW, RAIN_SPEED_DEFAULT, ASCII_CHARACTER);
+		RainUpdater_(RAIN_DENSITY_LOW, RAIN_SPEED_DEFAULT, ASCII_CHARACTER);
 	else
-		__RainUpdater(RAIN_DENSITY_HIGH, RAIN_SPEED_DEFAULT, ASCII_CHARACTER);
+		RainUpdater_(RAIN_DENSITY_HIGH, RAIN_SPEED_DEFAULT, ASCII_CHARACTER);
 
 	// Disolving charachters at intervals
 	if (scene_frame % DISSOLVE_INTERVAL_MASK == 0)
-		__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_HIGH);
+		CharacterDissolve_(scene_frame, DISSOLVE_STRENGTH_HIGH);
 }
