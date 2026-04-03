@@ -169,20 +169,20 @@ static void DrawLineHorizontal_(char c, uint16_t x0, uint16_t y0, uint16_t x1, u
 	}
 
 	// Calculate the horizontal and vertical distances
-	int16_t dx = x1 - x0;
-	int16_t dy = y1 - y0;
+	int16_t dx = (int16_t)(x1 - x0);
+	int16_t dy = (int16_t)(y1 - y0);
 
 	// Determine the step direction for the y-axis
 	int16_t y_direction = (dy < 0) ? -1 : 1;
 	if (dy < 0)
-		dy = -dy;
+		dy = (int16_t)-dy;
 
 	// Initialize Bresenham's decision variables
-	int16_t decision_parameter = (2 * dy) - dx;
-	int16_t y = y0;
+	int16_t decision_parameter = (int16_t)((2 * dy) - dx);
+	int16_t y = (int16_t)y0;
 
 	// Iterate across the x-axis
-	for (int16_t x = x0; x <= x1; x++)
+	for (int16_t x = (int16_t)x0; x <= (int16_t)x1; x++)
 	{
 		// Draw the character at (x, y) in the framebuffer
 		DrawChar_(c, x, y);
@@ -190,13 +190,13 @@ static void DrawLineHorizontal_(char c, uint16_t x0, uint16_t y0, uint16_t x1, u
 		// Check if decision variable is positive then move to the next y
 		if (decision_parameter > 0)
 		{
-			y += y_direction;
+			y = (int16_t)(y + y_direction);
 			// Update error for step in both X and Y
-			decision_parameter += (2 * (dy - dx));
+			decision_parameter = (int16_t)(decision_parameter + (2 * (dy - dx)));
 		} else
 		{
 			// Update error for step in X only
-			decision_parameter += (2 * dy);
+			decision_parameter = (int16_t)(decision_parameter + (2 * dy));
 		}
 	}
 }
@@ -230,20 +230,20 @@ static void DrawLineVertical_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uin
 	}
 
 	// Calculate the horizontal and vertical distances
-	int16_t dx = x1 - x0;
-	int16_t dy = y1 - y0;
+	int16_t dx = (int16_t)(x1 - x0);
+	int16_t dy = (int16_t)(y1 - y0);
 
 	// Determine the step direction for the x-axis
 	int16_t x_direction = (dx < 0) ? -1 : 1;
 	if (dx < 0)
-		dx = -dx;
+		dx = (int16_t)-dx;
 
 	// Initialize Bresenham's decision variables (swapped dy and dx)
-	int16_t decision_parameter = (2 * dx) - dy;
-	int16_t x = x0;
+	int16_t decision_parameter = (int16_t)((2 * dx) - dy);
+	int16_t x = (int16_t)x0;
 
 	// Iterate across the y-axis
-	for (int16_t y = y0; y <= y1; y++)
+	for (int16_t y = (int16_t)y0; y <= (int16_t)y1; y++)
 	{
 		// Draw the character at (x, y) in the framebuffer
 		DrawChar_(c, x, y);
@@ -251,13 +251,13 @@ static void DrawLineVertical_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uin
 		// Check if decision variable is positive then move to the next x
 		if (decision_parameter > 0)
 		{
-			x += x_direction;
+			x = (int16_t)(x + x_direction);
 			// Update error for step in both Y and X
-			decision_parameter += (2 * (dx - dy));
+			decision_parameter = (int16_t)(decision_parameter + (2 * (dx - dy)));
 		} else
 		{
 			// Update error for step in Y only
-			decision_parameter += (2 * dx);
+			decision_parameter = (int16_t)(decision_parameter + (2 * dx));
 		}
 	}
 }
@@ -276,8 +276,8 @@ static void DrawLineVertical_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uin
 static void DrawLine_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 	// Calculate absolute horizontal and vertical distances
-	int16_t absolute_x = abs(x1 - x0);
-	int16_t absolute_y = abs(y1 - y0);
+	int16_t absolute_x = (int16_t)abs((int)x1 - (int)x0);
+	int16_t absolute_y = (int16_t)abs((int)y1 - (int)y0);
 
 	// Choose to draw either a horizontal or vertical line based on greater distance between points
 	if (absolute_x > absolute_y)
@@ -887,7 +887,7 @@ void TerminalBufferDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
 	int16_t y = (int16_t)r;
 
 	// Initial midpoint probability
-	int16_t midpoint_probability = 3 - (2 * (int16_t)r);
+	int16_t midpoint_probability = (int16_t)(3 - (2 * (int16_t)r));
 
 	while (y >= x)
 	{
@@ -910,10 +910,10 @@ void TerminalBufferDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
 		// Update the decision variable and coordinates
 		if (midpoint_probability < 0)
 		{
-			midpoint_probability += (4 * x) + 6;
+			midpoint_probability = (int16_t)(midpoint_probability + (4 * x) + 6);
 		} else
 		{
-			midpoint_probability += (4 * (x - y)) + 10;
+			midpoint_probability = (int16_t)(midpoint_probability + (4 * (x - y)) + 10);
 			y--;
 		}
 
