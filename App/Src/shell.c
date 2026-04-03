@@ -192,11 +192,11 @@ static void ParseRunCommand_(char *rx_buffer, uint8_t command_offset)
 	{
 		char *qualifier = strtok(NULL, args_delimiter);
 
-		/* --- Case: RUN Demo--- */
-		// If there is no qualifier provided after "RUN DEMO"
-		if (qualifier == NULL)
+		/* --- Case: RUN DEMO with no qualifier OR /MODE=playlist --- */
+		// If there is no qualifier provided after "RUN DEMO" or it's "RUN DEMO /Mode=playlist"
+		if (qualifier == NULL || strcmp(qualifier, playlist_mode_qualifier_text) == 0)
 		{
-			// Call the dashboard page launcher swithing to the auto mode page by
+			// Call the dashboard page launcher switching to the playlist page if the
 			// default if no qualifier is provided to run demo
 			NavigateToDashboard_(DASHBOARD_PLAYLIST);
 		}
@@ -207,13 +207,6 @@ static void ParseRunCommand_(char *rx_buffer, uint8_t command_offset)
 			// Call the dashboard page launcher switching to the auto mode page if the
 			// auto mode qualifier is provided to run demo
 			NavigateToDashboard_(DASHBOARD_AUTO);
-		}
-		/* --- Case: Mode qualifier (e.g., "RUN DEMO /Mode=playlist") --- */
-		else if (strcmp(qualifier, playlist_mode_qualifier_text) == 0)
-		{
-			// Call the dashboard page launcher switching to the playlist page if the
-			// playlist mode qualifier is provided to run demo
-			NavigateToDashboard_(DASHBOARD_PLAYLIST);
 		}
 		/* --- Case: UNKNOWN qualifier --- */
 		else
