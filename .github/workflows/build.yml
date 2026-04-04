@@ -35,7 +35,9 @@ jobs:
       - name: Run clang-tidy
         run: |
           clang-tidy App/Src/*.c App/Src/Scenes/*.c \
-            -p build/Debug/compile_commands.json
+            -p build/Debug/compile_commands.json \
+            --extra-arg=--sysroot=/usr/lib/arm-none-eabi \
+            --extra-arg=-I/usr/lib/arm-none-eabi/include
 
   build-release:
     runs-on: ubuntu-latest
