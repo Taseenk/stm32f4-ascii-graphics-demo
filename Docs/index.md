@@ -6,13 +6,13 @@ Welcome to the official documentation for the **STM32F4 ASCII Graphics Demo**. T
 
 If you have your hardware ready, jump straight into the setup:
 
-* **[Setting Up the Toolchain](Tutorials/setup.md)**: Install the ARM GCC compiler and flashing tools.
-* **[Flashing the Board](Tutorials/flashing.md)**: Get the demo running on your STM32 in minutes.
-* **[Connecting a Terminal](Tutorials/terminal-setup.md)**: Configure your PC terminal (PuTTY, Tera Term, etc.) to handle the demo in 921,600 baud.
+* **[Setting Up the Toolchain](Tutorial/setup.md)**: Install the ARM GCC compiler and flashing tools.
+* **[Flashing the Board](Tutorial/flashing.md)**: Get the demo running on your STM32 in minutes.
+* **[Connecting a Terminal](Tutorial/terminal-setup.md)**: Configure your PC terminal (PuTTY, Tera Term, etc.) to handle the demo in 921,600 baud.
 
 ## Explore the Documentation
 
-### [Tutorials](Tutorials/index.md)
+### [Tutorials](Tutorial/index.md)
 
 Step-by-step lessons for beginners to get the project building and running from scratch.
 
