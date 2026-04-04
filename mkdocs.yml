@@ -37,6 +37,7 @@ theme:
 
 plugins:
   - search
+  - likec4
 
 markdown_extensions:
   - admonition
@@ -54,10 +55,10 @@ nav:
   - Home: index.md
 
   - Tutorials:
-    - Tutorials/index.md
-    - Setting Up the Toolchain: Tutorials/setup.md
-    - Flashing the Board: Tutorials/flashing.md
-    - Connecting a Terminal: Tutorials/terminal-setup.md
+    - Tutorial/index.md
+    - Setting Up the Toolchain: Tutorial/setup.md
+    - Flashing the Board: Tutorial/flashing.md
+    - Connecting a Terminal: Tutorial/terminal-setup.md
 
   - How-to Guides:
     - How-to/index.md
