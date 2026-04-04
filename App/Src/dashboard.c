@@ -33,9 +33,9 @@
 	(TERMINAL_WIDTH + ANSI_TEXT_LEN +                                                                                  \
 	 1)                      // Total size of the status bar buffer, including ANSI escape codes and null terminator
 #define ANSI_TEXT_LEN      8 // Length of the ANSI escape codes used for setting and resetting styling
-#define SYSTEM_TEXT_LEN    sizeof(SYSTEM_TEXT) - 1    // Length of the system text without null terminator
-#define MAIN_PAGE_TEXT_LEN sizeof(MAIN_PAGE_TEXT) - 1 // Length of the main page text without null terminator
-#define FPS_TEXT_LEN       sizeof(FPS_TEXT) - 1       // Length of the FPS text without null terminator
+#define SYSTEM_TEXT_LEN    (sizeof(SYSTEM_TEXT) - 1)    // Length of the system text without null terminator
+#define MAIN_PAGE_TEXT_LEN (sizeof(MAIN_PAGE_TEXT) - 1) // Length of the main page text without null terminator
+#define FPS_TEXT_LEN       (sizeof(FPS_TEXT) - 1)       // Length of the FPS text without null terminator
 
 // Dashboard Status Bar Text positions
 #define SYSTEM_TEXT_POSITION    1  // Starting column for system information text
