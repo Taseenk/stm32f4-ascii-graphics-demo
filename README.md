@@ -63,4 +63,5 @@ Full documentation — tutorials, how-to guides, module reference, and architect
 
 ## Acknowledgements & Inspiration
 
+- [ASCII AA Project BB Demo](https://youtu.be/FLlDt_4EGX4?si=c_ntV8wBtghTJN6d): Main Inspiration for the project
 - [VT100 ASCII Animation: TortureTest](https://youtu.be/4ZeDudfzAs0?si=S6oy03UdSebeTyBo): Inspiration for Attributes demo scene

@@ -92,19 +92,19 @@
 /* Private Variables ---------------------------------------------------------*/
 
 /* Private Function Prototypes -----------------------------------------------*/
-static void __DrawTitleBar(void);
-static void __DrawSingleAttributeLines(void);
-static void __DrawCombinationGrid(void);
-static void __DrawAsciiSet(uint32_t frame, uint8_t speed);
-static void __DrawFooter(void);
+static void DrawTitleBar_(void);
+static void DrawSingleAttributeLines_(void);
+static void DrawCombinationGrid_(void);
+static void DrawAsciiSet_(uint32_t frame, uint8_t speed);
+static void DrawFooter_(void);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn static void __DrawTitleBar(void)
+ * @fn static void DrawTitleBar_(void)
  * @brief Renders the title bar at row 1 in inverse video to mimic the
  * bordered heading style.
  */
-static void __DrawTitleBar(void)
+static void DrawTitleBar_(void)
 {
 	// Initialize the title text bufferm for the full width with spaces and null-terminate it
 	char title_buffer[TERMINAL_WIDTH + 1];
@@ -122,11 +122,11 @@ static void __DrawTitleBar(void)
 }
 
 /**
- * @fn static void __DrawSingleAttributeLines(void)
+ * @fn static void DrawSingleAttributeLines_(void)
  * @brief Renders one line per ANSI text attribute and common two-attribute
  * combinations, each demonstrating a single capability of the terminal.
  */
-static void __DrawSingleAttributeLines(void)
+static void DrawSingleAttributeLines_(void)
 {
 	// Normal — no attribute applied, baseline reference
 	TerminalPrintString(NORMAL_TEXT, 1, ROW_NORMAL);
@@ -187,12 +187,12 @@ static void __DrawSingleAttributeLines(void)
 }
 
 /**
- * @fn static void __DrawCombinationGrid(void)
+ * @fn static void DrawCombinationGrid_(void)
  * @brief Renders a 5x5 grid showcasing the combination of each attribute with
  * every other attribute, allowing for easy visual comparison of how attributes
  * interact when layered on top of each other.
  */
-static void __DrawCombinationGrid(void)
+static void DrawCombinationGrid_(void)
 {
 	// Header row — label each column
 	TerminalPrintString(GRID_HEADER_NORMAL, GRID_COL_NORMAL, ROW_GRID_HEADER);
@@ -272,14 +272,14 @@ static void __DrawCombinationGrid(void)
 }
 
 /**
- * @fn static void __DrawAsciiSet(uint32_t frame, uint8_t speed)
+ * @fn static void DrawAsciiSet_(uint32_t frame, uint8_t speed)
  * @brief Renders the standard printable ASCII character set (32-126) in a single row at the bottom of the screen, with
  * a dynamic alternating background pattern that shifts every few frames to demonstrate how attributes interact with
  * character output.
  * @param frame The current frame count, used to calculate the animation offset
  * @param speed The number of frames to wait before shifting the background pattern
  */
-static void __DrawAsciiSet(uint32_t frame, uint8_t speed)
+static void DrawAsciiSet_(uint32_t frame, uint8_t speed)
 {
 	// Calculate an offset for animating the background pattern based on the frame count and speed
 	uint32_t offset = (frame / speed);
@@ -306,11 +306,11 @@ static void __DrawAsciiSet(uint32_t frame, uint8_t speed)
 }
 
 /**
- * @fn static void __DrawFooter(void)
+ * @fn static void DrawFooter_(void)
  * @brief Renders the footer text at the bottom of the screen in dimmed style to
  * provide a subtle, non-distracting information bar.
  */
-static void __DrawFooter(void)
+static void DrawFooter_(void)
 {
 	TerminalSetAttribute(TERM_ATTR_DIM);
 	TerminalPrintString(FOOTER_TEXT, 1, ROW_FOOTER);
@@ -330,10 +330,10 @@ void SceneAttributesInit(void)
 	TerminalResetStyle();
 
 	// Render each section of the demo layout
-	__DrawTitleBar();
-	__DrawSingleAttributeLines();
-	__DrawCombinationGrid();
-	__DrawFooter();
+	DrawTitleBar_();
+	DrawSingleAttributeLines_();
+	DrawCombinationGrid_();
+	DrawFooter_();
 }
 
 /**
@@ -344,5 +344,5 @@ void SceneAttributesInit(void)
 void SceneAttributesRender(uint32_t scene_frame)
 {
 	// Animated ASCII set at the bottom to demonstrate attributes with character output
-	__DrawAsciiSet(scene_frame, ASCII_PATTERN_SPEED);
+	DrawAsciiSet_(scene_frame, ASCII_PATTERN_SPEED);
 }

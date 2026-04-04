@@ -42,14 +42,14 @@
 static uint32_t rand_number; // Global random number state for consistent RNG across functions
 
 /* Private Function Prototypes -----------------------------------------------*/
-static char __GetAsciiOrBinaryChar(uint8_t noise_mode);
-static void __CharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t noise_mode);
-static void __CharacterDissolve(uint32_t frame, uint8_t density_scale);
-static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode);
+static char GetAsciiOrBinaryChar_(uint8_t noise_mode);
+static void CharacterNoise_(uint32_t frame, uint8_t density_scale, uint8_t noise_mode);
+static void CharacterDissolve_(uint32_t frame, uint8_t density_scale);
+static void RenderGlitchFrame_(uint32_t scene_frame, uint8_t noise_mode);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn static char __GetAsciiOrBinaryChar(uint8_t noise_mode)
+ * @fn static char GetAsciiOrBinaryChar_(uint8_t noise_mode)
  * @brief Returns a random printable character based on the noise mode.
  * ASCII mode returns a random printable character in the range 33-96.
  * Binary mode returns either '0' or '1'.
@@ -57,7 +57,7 @@ static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode);
  * or CHARACTER_BINARY_NOISE.
  * @return A single character determined by the noise mode.
  */
-static char __GetAsciiOrBinaryChar(uint8_t noise_mode)
+static char GetAsciiOrBinaryChar_(uint8_t noise_mode)
 {
 	if (noise_mode == BINARY_CHARACTER)
 	{
@@ -71,13 +71,13 @@ static char __GetAsciiOrBinaryChar(uint8_t noise_mode)
 }
 
 /**
- * @fn static void __CharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t noise_mode)
+ * @fn static void CharacterNoise_(uint32_t frame, uint8_t density_scale, uint8_t noise_mode)
  * @brief Generates random characters at random positions.
  * @param frame The current frame count used for determining density.
  * @param density_scale The scale factor to adjust the density of characters generated.
  * @param noise_mode The mode for generating noise characters (binary or ASCII).
  */
-static void __CharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t noise_mode)
+static void CharacterNoise_(uint32_t frame, uint8_t density_scale, uint8_t noise_mode)
 {
 	// Variables for coordinate tracking and character generation
 	uint16_t random_col, random_row;
@@ -104,10 +104,10 @@ static void __CharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t nois
 		// Determine the character to draw based on the noise mode
 		if (noise_mode == ASCII_CHARACTER)
 		{
-			char_buffer[0] = __GetAsciiOrBinaryChar(ASCII_CHARACTER);
+			char_buffer[0] = GetAsciiOrBinaryChar_(ASCII_CHARACTER);
 		} else if (noise_mode == BINARY_CHARACTER)
 		{
-			char_buffer[0] = __GetAsciiOrBinaryChar(BINARY_CHARACTER);
+			char_buffer[0] = GetAsciiOrBinaryChar_(BINARY_CHARACTER);
 		}
 
 		// Move cursor and draw the character on the terminal
@@ -116,12 +116,12 @@ static void __CharacterNoise(uint32_t frame, uint8_t density_scale, uint8_t nois
 }
 
 /**
- * @fn static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
+ * @fn static void CharacterDissolve_(uint32_t frame, uint8_t density_scale)
  * @brief Erases random characters at random positions.
  * @param frame The current frame count used for determining density.
  * @param density_scale The scale factor to adjust the density of characters erased.
  */
-static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
+static void CharacterDissolve_(uint32_t frame, uint8_t density_scale)
 {
 	// Variables for coordinate tracking and character generation
 	uint16_t random_col, random_row;
@@ -147,13 +147,13 @@ static void __CharacterDissolve(uint32_t frame, uint8_t density_scale)
 }
 
 /**
- * @fn static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode)
+ * @fn static void RenderGlitchFrame_(uint32_t scene_frame, uint8_t noise_mode)
  * @brief Renders a single frame of the glitch effect based on the current scene frame and noise mode.
  * It adjusts the text color and character density to create a dynamic glitch effect.
  * @param scene_frame The current frame index provided by the scene manager.
  * @param noise_mode The mode for generating noise characters (binary or ASCII).
  */
-static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode)
+static void RenderGlitchFrame_(uint32_t scene_frame, uint8_t noise_mode)
 {
 	// Adjust text colour based on time in scene to create a dynamic visual effect
 	if (scene_frame == GLITCH_SCENE_START)
@@ -167,27 +167,27 @@ static void __RenderGlitchFrame(uint32_t scene_frame, uint8_t noise_mode)
 	if (scene_frame < GLITCH_SCENE_BRIGHT)
 	{
 		// Spawn random characters
-		__CharacterNoise(scene_frame, GLITCH_DENSITY_HIGH, noise_mode);
+		CharacterNoise_(scene_frame, GLITCH_DENSITY_HIGH, noise_mode);
 
 		// Occasional light dissolving to keep the screen from getting too crowded
 		if ((scene_frame & DISSOLVE_INTERVAL_MASK) == 0)
-			__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_LOW);
+			CharacterDissolve_(scene_frame, DISSOLVE_STRENGTH_LOW);
 	}
 
 	// Light Dimming
 	else if (scene_frame < GLITCH_SCENE_DIM)
 	{
 		// Spawn fewer new characters, dissolve more existing ones
-		__CharacterNoise(scene_frame, GLITCH_DENSITY_MEDIUM, noise_mode);
-		__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_HIGH);
+		CharacterNoise_(scene_frame, GLITCH_DENSITY_MEDIUM, noise_mode);
+		CharacterDissolve_(scene_frame, DISSOLVE_STRENGTH_HIGH);
 	}
 
 	// Deeper Fade
 	else
 	{
 		// Very few new characters and keep dissolving
-		__CharacterNoise(scene_frame, GLITCH_DENSITY_LOW, noise_mode);
-		__CharacterDissolve(scene_frame, DISSOLVE_STRENGTH_HIGH);
+		CharacterNoise_(scene_frame, GLITCH_DENSITY_LOW, noise_mode);
+		CharacterDissolve_(scene_frame, DISSOLVE_STRENGTH_HIGH);
 	}
 }
 
@@ -213,7 +213,7 @@ void GlitchInit(void)
 void AsciiGlitchRender(uint32_t scene_frame)
 {
 	// Render the glitch frame using ascii character mode
-	__RenderGlitchFrame(scene_frame, ASCII_CHARACTER);
+	RenderGlitchFrame_(scene_frame, ASCII_CHARACTER);
 }
 
 /**
@@ -224,5 +224,5 @@ void AsciiGlitchRender(uint32_t scene_frame)
 void BinaryGlitchRender(uint32_t scene_frame)
 {
 	// Render the glitch frame using binary character mode
-	__RenderGlitchFrame(scene_frame, BINARY_CHARACTER);
+	RenderGlitchFrame_(scene_frame, BINARY_CHARACTER);
 }

@@ -37,22 +37,22 @@
 static uint8_t framebuffer[TERMINAL_BUFFER_SIZE];
 
 /* Private Function Prototypes -----------------------------------------------*/
-static void __NormalizeCoordinates(uint16_t *col, uint16_t *row);
-static uint8_t __IsValidPos(uint16_t col, uint16_t row);
-static int __BuildColourSequence(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg);
-static void __DrawChar(char c, uint16_t col, uint16_t row);
-static void __DrawLineHorizontal(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
-static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+static void NormalizeCoordinates_(uint16_t *col, uint16_t *row);
+static uint8_t IsValidPos_(uint16_t col, uint16_t row);
+static int BuildColourSequence_(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg);
+static void DrawChar_(char c, uint16_t col, uint16_t row);
+static void DrawLineHorizontal_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+static void DrawLineVertical_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn static void __NormalizeCoordinates(int16_t *col, int16_t *row)
+ * @fn static void NormalizeCoordinates_(int16_t *col, int16_t *row)
  * @brief Internal function to ensure that the provided column and row
  * coordinates are at least 1 for ANSI terminal compatibility.
  * @param col Pointer to the column number (1-based index).
  * @param row Pointer to the row number (1-based index).
  */
-static void __NormalizeCoordinates(uint16_t *col, uint16_t *row)
+static void NormalizeCoordinates_(uint16_t *col, uint16_t *row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
 	if (*row == 0)
@@ -62,14 +62,14 @@ static void __NormalizeCoordinates(uint16_t *col, uint16_t *row)
 }
 
 /**
- * @fn static uint8_t __IsValidPos(uint16_t col, uint16_t row)
+ * @fn static uint8_t IsValidPos_(uint16_t col, uint16_t row)
  * @brief Internal function to check if the provided column and row
  * coordinates are within the valid terminal bounds.
  * @param col The column number (1-based index).
  * @param row The row number (1-based index).
  * @return TRUE if the position is valid, FALSE otherwise.
  */
-static uint8_t __IsValidPos(uint16_t col, uint16_t row)
+static uint8_t IsValidPos_(uint16_t col, uint16_t row)
 {
 	// Check the maximum screen bounds
 	if (row < 1 || row > TERMINAL_HEIGHT || col < 1 || col > TERMINAL_WIDTH)
@@ -80,7 +80,7 @@ static uint8_t __IsValidPos(uint16_t col, uint16_t row)
 }
 
 /**
- * @fn static int __BuildColourSequence(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg)
+ * @fn static int BuildColourSequence_(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg)
  * @brief Internal function to build an ANSI escape sequence for setting either foreground or background colour.
  * This function handles both standard ANSI colours and extended 256-colour mode by checking the colour value against
  * the EXTENDED_COLOURS_OFFSET. It formats the appropriate ANSI command into the provided buffer and returns the length
@@ -93,7 +93,7 @@ static uint8_t __IsValidPos(uint16_t col, uint16_t row)
  * @return The length of the formatted ANSI escape sequence string, or a negative value if formatting failed or the
  * buffer was too small.
  */
-static int __BuildColourSequence(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg)
+static int BuildColourSequence_(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg)
 {
 	if (colour >= EXTENDED_COLOURS_OFFSET)
 	{
@@ -118,7 +118,7 @@ static int __BuildColourSequence(char *buffer, size_t buf_size, uint16_t colour,
 }
 
 /**
- * @fn static void __DrawChar(char c, uint16_t col, uint16_t row)
+ * @fn static void DrawChar_(char c, uint16_t col, uint16_t row)
  * @brief Internal function for drawing a single character into the
  * terminal framebuffer at the specified row and column. This is a static function and does NOT
  * perform bounds checking. This function updates the internal framebuffer array but does NOT
@@ -127,10 +127,10 @@ static int __BuildColourSequence(char *buffer, size_t buf_size, uint16_t colour,
  * @param col The target column number (1-based index).
  * @param row The target row number (1-based index).
  */
-static void __DrawChar(char c, uint16_t col, uint16_t row)
+static void DrawChar_(char c, uint16_t col, uint16_t row)
 {
 	// Check if the starting position is within the screen boundaries
-	if (!__IsValidPos(col, row))
+	if (!IsValidPos_(col, row))
 		return;
 
 	// Calculate the 1D array index for the 2D framebuffer
@@ -141,7 +141,7 @@ static void __DrawChar(char c, uint16_t col, uint16_t row)
 }
 
 /**
- * @fn static void __DrawLineHorizontal(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+ * @fn static void DrawLineHorizontal_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
  * @brief Internal function for drawing a horizontal line using Bresenham's algorithm.
  * This function draws a line from (x0, y0) to (x1, y1) in the terminal framebuffer
  * using the specified character. This is a static function and does NOT perform bounds checking.
@@ -152,7 +152,7 @@ static void __DrawChar(char c, uint16_t col, uint16_t row)
  * @param x1 The ending column (1-based index).
  * @param y1 The ending row (1-based index).
  */
-static void __DrawLineHorizontal(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+static void DrawLineHorizontal_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 	// Make sure to draw from left to right
 	if (x0 > x1)
@@ -169,40 +169,40 @@ static void __DrawLineHorizontal(char c, uint16_t x0, uint16_t y0, uint16_t x1, 
 	}
 
 	// Calculate the horizontal and vertical distances
-	int16_t dx = x1 - x0;
-	int16_t dy = y1 - y0;
+	int16_t dx = (int16_t)(x1 - x0);
+	int16_t dy = (int16_t)(y1 - y0);
 
 	// Determine the step direction for the y-axis
 	int16_t y_direction = (dy < 0) ? -1 : 1;
 	if (dy < 0)
-		dy = -dy;
+		dy = (int16_t)-dy;
 
 	// Initialize Bresenham's decision variables
-	int16_t decision_parameter = (2 * dy) - dx;
-	int16_t y = y0;
+	int16_t decision_parameter = (int16_t)((2 * dy) - dx);
+	int16_t y = (int16_t)y0;
 
 	// Iterate across the x-axis
-	for (int16_t x = x0; x <= x1; x++)
+	for (int16_t x = (int16_t)x0; x <= (int16_t)x1; x++)
 	{
 		// Draw the character at (x, y) in the framebuffer
-		__DrawChar(c, x, y);
+		DrawChar_(c, x, y);
 
 		// Check if decision variable is positive then move to the next y
 		if (decision_parameter > 0)
 		{
-			y += y_direction;
+			y = (int16_t)(y + y_direction);
 			// Update error for step in both X and Y
-			decision_parameter += (2 * (dy - dx));
+			decision_parameter = (int16_t)(decision_parameter + (2 * (dy - dx)));
 		} else
 		{
 			// Update error for step in X only
-			decision_parameter += (2 * dy);
+			decision_parameter = (int16_t)(decision_parameter + (2 * dy));
 		}
 	}
 }
 
 /**
- * @fn static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+ * @fn static void DrawLineVertical_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
  * @brief Internal function for drawing a vertical line using Bresenham's algorithm.
  * This function draws a line from (x0, y0) to (x1, y1) in the terminal framebuffer
  * using the specified character. This is a static function and does NOT perform bounds checking.
@@ -213,7 +213,7 @@ static void __DrawLineHorizontal(char c, uint16_t x0, uint16_t y0, uint16_t x1, 
  * @param x1 The ending column (1-based index).
  * @param y1 The ending row (1-based index).
  */
-static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+static void DrawLineVertical_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 	// Make sure to draw from top to bottom
 	if (y0 > y1)
@@ -230,40 +230,40 @@ static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, ui
 	}
 
 	// Calculate the horizontal and vertical distances
-	int16_t dx = x1 - x0;
-	int16_t dy = y1 - y0;
+	int16_t dx = (int16_t)(x1 - x0);
+	int16_t dy = (int16_t)(y1 - y0);
 
 	// Determine the step direction for the x-axis
 	int16_t x_direction = (dx < 0) ? -1 : 1;
 	if (dx < 0)
-		dx = -dx;
+		dx = (int16_t)-dx;
 
 	// Initialize Bresenham's decision variables (swapped dy and dx)
-	int16_t decision_parameter = (2 * dx) - dy;
-	int16_t x = x0;
+	int16_t decision_parameter = (int16_t)((2 * dx) - dy);
+	int16_t x = (int16_t)x0;
 
 	// Iterate across the y-axis
-	for (int16_t y = y0; y <= y1; y++)
+	for (int16_t y = (int16_t)y0; y <= (int16_t)y1; y++)
 	{
 		// Draw the character at (x, y) in the framebuffer
-		__DrawChar(c, x, y);
+		DrawChar_(c, x, y);
 
 		// Check if decision variable is positive then move to the next x
 		if (decision_parameter > 0)
 		{
-			x += x_direction;
+			x = (int16_t)(x + x_direction);
 			// Update error for step in both Y and X
-			decision_parameter += (2 * (dx - dy));
+			decision_parameter = (int16_t)(decision_parameter + (2 * (dx - dy)));
 		} else
 		{
 			// Update error for step in Y only
-			decision_parameter += (2 * dx);
+			decision_parameter = (int16_t)(decision_parameter + (2 * dx));
 		}
 	}
 }
 
 /**
- * @fn static void __DrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+ * @fn static void DrawLine_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
  * @brief Internal function for drawing a line between two points using Bresenham's algorithm.
  * This function determines whether to draw a horizontal or vertical line based on
  * the slope and updates the internal framebuffer array but does NOT send any data to the terminal.
@@ -273,19 +273,19 @@ static void __DrawLineVertical(char c, uint16_t x0, uint16_t y0, uint16_t x1, ui
  * @param x1 The ending column (1-based index).
  * @param y1 The ending row (1-based index).
  */
-static void __DrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+static void DrawLine_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 	// Calculate absolute horizontal and vertical distances
-	int16_t absolute_x = abs(x1 - x0);
-	int16_t absolute_y = abs(y1 - y0);
+	int16_t absolute_x = (int16_t)abs((int)x1 - (int)x0);
+	int16_t absolute_y = (int16_t)abs((int)y1 - (int)y0);
 
 	// Choose to draw either a horizontal or vertical line based on greater distance between points
 	if (absolute_x > absolute_y)
 		// The line is "flat" (more horizontal than vertical)
-		__DrawLineHorizontal(c, x0, y0, x1, y1);
+		DrawLineHorizontal_(c, x0, y0, x1, y1);
 	else
 		// Line is "steep" (more vertical than horizontal)
-		__DrawLineVertical(c, x0, y0, x1, y1);
+		DrawLineVertical_(c, x0, y0, x1, y1);
 }
 
 /* Public Functions ----------------------------------------------------------*/
@@ -330,7 +330,7 @@ void TerminalInit(uint8_t cursor, uint16_t col, uint16_t row)
 void TerminalSetDimensions(uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	NormalizeCoordinates_(&col, &row);
 
 	// Temporary buffer to hold the ANSI escape sequence (enough for ESC[8;255;255t)
 	char buffer[DIMENSIONS_BUFFER_SIZE];
@@ -416,10 +416,10 @@ void TerminalVisibleCursor(void)
 void TerminalSetCursorPos(uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	NormalizeCoordinates_(&col, &row);
 
 	// Check if the starting position is within the screen boundaries
-	if (!__IsValidPos(col, row))
+	if (!IsValidPos_(col, row))
 		return;
 
 	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H)
@@ -516,8 +516,8 @@ void TerminalSetColour(ForegroundColour_t text_colour, BackgroundColour_t backgr
 	char bg_seg[COLOUR_SEGMENT_MAX_LEN];
 
 	// Build the ANSI escape sequences for foreground and background colours
-	__BuildColourSequence(fg_seg, sizeof(fg_seg), (int)text_colour, TRUE);
-	__BuildColourSequence(bg_seg, sizeof(bg_seg), (int)background_colour, FALSE);
+	BuildColourSequence_(fg_seg, sizeof(fg_seg), (int)text_colour, TRUE);
+	BuildColourSequence_(bg_seg, sizeof(bg_seg), (int)background_colour, FALSE);
 
 	// Combine the foreground and background escape sequence into a single ANSI escape sequence
 	// The length here is without the string terminator (\0)
@@ -543,7 +543,7 @@ void TerminalSetTextColour(ForegroundColour_t text_colour)
 	char fg_seg[COLOUR_SEGMENT_MAX_LEN];
 
 	// Build the ANSI escape sequences for foreground
-	__BuildColourSequence(fg_seg, sizeof(fg_seg), (int)text_colour, TRUE);
+	BuildColourSequence_(fg_seg, sizeof(fg_seg), (int)text_colour, TRUE);
 
 	// Format the escape sequence to set the foreground text colour
 	// The length here is without the string terminator (\0)
@@ -570,7 +570,7 @@ void TerminalSetBackgroundColour(BackgroundColour_t background_colour)
 	char bg_seg[COLOUR_SEGMENT_MAX_LEN];
 
 	// Build the ANSI escape sequences for background colours
-	__BuildColourSequence(bg_seg, sizeof(bg_seg), (int)background_colour, FALSE);
+	BuildColourSequence_(bg_seg, sizeof(bg_seg), (int)background_colour, FALSE);
 
 	// Format the escape sequence to set the foreground text colour
 	// The length here is without the string terminator (\0)
@@ -620,10 +620,10 @@ void TerminalPrint(const char *str)
 void TerminalPrintString(const char *str, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	NormalizeCoordinates_(&col, &row);
 
 	// Check if the starting position is within the screen boundaries
-	if (!__IsValidPos(col, row))
+	if (!IsValidPos_(col, row))
 		return;
 
 	// Temporary buffer to hold the ANSI escape sequence (enough for a command like ESC[255;255H) and a string for the
@@ -679,14 +679,14 @@ void TerminalBufferClear(void)
 void TerminalBufferDrawChar(char c, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	NormalizeCoordinates_(&col, &row);
 
 	// Check if the starting position is within the screen boundaries
-	if (!__IsValidPos(col, row))
+	if (!IsValidPos_(col, row))
 		return;
 
 	// Draw the character in the framebuffer using the internal function
-	__DrawChar(c, col, row);
+	DrawChar_(c, col, row);
 }
 
 /**
@@ -700,10 +700,10 @@ void TerminalBufferDrawChar(char c, uint16_t col, uint16_t row)
 void TerminalBufferDrawString(const char *str, uint16_t col, uint16_t row)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	NormalizeCoordinates_(&col, &row);
 
 	// Check if the starting position is within the screen boundaries
-	if (!__IsValidPos(col, row))
+	if (!IsValidPos_(col, row))
 		return;
 
 	// Calculate the length of the string
@@ -717,7 +717,7 @@ void TerminalBufferDrawString(const char *str, uint16_t col, uint16_t row)
 	// Store the string in the framebuffer using the internal function
 	for (uint16_t i = 0; i < len; i++)
 	{
-		__DrawChar(str[i], col + i, row);
+		DrawChar_(str[i], col + i, row);
 	}
 }
 
@@ -734,11 +734,11 @@ void TerminalBufferDrawString(const char *str, uint16_t col, uint16_t row)
 void TerminalBufferDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	NormalizeCoordinates_(&col, &row);
 
 	// Quick exit check if the starting position is within the screen boundaries
 	// Also check is the rectangle is valid
-	if (!__IsValidPos(col, row) || w == 0 || h == 0)
+	if (!IsValidPos_(col, row) || w == 0 || h == 0)
 		return;
 
 	// Calculate corner coordinates for x and y
@@ -748,17 +748,17 @@ void TerminalBufferDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint
 	// Draw Top and Bottom edges
 	for (uint16_t i = 0; i < w; i++)
 	{
-		__DrawChar(c, col + i, row);
+		DrawChar_(c, col + i, row);
 		if (bottom_row <= TERMINAL_HEIGHT)
-			__DrawChar(c, col + i, bottom_row);
+			DrawChar_(c, col + i, bottom_row);
 	}
 
 	// Draw Left and Right edges
 	for (uint16_t j = 0; j < h; j++)
 	{
-		__DrawChar(c, col, row + j);
+		DrawChar_(c, col, row + j);
 		if (right_col <= TERMINAL_WIDTH)
-			__DrawChar(c, right_col, row + j);
+			DrawChar_(c, right_col, row + j);
 	}
 }
 
@@ -775,11 +775,11 @@ void TerminalBufferDrawRect(char c, uint16_t col, uint16_t row, uint16_t w, uint
 void TerminalBufferFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint16_t h)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	NormalizeCoordinates_(&col, &row);
 
 	// Quick exit check if the starting position is within the screen boundaries
 	// Also check is the rectangle is valid
-	if (!__IsValidPos(col, row) || w == 0 || h == 0)
+	if (!IsValidPos_(col, row) || w == 0 || h == 0)
 		return;
 
 	// Calculate corner coordinates for x and y
@@ -795,7 +795,7 @@ void TerminalBufferFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint
 	{
 		for (uint16_t i = 0; i < w; i++)
 		{
-			__DrawChar(c, col + i, row + j);
+			DrawChar_(c, col + i, row + j);
 		}
 	}
 }
@@ -814,15 +814,15 @@ void TerminalBufferFillRect(char c, uint16_t col, uint16_t row, uint16_t w, uint
 void TerminalBufferDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&x0, &y0);
-	__NormalizeCoordinates(&x1, &y1);
+	NormalizeCoordinates_(&x0, &y0);
+	NormalizeCoordinates_(&x1, &y1);
 
 	// Check if the line is not off the screen
 	if ((x0 > TERMINAL_WIDTH && x1 > TERMINAL_WIDTH) || (y0 > TERMINAL_HEIGHT && y1 > TERMINAL_HEIGHT))
 		return;
 
 	// Draw the line using the internal function
-	__DrawLine(c, x0, y0, x1, y1);
+	DrawLine_(c, x0, y0, x1, y1);
 }
 
 /**
@@ -841,9 +841,9 @@ void TerminalBufferDrawLine(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint1
 void TerminalBufferDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&x0, &y0);
-	__NormalizeCoordinates(&x1, &y1);
-	__NormalizeCoordinates(&x2, &y2);
+	NormalizeCoordinates_(&x0, &y0);
+	NormalizeCoordinates_(&x1, &y1);
+	NormalizeCoordinates_(&x2, &y2);
 
 	// Check if the triangle is not off the screen
 	if ((x0 > TERMINAL_WIDTH && x1 > TERMINAL_WIDTH && x2 > TERMINAL_WIDTH) ||
@@ -851,13 +851,13 @@ void TerminalBufferDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, u
 		return;
 
 	// Draw the line Vertex A to Vertex B
-	__DrawLine(c, x0, y0, x1, y1);
+	DrawLine_(c, x0, y0, x1, y1);
 
 	// Draw the line Vertex B to Vertex C
-	__DrawLine(c, x1, y1, x2, y2);
+	DrawLine_(c, x1, y1, x2, y2);
 
 	// Draw the line Vertex C back to Vertex A
-	__DrawLine(c, x2, y2, x0, y0);
+	DrawLine_(c, x2, y2, x0, y0);
 }
 
 /**
@@ -873,7 +873,7 @@ void TerminalBufferDrawTriangle(char c, uint16_t x0, uint16_t y0, uint16_t x1, u
 void TerminalBufferDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
 {
 	// Make row and column always be 1 or greater for ANSI terminals
-	__NormalizeCoordinates(&col, &row);
+	NormalizeCoordinates_(&col, &row);
 
 	// Aspect ratio adjustment for terminal character cells that are 2:1
 	const uint16_t aspect_ratio = 2;
@@ -887,33 +887,33 @@ void TerminalBufferDrawCircle(char c, uint16_t col, uint16_t row, uint16_t r)
 	int16_t y = (int16_t)r;
 
 	// Initial midpoint probability
-	int16_t midpoint_probability = 3 - (2 * (int16_t)r);
+	int16_t midpoint_probability = (int16_t)(3 - (2 * (int16_t)r));
 
 	while (y >= x)
 	{
 		// --- Quadrant 1 (Upper-Right) ---
-		__DrawChar(c, (col + (x * aspect_ratio)), (row - y));
-		__DrawChar(c, (col + (y * aspect_ratio)), (row - x));
+		DrawChar_(c, (col + (x * aspect_ratio)), (row - y));
+		DrawChar_(c, (col + (y * aspect_ratio)), (row - x));
 
 		// --- Quadrant 4 (Lower-Right) ---
-		__DrawChar(c, (col + (x * aspect_ratio)), (row + y));
-		__DrawChar(c, (col + (y * aspect_ratio)), (row + x));
+		DrawChar_(c, (col + (x * aspect_ratio)), (row + y));
+		DrawChar_(c, (col + (y * aspect_ratio)), (row + x));
 
 		// --- Quadrant 3 (Lower-Left) ---
-		__DrawChar(c, (col - (x * aspect_ratio)), (row + y));
-		__DrawChar(c, (col - (y * aspect_ratio)), (row + x));
+		DrawChar_(c, (col - (x * aspect_ratio)), (row + y));
+		DrawChar_(c, (col - (y * aspect_ratio)), (row + x));
 
 		// --- Quadrant 2 (Upper-Left) ---
-		__DrawChar(c, (col - (x * aspect_ratio)), (row - y));
-		__DrawChar(c, (col - (y * aspect_ratio)), (row - x));
+		DrawChar_(c, (col - (x * aspect_ratio)), (row - y));
+		DrawChar_(c, (col - (y * aspect_ratio)), (row - x));
 
 		// Update the decision variable and coordinates
 		if (midpoint_probability < 0)
 		{
-			midpoint_probability += (4 * x) + 6;
+			midpoint_probability = (int16_t)(midpoint_probability + (4 * x) + 6);
 		} else
 		{
-			midpoint_probability += (4 * (x - y)) + 10;
+			midpoint_probability = (int16_t)(midpoint_probability + (4 * (x - y)) + 10);
 			y--;
 		}
 

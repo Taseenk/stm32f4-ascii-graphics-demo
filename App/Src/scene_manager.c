@@ -65,18 +65,18 @@ static uint8_t scene_index = 0;                        // Current index in the s
 static uint32_t scene_frame_counter = 0;               // Frame counter for the current scene
 
 /* Private Function Prototypes -----------------------------------------------*/
-static uint8_t __GetTotalIndexCount(void);
-static const SceneConfig_t *__GetActiveScene(void);
-static uint32_t __GetSceneDuration(uint32_t scene_duration);
+static uint8_t GetTotalIndexCount_(void);
+static const SceneConfig_t *GetActiveScene_(void);
+static uint32_t GetSceneDuration_(uint32_t scene_duration);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn static uint8_t __GetTotalIndexCount(void)
+ * @fn static uint8_t GetTotalIndexCount_(void)
  * @brief Determines the total number of scenes available based
  * on the current system mode (auto or playlist).
  * @return Returns the total count of scenes to cycle through in the current mode.
  */
-static uint8_t __GetTotalIndexCount(void)
+static uint8_t GetTotalIndexCount_(void)
 {
 	// In auto mode, return the total number of scenes in the scene table
 	if (system_mode == SYSTEM_STATE_AUTO_SCENE)
@@ -95,13 +95,13 @@ static uint8_t __GetTotalIndexCount(void)
 }
 
 /**
- * @fn static const SceneConfig_t *__GetActiveScene(void)
+ * @fn static const SceneConfig_t *GetActiveScene_(void)
  * @brief Retrieves the configuration of the currently active scene based on the system mode (auto or playlist).
  * In auto mode, it returns the current scene from the scene table based on the scene index. In playlist mode,
  * it searches for the current target scene in the playlist and returns its configuration from the scene table.
  * @return A pointer to the SceneConfig_t structure of the active scene, or NULL if no valid scene is found.
  */
-static const SceneConfig_t *__GetActiveScene(void)
+static const SceneConfig_t *GetActiveScene_(void)
 {
 	// Return the current active scene configuration based on the system mode
 	// System mode is auto
@@ -139,14 +139,14 @@ static const SceneConfig_t *__GetActiveScene(void)
 }
 
 /**
- * @fn static uint32_t __GetSceneDuration(uint32_t scene_duration)
+ * @fn static uint32_t GetSceneDuration_(uint32_t scene_duration)
  * @brief Determines the duration of the current scene based on the system mode.
  * In auto mode, it returns a default duration for all scenes. In playlist mode,
  * it returns the specified duration for the scene.
  * @param scene_duration The specified duration for the scene in frames.
  * @return The duration to use for the current scene in frames.
  */
-static uint32_t __GetSceneDuration(uint32_t scene_duration)
+static uint32_t GetSceneDuration_(uint32_t scene_duration)
 {
 	// In auto mode use default scene duration for all scenes
 	if (system_mode == SYSTEM_STATE_AUTO_SCENE)
@@ -172,7 +172,7 @@ void SceneManagerInit(void)
 void SceneManager(uint32_t global_frame_count)
 {
 	// Get the currently active scene
-	const SceneConfig_t *active_scene = __GetActiveScene();
+	const SceneConfig_t *active_scene = GetActiveScene_();
 
 	// If no valid active scene is found, reset to the first scene and return
 	if (active_scene == NULL)
@@ -207,7 +207,7 @@ void SceneManager(uint32_t global_frame_count)
 		/* Run scene logic checking duration based on auto or playlist mode */
 		case SCENE_STATE_RUN:
 			// Check the duration of the scene to transition to EXIT state
-			if (scene_frame_counter >= __GetSceneDuration(active_scene->duration))
+			if (scene_frame_counter >= GetSceneDuration_(active_scene->duration))
 			{
 				current_state = SCENE_STATE_EXIT;
 				break;
@@ -229,7 +229,7 @@ void SceneManager(uint32_t global_frame_count)
 
 			// If the end of available scenes is reached based on the current mode
 			// reset to user input mode, otherwise move back to START
-			if (scene_index >= __GetTotalIndexCount())
+			if (scene_index >= GetTotalIndexCount_())
 			{
 				system_mode = SYSTEM_STATE_USER_INPUT;
 				ShellInit();

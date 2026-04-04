@@ -1,0 +1,80 @@
+site_name: STM32F4 ASCII Graphics Demo
+site_url: https://taseenk.github.io/stm32f4-ascii-graphics-demo/
+site_description: Real-time ASCII art demo scenes on a PC terminal, running bare-metal on the STM32F407 Discovery board.
+site_author: Taseen Khan
+repo_name: Taseenk/stm32f4-ascii-graphics-demo
+repo_url: https://github.com/Taseenk/stm32f4-ascii-graphics-demo
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: red
+      accent: deep orange
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  
+    - scheme: default
+      primary: red
+      accent: deep orange
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.path
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+  font:
+    text: Roboto
+    code: Roboto Mono
+  icon:
+    repo: fontawesome/brands/github
+  language: en
+
+plugins:
+  - search
+  - likec4
+
+markdown_extensions:
+  - admonition
+  - tables
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - toc:
+      permalink: true
+
+docs_dir: Docs
+
+nav:
+  - Home: index.md
+
+  - Tutorials:
+    - Tutorial/index.md
+    - Setting Up the Toolchain: Tutorial/setup.md
+    - Flashing the Board: Tutorial/flashing.md
+    - Connecting a Terminal: Tutorial/terminal-setup.md
+
+  - How-to Guides:
+    - How-to/index.md
+    - Configure UART and DMA: How-to/configure-uart-dma.md
+    - Change Baud Rate or Frame Rate: How-to/change-baud-fps.md
+    - Add a New Scene: How-to/add-a-scene.md
+    - Use the CLI Shell: How-to/use-the-shell.md
+
+  - Reference:
+    - Reference/index.md
+    - Module Overview: Reference/modules.md
+    - Public API: Reference/api.md
+    - UART Bandwidth & Frame Timing: Reference/uart-bandwidth.md
+    - UART Command Set: Reference/commands.md
+    - Hardware Configuration: Reference/hardware-config.md
+
+  - Explanation:
+    - Why 3-Tier Architecture?: Explanation/three-tier-architecture.md
+    - Why DMA + double-buffering: Explanation/dma-double-buffer.md
