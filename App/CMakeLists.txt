@@ -22,6 +22,7 @@ target_sources(AppModule PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Src/Scenes/scene_matrix_rain.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Src/Scenes/scene_colour_demo.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Src/Scenes/scene_attributes_demo.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Scenes/scene_credits.c
 )
 
 # Project include paths
