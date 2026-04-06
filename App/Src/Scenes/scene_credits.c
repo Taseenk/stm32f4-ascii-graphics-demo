@@ -18,6 +18,9 @@
 // STM32 libraries
 #include "main.h"
 
+// Standard libraries
+#include <stdio.h>
+
 /* Private Defines -----------------------------------------------------------*/
 #define CENTRE_COL     (TERMINAL_WIDTH / 2)
 #define CENTRE_ROW     (TERMINAL_HEIGHT / 2)
@@ -74,10 +77,36 @@ static const CreditLine_t credits[] = {
 const uint8_t credits_count = sizeof(credits) / sizeof(credits[0]);
 
 /* Private Function Prototypes -----------------------------------------------*/
+static void EraseCreditLine_(uint8_t row);
 static void DrawCredits_(uint32_t frame);
 
 /* Private Functions ---------------------------------------------------------*/
-/*
+/**
+ * @fn static void EraseCreditLine_(uint8_t row)
+ * @brief Erases a single line of text at the specified row by moving the
+ * cursor to the start of the line and sending the ANSI escape sequence to
+ * clear the entire line. This is used to create the sliding animation effect
+ * as lines move upwards into their final positions.
+ * @param row The terminal row index (1-based) where the line should be erased.
+ */
+static void EraseCreditLine_(uint8_t row)
+{
+	// Buffer to hold the ANSI escape sequence for erasing a line e.g. ESC[12;1H\x1b[2K
+	char buffer[24];
+
+	// Format the escape sequence to move the cursor and return the length
+	// The length here is without the string terminator (\0)
+	int len = snprintf(buffer, sizeof(buffer), ANSI_ESC "%u;1H\x1b[2K", (unsigned int)row);
+
+	// Check if sprintf failed (len < 0) or if the formatted string exceeded the terminal size
+	if (len <= 0 || (size_t)len >= sizeof(buffer))
+		return;
+
+	TerminalPrintN(buffer, (uint16_t)len);
+}
+
+/**
+ * @fn static void DrawCredits_(uint32_t frame)
  * @brief Draws all credit lines at their current animated positions for the
  * given frame. Applies the correct ANSI attribute to each line before
  * printing and resets styling afterwards.
