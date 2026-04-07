@@ -22,59 +22,78 @@
 #include <stdio.h>
 
 /* Private Defines -----------------------------------------------------------*/
-#define CENTRE_COL     (TERMINAL_WIDTH / 2)
-#define CENTRE_ROW     (TERMINAL_HEIGHT / 2)
-
-#define GUTTER_SPACING 2
-#define LABEL_COL      (CENTRE_COL - 2)
-#define VALUE_COL      (CENTRE_COL + 2)
+#define GUTTER_TEXT   "    "                                 // Visual separator between label and value
+#define CREDITS_COUNT (sizeof(credits) / sizeof(credits[0])) // Count of the credits array
+#define STAGGER_DELAY 10                                     // Frame delay between credit lines
 
 /* Private Variables ---------------------------------------------------------*/
+
+/**
+ * @brief Defines the rows for each line of the credits, including headers, spacers, and content lines.
+ */
+typedef enum {
+	// Header: Cast
+	LINE_HEADER_CAST = 3,
+	LINE_CAST_SPACER,
+
+	LINE_RENDERER,
+	LINE_TRANSPORT,
+	LINE_TIMING,
+	LINE_RANDOM,
+	LINE_PALETTE,
+	LINE_CREW_GAP,
+	LINE_CREW_CAP2,
+
+	// Header: CREW
+	LINE_HEADER_CREW = 12,
+	LINE_CREW_SPACER,
+
+	LINE_HARDWARE,
+	LINE_CORE,
+	LINE_CLOCK,
+	LINE_MEMORY,
+
+	// Footer
+	LINE_FOOTER = 21
+} CreditLineRow_t;
+
+/**
+ * @brief Structure to define each credit line, including the text to display, the column position, and the target row
+ * for animation. The text can include ANSI escape sequences for styling.
+ */
 typedef struct {
 	const char *text;
 	uint8_t col;
-	uint8_t target_row;
-	TerminalAttr_t attr;
+	CreditLineRow_t target_row;
 } CreditLine_t;
 
+// Static array of credit lines with their text, column position, and target row for animation
 static const CreditLine_t credits[] = {
     // Header: Cast
-    {"CAST", 38, 3, TERM_ATTR_RESET},
+    {ANSI_RESET_STYLE "CAST", 38, LINE_HEADER_CAST},
+    {ANSI_RESET_STYLE, 1, LINE_CAST_SPACER},
 
-    {"RENDERING", 29, 5, TERM_ATTR_DIM},
-    {"ASCII FRAMEBUFFER", 42, 5, TERM_ATTR_RESET},
-
-    {"TRANSPORT", 29, 6, TERM_ATTR_DIM},
-    {"UART @ 921600 BAUD", 42, 6, TERM_ATTR_RESET},
-
-    {"TIMING", 32, 7, TERM_ATTR_DIM},
-    {"ARM SYSTICK", 42, 7, TERM_ATTR_RESET},
-
-    {"RANDOMNESS", 28, 8, TERM_ATTR_DIM},
-    {"HARDWARE TRNG", 42, 8, TERM_ATTR_RESET},
-
-    {"PALETTE", 31, 9, TERM_ATTR_DIM},
-    {"XTERM-256 COLOUR", 42, 9, TERM_ATTR_RESET},
+    {ANSI_DIM "RENDERING" ANSI_RESET_STYLE GUTTER_TEXT "ASCII FRAMEBUFFER", 29, LINE_RENDERER},
+    {ANSI_DIM "TRANSPORT" ANSI_RESET_STYLE GUTTER_TEXT "UART @ 921600 BAUD", 29, LINE_TRANSPORT},
+    {ANSI_DIM "TIMING" ANSI_RESET_STYLE GUTTER_TEXT "ARM SYSTICK", 32, LINE_TIMING},
+    {ANSI_DIM "RANDOMNESS" ANSI_RESET_STYLE GUTTER_TEXT "HARDWARE TRNG", 28, LINE_RANDOM},
+    {ANSI_DIM "PALETTE" ANSI_RESET_STYLE GUTTER_TEXT "XTERM-256 COLOUR", 31, LINE_PALETTE},
+    {ANSI_RESET_STYLE, 1, LINE_CREW_GAP},
+    {ANSI_RESET_STYLE, 1, LINE_CREW_CAP2},
 
     // Header: CREW
-    {"CREW", 38, 12, TERM_ATTR_RESET},
+    {ANSI_RESET_STYLE "CREW", 38, LINE_HEADER_CREW},
+    {ANSI_RESET_STYLE, 1, LINE_CREW_SPACER},
 
-    {"HARDWARE", 30, 14, TERM_ATTR_DIM},
-    {"STM32F407VG", 42, 14, TERM_ATTR_RESET},
-
-    {"CORE", 34, 15, TERM_ATTR_DIM},
-    {"ARM CORTEX-M4", 42, 15, TERM_ATTR_RESET},
-
-    {"CLOCK", 33, 16, TERM_ATTR_DIM},
-    {"168 MHZ PLL", 42, 16, TERM_ATTR_RESET},
-
-    {"MEMORY", 32, 17, TERM_ATTR_DIM},
-    {"128KB SRAM", 42, 17, TERM_ATTR_RESET},
+    {ANSI_DIM "HARDWARE" ANSI_RESET_STYLE GUTTER_TEXT "STM32F407VG", 30, LINE_HARDWARE},
+    {ANSI_DIM "CORE" ANSI_RESET_STYLE GUTTER_TEXT "ARM CORTEX-M4", 34, LINE_CORE},
+    {ANSI_DIM "CLOCK" ANSI_RESET_STYLE GUTTER_TEXT "168 MHZ PLL", 33, LINE_CLOCK},
+    {ANSI_DIM "MEMORY" ANSI_RESET_STYLE GUTTER_TEXT "128KB SRAM", 32, LINE_MEMORY},
 
     // Footer
-    {"(C) 2026 ASCII GRAPHICS DEMO", 27, 21, TERM_ATTR_RESET},
+    {ANSI_RESET_STYLE "(C) 2026 ASCII GRAPHICS DEMO", 27, LINE_FOOTER},
 };
-const uint8_t credits_count = sizeof(credits) / sizeof(credits[0]);
+static uint8_t current_row[CREDITS_COUNT] = {0}; // Tracks the current animated row position for each credit line
 
 /* Private Function Prototypes -----------------------------------------------*/
 static void EraseCreditLine_(uint8_t row);
@@ -102,6 +121,7 @@ static void EraseCreditLine_(uint8_t row)
 	if (len <= 0 || (size_t)len >= sizeof(buffer))
 		return;
 
+	// Send the escape sequence to the terminal to erase the line
 	TerminalPrintN(buffer, (uint16_t)len);
 }
 
@@ -114,11 +134,27 @@ static void EraseCreditLine_(uint8_t row)
  */
 static void DrawCredits_(uint32_t frame)
 {
-	for (int i = 0; i < credits_count; i++)
+	// Slow down the animation by only updating every 8 frames
+	if ((frame % 8) != 0)
+		return;
+
+	// Calculate new positions and clear old artifacts
+	for (int i = 0; i < CREDITS_COUNT; i++)
 	{
-		// Render each line
-		TerminalSetAttribute(credits[i].attr);
-		TerminalPrintString(credits[i].text, credits[i].col, credits[i].target_row);
+		const uint32_t starting_frame = i * STAGGER_DELAY;
+
+		// Skip updating this line until its staggered start time has been reached
+		if (frame < starting_frame)
+			continue;
+
+		// Animate and render until the line reaches its target row
+		if (current_row[i] > credits[i].target_row)
+		{
+			EraseCreditLine_(current_row[i]);
+			current_row[i]--;
+
+			TerminalPrintString(credits[i].text, credits[i].col, current_row[i]);
+		}
 	}
 }
 
@@ -134,6 +170,12 @@ void SceneCreditsInit(void)
 	TerminalClearAndHome();
 	TerminalResetStyle();
 	TerminalInvisibleCursor();
+
+	// Initialize all credit lines to start below the visible area of the terminal
+	for (int i = 0; i < CREDITS_COUNT; i++)
+	{
+		current_row[i] = TERMINAL_HEIGHT + 1;
+	}
 }
 
 /**
