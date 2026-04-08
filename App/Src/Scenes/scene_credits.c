@@ -24,7 +24,7 @@
 /* Private Defines -----------------------------------------------------------*/
 #define GUTTER_TEXT   "    "                                 // Visual separator between label and value
 #define CREDITS_COUNT (sizeof(credits) / sizeof(credits[0])) // Count of the credits array
-#define STAGGER_DELAY 10                                     // Frame delay between credit lines
+#define STAGGER_DELAY 15                                     // Frame delay between credit lines
 
 /* Private Variables ---------------------------------------------------------*/
 
@@ -93,7 +93,7 @@ static const CreditLine_t credits[] = {
     // Footer
     {ANSI_RESET_STYLE "(C) 2026 ASCII GRAPHICS DEMO", 27, LINE_FOOTER},
 };
-static uint8_t current_row[CREDITS_COUNT] = {0}; // Tracks the current animated row position for each credit line
+static int16_t current_row[CREDITS_COUNT] = {0}; // Tracks the current animated row position for each credit line
 
 /* Private Function Prototypes -----------------------------------------------*/
 static void EraseCreditLine_(uint8_t row);
@@ -134,26 +134,29 @@ static void EraseCreditLine_(uint8_t row)
  */
 static void DrawCredits_(uint32_t frame)
 {
-	// Slow down the animation by only updating every 8 frames
-	if ((frame % 8) != 0)
-		return;
-
 	// Calculate new positions and clear old artifacts
 	for (int i = 0; i < CREDITS_COUNT; i++)
 	{
-		const uint32_t starting_frame = i * STAGGER_DELAY;
-
 		// Skip updating this line until its staggered start time has been reached
+		const uint32_t starting_frame = i * STAGGER_DELAY;
 		if (frame < starting_frame)
 			continue;
 
-		// Animate and render until the line reaches its target row
-		if (current_row[i] > credits[i].target_row)
+		// Calculate the distance from the current row to the target row for this credit line
+		int32_t distance = current_row[i] - (int32_t)credits[i].target_row;
+		if (distance > 0)
 		{
-			EraseCreditLine_(current_row[i]);
-			current_row[i]--;
+			// Ease in, delaying animation by distance to target row
+			uint8_t dynamic_delay = 2 + (STAGGER_DELAY / (distance + 1));
 
-			TerminalPrintString(credits[i].text, credits[i].col, current_row[i]);
+			// Move and render if after correct number of frames based on distance to target row
+			if ((frame % dynamic_delay) == 0)
+			{
+				EraseCreditLine_(current_row[i]);
+				current_row[i]--;
+
+				TerminalPrintString(credits[i].text, credits[i].col, current_row[i]);
+			}
 		}
 	}
 }
