@@ -1,10 +1,10 @@
 /**
  ******************************************************************************
  * @file           : scene_credits.h
- * @brief          : Header for scene_credits.c, defining the initialization
- * and rendering functions for the Credits scene. A demoscene-style animated
- * credits card that acts as a bookend for the playlist, sliding each line
- * up into its final position with a staggered reveal effect.
+ * @brief          : Header for scene_credits.c, This scene implements a vertical
+ * motion crawl where text elements originate from the bottom edge and move upward
+ * to fixed layout coordinates. Includes support for staggered entry timings to separate
+ * headers from body text, culminating in a static final billboard display.
  ******************************************************************************
  */
 
