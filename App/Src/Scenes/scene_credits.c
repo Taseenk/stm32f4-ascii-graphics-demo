@@ -1,12 +1,11 @@
 /**
  ******************************************************************************
  * @file           : scene_credits.c
- * @brief          : Implements the Credits scene, a demoscene-style animated
- * credits card modelled after classic ASCII demo group credits screens.
- * Each line slides up from below into its final resting position with a
- * staggered delay, so the header arrives first and the trailing lines follow.
- * Once all lines have settled the layout holds static for the remainder of
- * the scene duration, acting as a natural playlist bookend.
+ * @brief          : Implements the Credits scene, a vertical credit crawl inspired
+ * by movie end sequences. Text lines enter from the bottom edge and move toward their
+ * assigned layout positions. The timing uses a staggered entry system so that
+ * headers lead the crawl, followed by the supporting cast and crew,
+ * eventually locking into a final static billboard.
  ******************************************************************************
  */
 
@@ -24,18 +23,17 @@
 /* Private Defines -----------------------------------------------------------*/
 #define GUTTER_TEXT   "    "                                 // Visual separator between label and value
 #define CREDITS_COUNT (sizeof(credits) / sizeof(credits[0])) // Count of the credits array
-#define STAGGER_DELAY 15                                     // Frame delay between credit lines
+#define STAGGER_DELAY 15                                     // Frame delay between lines starts
 
 // Scene timing defines (in frames)
-#define SLIDE_IN_END  250                   // frames for all lines to slide in and settle
-#define HOLD_END      270                   // frames to hold static after settling
-#define SLIDE_OUT_END 340                   // frames for all lines except footer to slide out
-#define TITLE_TARGET  (TERMINAL_HEIGHT / 2) // centre row for the footer title
+#define SLIDE_IN_END 250                   // frames for all lines to slide in and settle
+#define HOLD_END     270                   // frames to stay static
+#define TITLE_TARGET (TERMINAL_HEIGHT / 2) // centre row for the footer title
 
 /* Private Variables ---------------------------------------------------------*/
 
 /**
- * @brief Defines the rows for each line of the credits, including headers, spacers, and content lines.
+ * @brief Target row numbers for each line of text, including headers, spacers, and content lines.
  */
 typedef enum {
 	// Header: Cast
@@ -64,7 +62,7 @@ typedef enum {
 } CreditLineRow_t;
 
 /**
- * @brief Structure to define each credit line, including the text to display, the column position, and the target row
+ * @brief Data for a single credit line. including the text to display, the column position, and the target row
  * for animation. The text can include ANSI escape sequences for styling.
  */
 typedef struct {
@@ -99,11 +97,11 @@ static const CreditLine_t credits[] = {
     // Footer
     {ANSI_RESET_STYLE "(C) 2026 ASCII GRAPHICS DEMO", 27, LINE_FOOTER},
 };
-static int16_t current_row[CREDITS_COUNT] = {0}; // Tracks the current animated row position for each credit line
+static int16_t current_row[CREDITS_COUNT] = {0}; // Tracks the current row position for each line at any given moment
 
 /* Private Function Prototypes -----------------------------------------------*/
 static void EraseCreditLine_(uint8_t row);
-static void DrawCredits_(uint32_t frame);
+static void DrawCredits_(uint32_t frame, uint8_t is_sliding_out);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
@@ -132,13 +130,15 @@ static void EraseCreditLine_(uint8_t row)
 }
 
 /**
- * @fn static void DrawCredits_(uint32_t frame)
- * @brief Draws all credit lines at their current animated positions for the
- * given frame. Applies the correct ANSI attribute to each line before
- * printing and resets styling afterwards.
+ * @fn static void DrawCredits_(uint32_t frame, uint8_t is_sliding_out)
+ * @brief Handles the animation logic for both sliding in and sliding out the credit lines. During the slide-in phase,
+ * lines will move upwards from below the terminal into their target positions with a staggered delay. During the
+ * slide-out phase, lines will continue moving upwards off the screen except for the footer which locks to the centre.
+ * The function calculates dynamic delays based on the distance to the target row to create a smooth animation effect.
  * @param frame The current frame index provided by the scene manager.
+ * @param is_sliding_out Flag indicating whether the credits are in the slide-out phase or slide-in phase.
  */
-static void DrawCredits_(uint32_t frame)
+static void DrawCredits_(uint32_t frame, uint8_t is_sliding_out)
 {
 	// Calculate new positions and clear old artifacts
 	for (int i = 0; i < CREDITS_COUNT; i++)
@@ -148,41 +148,22 @@ static void DrawCredits_(uint32_t frame)
 		if (frame < starting_frame)
 			continue;
 
-		// Calculate the distance from the current row to the target row for this credit line
-		int32_t distance = current_row[i] - (int32_t)credits[i].target_row;
-		if (distance > 0)
+		// Determine the target row for this line based on whether to slide out of the screen completely or not
+		int32_t target;
+		if (is_sliding_out == TRUE)
 		{
-			// Delaying animation by distance to target row
-			uint8_t dynamic_delay = 2 + (STAGGER_DELAY / (distance + 1));
-
-			// Move and render if after correct number of frames based on distance to target row
-			if ((frame % dynamic_delay) == 0)
-			{
-				EraseCreditLine_(current_row[i]);
-				current_row[i]--;
-
-				TerminalPrintString(credits[i].text, credits[i].col, current_row[i]);
-			}
+			target = (i == (CREDITS_COUNT - 1)) ? TITLE_TARGET : -1;
+		} else
+		{
+			target = (int32_t)credits[i].target_row;
 		}
-	}
-}
-
-static void SlideOut_(uint32_t frame)
-{
-	for (int i = 0; i < CREDITS_COUNT; i++)
-	{
-		// Skip updating this line until its staggered start time has been reached
-		const uint32_t starting_frame = i * STAGGER_DELAY;
-		if (frame < starting_frame)
-			continue;
 
 		// Calculate the distance from the current row to the target row for this credit line
-		int32_t distance = (i == (CREDITS_COUNT - 1)) ? (current_row[i] - TITLE_TARGET) : current_row[i] - 0;
-
+		int32_t distance = current_row[i] - target;
 		if (distance > 0)
 		{
 			// Delaying animation by distance to target row
-			uint8_t dynamic_delay = 2 + (STAGGER_DELAY / (distance + 1));
+			uint8_t dynamic_delay = (is_sliding_out == TRUE) ? 2 : (2 + (STAGGER_DELAY / (distance + 1)));
 
 			// Move and render if after correct number of frames based on distance to target row
 			if ((frame % dynamic_delay) == 0)
@@ -218,32 +199,26 @@ void SceneCreditsInit(void)
 
 /**
  * @fn void SceneCreditsRender(uint32_t scene_frame)
- * @brief
+ * @brief Scene management loop, dividing the scene into distinct phases:
+ * 1. Slide-in (staggered entry)
+ * 2. Hold (static display)
+ * 3. Slide-out (transition to next scene/title lock)
  * @param scene_frame The current frame index provided by the scene manager.
  */
 void SceneCreditsRender(uint32_t scene_frame)
 {
+	// During the slide-in phase, animate lines sliding up from the bottom with staggered delays
 	if (scene_frame < SLIDE_IN_END)
 	{
-		DrawCredits_(scene_frame);
+		DrawCredits_(scene_frame, FALSE);
 		return;
 	}
 
+	// Hold phase, keeping the credits static on the screen without changes for reading
 	if (scene_frame < HOLD_END)
 		return;
 
-	if (scene_frame < HOLD_END)
-	{
-		for (int i = 0; i < CREDITS_COUNT; i++)
-		{
-			current_row[i] = (int16_t)credits[i].target_row;
-		}
-		return;
-	}
-
-	if (scene_frame < SLIDE_OUT_END)
-	{
-		SlideOut_(scene_frame);
-		return;
-	}
+	// During the slide-out phase, animate lines sliding up and off the screen
+	// except for the footer which locks to the centre
+	DrawCredits_(scene_frame, TRUE);
 }
