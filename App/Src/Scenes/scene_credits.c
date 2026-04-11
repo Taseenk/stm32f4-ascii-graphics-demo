@@ -26,6 +26,12 @@
 #define CREDITS_COUNT (sizeof(credits) / sizeof(credits[0])) // Count of the credits array
 #define STAGGER_DELAY 15                                     // Frame delay between credit lines
 
+// Scene timing defines (in frames)
+#define SLIDE_IN_END  250                   // frames for all lines to slide in and settle
+#define HOLD_END      270                   // frames to hold static after settling
+#define SLIDE_OUT_END 340                   // frames for all lines except footer to slide out
+#define TITLE_TARGET  (TERMINAL_HEIGHT / 2) // centre row for the footer title
+
 /* Private Variables ---------------------------------------------------------*/
 
 /**
@@ -146,7 +152,36 @@ static void DrawCredits_(uint32_t frame)
 		int32_t distance = current_row[i] - (int32_t)credits[i].target_row;
 		if (distance > 0)
 		{
-			// Ease in, delaying animation by distance to target row
+			// Delaying animation by distance to target row
+			uint8_t dynamic_delay = 2 + (STAGGER_DELAY / (distance + 1));
+
+			// Move and render if after correct number of frames based on distance to target row
+			if ((frame % dynamic_delay) == 0)
+			{
+				EraseCreditLine_(current_row[i]);
+				current_row[i]--;
+
+				TerminalPrintString(credits[i].text, credits[i].col, current_row[i]);
+			}
+		}
+	}
+}
+
+static void SlideOut_(uint32_t frame)
+{
+	for (int i = 0; i < CREDITS_COUNT; i++)
+	{
+		// Skip updating this line until its staggered start time has been reached
+		const uint32_t starting_frame = i * STAGGER_DELAY;
+		if (frame < starting_frame)
+			continue;
+
+		// Calculate the distance from the current row to the target row for this credit line
+		int32_t distance = (i == (CREDITS_COUNT - 1)) ? (current_row[i] - TITLE_TARGET) : current_row[i] - 0;
+
+		if (distance > 0)
+		{
+			// Delaying animation by distance to target row
 			uint8_t dynamic_delay = 2 + (STAGGER_DELAY / (distance + 1));
 
 			// Move and render if after correct number of frames based on distance to target row
@@ -188,5 +223,27 @@ void SceneCreditsInit(void)
  */
 void SceneCreditsRender(uint32_t scene_frame)
 {
-	DrawCredits_(scene_frame);
+	if (scene_frame < SLIDE_IN_END)
+	{
+		DrawCredits_(scene_frame);
+		return;
+	}
+
+	if (scene_frame < HOLD_END)
+		return;
+
+	if (scene_frame < HOLD_END)
+	{
+		for (int i = 0; i < CREDITS_COUNT; i++)
+		{
+			current_row[i] = (int16_t)credits[i].target_row;
+		}
+		return;
+	}
+
+	if (scene_frame < SLIDE_OUT_END)
+	{
+		SlideOut_(scene_frame);
+		return;
+	}
 }
