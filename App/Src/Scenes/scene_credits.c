@@ -114,6 +114,10 @@ static void DrawCredits_(uint32_t frame, uint8_t is_sliding_out);
  */
 static void EraseCreditLine_(uint8_t row)
 {
+	// Check the maximum screen bounds
+	if (row < 1 || row > TERMINAL_HEIGHT)
+		return;
+
 	// Buffer to hold the ANSI escape sequence for erasing a line e.g. ESC[12;1H\x1b[2K
 	char buffer[24];
 
@@ -168,10 +172,15 @@ static void DrawCredits_(uint32_t frame, uint8_t is_sliding_out)
 			// Move and render if after correct number of frames based on distance to target row
 			if ((frame % dynamic_delay) == 0)
 			{
-				EraseCreditLine_(current_row[i]);
+				// Only erase if the row is actually on the screen
+				if (current_row[i] >= 1 && current_row[i] <= TERMINAL_HEIGHT)
+					EraseCreditLine_(current_row[i]);
+
 				current_row[i]--;
 
-				TerminalPrintString(credits[i].text, credits[i].col, current_row[i]);
+				// Only print if the new position is actually on the screen
+				if (current_row[i] >= 1 && current_row[i] <= TERMINAL_HEIGHT)
+					TerminalPrintString(credits[i].text, credits[i].col, current_row[i]);
 			}
 		}
 	}
