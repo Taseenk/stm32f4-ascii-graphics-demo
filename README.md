@@ -23,6 +23,14 @@ This project aims to use a standard serial terminal as a visual canvas. Running 
 - **Hardware RNG** — true random seed from the STM32F407 TRNG, extended per-frame with Xorshift
 - **Interactive dashboard** — boot menu with blinking selection and FPS display
 
+## Code Quality & Security
+
+The codebase is maintained using automated linting and formatting tools to ensure consistency and catch common embedded C pitfalls:
+
+- **Static Analysis:** Deep analysis via **Clang-Tidy** using `bugprone-*`, `portability-*`, and `clang-analyzer-*` checks. Logic and bugprone checks are enforced as **WarningsAsErrors**.
+- **Code Formatting:** Consistent style and layout enforced via **Clang-Format** using a customized Microsoft-based configuration.
+- **Exclusion Rules:** Peripheral drivers and auto-generated HAL code are excluded from analysis to focus on the integrity of the application and scene logic.
+
 ## Getting Started
 
 ### Prerequisites
@@ -55,9 +63,9 @@ This project aims to use a standard serial terminal as a visual canvas. Running 
 
 ## Documentation
 
-Full documentation — tutorials, how-to guides, module reference, and architecture diagrams — is hosted at:
+Detailed technical reference, architecture deep-dives, and tutorials are available in the project documentation:
 
-> **[docs link — TODO](#)**
+> [Read the Documentation](https://taseenk.github.io/stm32f4-ascii-graphics-demo/)
 
 ## License
 
