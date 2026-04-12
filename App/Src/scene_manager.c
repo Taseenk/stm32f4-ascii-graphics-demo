@@ -31,6 +31,7 @@
 #define GLITCH_NOISE_DURATION      150
 #define MATRIX_RAIN_DURATION       350
 #define RAIN_FADE_IN_DURATION      300
+#define CREDITS_DURATION           1000
 
 /* Private Variables ---------------------------------------------------------*/
 // Table with configurations for all scenes
@@ -51,7 +52,7 @@ static const SceneConfig_t scene_table[] = {
 
     {SCENE_RAIN_FADE_IN, RAIN_FADE_IN_DURATION, SCENE_TRANSITION_NONE, MatrixRainInit, AsciiRainFadeIn},
 
-    {SCENE_CREDITS, 500, SCENE_TRANSITION_CLEAR, SceneCreditsInit, SceneCreditsRender},
+    {SCENE_CREDITS, CREDITS_DURATION, SCENE_TRANSITION_CLEAR, SceneCreditsInit, SceneCreditsRender},
 };
 const uint8_t scene_table_count = sizeof(scene_table) / sizeof(scene_table[0]);
 
