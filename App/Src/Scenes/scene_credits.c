@@ -158,7 +158,7 @@ static void DrawCredits_(uint32_t frame, uint8_t is_sliding_out)
 		int32_t target;
 		if (is_sliding_out == TRUE)
 		{
-			target = (i == (CREDITS_COUNT - 1)) ? TITLE_TARGET : -1;
+			target = (credits[i].target_row == LINE_FOOTER) ? TITLE_TARGET : -1;
 		} else
 		{
 			target = (int32_t)credits[i].target_row;
