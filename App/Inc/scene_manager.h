@@ -24,6 +24,7 @@
 typedef enum {
 	SCENE_ATTRIBUTES_DEMO,   // VT100 attribute torture test showcasing all text attributes and combinations
 	SCENE_SMPTE_CALIBRATION, // SMPTE colour bar calibration pattern
+	SCENE_XTERM_256,         // Display of all 256 xterm colours in a grid pattern
 
 	SCENE_RADIAL_GREYSCALE, // Radial gradient pattern using greyscale characters and colours
 	SCENE_RADIAL_COLOUR,    // Radial gradient pattern using extended colour range without character shading for a block

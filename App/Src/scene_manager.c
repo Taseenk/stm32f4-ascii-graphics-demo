@@ -19,6 +19,7 @@
 #include "scene_credits.h"
 #include "scene_glitch.h"
 #include "scene_matrix_rain.h"
+#include "scene_xterm_palette.h"
 
 // STM32 libraries
 #include "main.h"
@@ -37,9 +38,10 @@
 // Table with configurations for all scenes
 static const SceneConfig_t scene_table[] = {
     {SCENE_ATTRIBUTES_DEMO, ATTRIBUTES_DURATION, SCENE_TRANSITION_CLEAR, SceneAttributesInit, SceneAttributesRender},
-
     {SCENE_SMPTE_CALIBRATION, SMPTE_CALIBRATION_DURATION, SCENE_TRANSITION_CLEAR, ColourDemoInit,
      SmpteCalibrationRender},
+    {SCENE_XTERM_256, 200, SCENE_TRANSITION_CLEAR, SceneXtermPaletteInit, SceneXtermPaletteRender},
+
     {SCENE_RADIAL_GREYSCALE, RADIAL_COLOUR_DURATION, SCENE_TRANSITION_CLEAR, ColourDemoInit, RadialGreyscaleRender},
     {SCENE_RADIAL_COLOUR, RADIAL_COLOUR_DURATION, SCENE_TRANSITION_CLEAR, ColourDemoInit, RadialColourRender},
 
