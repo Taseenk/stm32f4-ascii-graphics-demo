@@ -99,6 +99,9 @@ static const CreditLine_t credits[] = {
 };
 static int16_t current_row[CREDITS_COUNT] = {0}; // Tracks the current row position for each line at any given moment
 
+// Tracks the next frame where each line should update its position during the animation
+static uint32_t next_update_frame[CREDITS_COUNT] = {0};
+
 /* Private Function Prototypes -----------------------------------------------*/
 static void EraseCreditLine_(uint8_t row);
 static void DrawCredits_(uint32_t frame, uint8_t is_sliding_out);
@@ -147,9 +150,8 @@ static void DrawCredits_(uint32_t frame, uint8_t is_sliding_out)
 	// Calculate new positions and clear old artifacts
 	for (int i = 0; i < CREDITS_COUNT; i++)
 	{
-		// Skip updating this line until its staggered start time has been reached
-		const uint32_t starting_frame = i * STAGGER_DELAY;
-		if (frame < starting_frame)
+		// If this line is not scheduled to update yet, skip it for this frame
+		if (frame < next_update_frame[i])
 			continue;
 
 		// Determine the target row for this line based on whether to slide out of the screen completely or not
@@ -169,8 +171,8 @@ static void DrawCredits_(uint32_t frame, uint8_t is_sliding_out)
 			// Delaying animation by distance to target row
 			uint8_t dynamic_delay = (is_sliding_out == TRUE) ? 2 : (2 + (STAGGER_DELAY / (distance + 1)));
 
-			// Move and render if after correct number of frames based on distance to target row
-			if ((frame % dynamic_delay) == 0)
+			// Check if it's time to update this line's position
+			if (frame >= next_update_frame[i])
 			{
 				// Only erase if the row is actually on the screen
 				if (current_row[i] >= 1 && current_row[i] <= TERMINAL_HEIGHT)
@@ -181,6 +183,9 @@ static void DrawCredits_(uint32_t frame, uint8_t is_sliding_out)
 				// Only print if the new position is actually on the screen
 				if (current_row[i] >= 1 && current_row[i] <= TERMINAL_HEIGHT)
 					TerminalPrintString(credits[i].text, credits[i].col, current_row[i]);
+
+				// Set the next update frame for this line based on the dynamic delay
+				next_update_frame[i] = frame + dynamic_delay;
 			}
 		}
 	}
@@ -203,6 +208,7 @@ void SceneCreditsInit(void)
 	for (int i = 0; i < CREDITS_COUNT; i++)
 	{
 		current_row[i] = TERMINAL_HEIGHT + 1;
+		next_update_frame[i] = STAGGER_DELAY * (uint16_t)i;
 	}
 }
 
