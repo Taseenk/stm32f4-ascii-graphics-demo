@@ -4,6 +4,7 @@ on:
     branches: [ "master", "develop" ]
     paths:
       - "Docs/**"
+      - "!Docs/LikeC4/**"
       - "mkdocs.yml"
   workflow_dispatch:
 

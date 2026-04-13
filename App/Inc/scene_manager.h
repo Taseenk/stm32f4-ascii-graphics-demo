@@ -40,6 +40,8 @@ typedef enum {
 
 	SCENE_RAIN_FADE_IN, // Transitional scene to Matrix falling rain effect
 
+	SCENE_CREDITS, // Rolling credits scene with text crawling from the bottom to the top of the screen
+
 	SCENE_TOTAL_SCENES // Total number of available scenes
 } SceneID_t;
 

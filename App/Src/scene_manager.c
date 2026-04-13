@@ -16,6 +16,7 @@
 
 #include "scene_attributes_demo.h"
 #include "scene_colour_demo.h"
+#include "scene_credits.h"
 #include "scene_glitch.h"
 #include "scene_matrix_rain.h"
 
@@ -30,6 +31,7 @@
 #define GLITCH_NOISE_DURATION      150
 #define MATRIX_RAIN_DURATION       350
 #define RAIN_FADE_IN_DURATION      300
+#define CREDITS_DURATION           1000
 
 /* Private Variables ---------------------------------------------------------*/
 // Table with configurations for all scenes
@@ -49,13 +51,15 @@ static const SceneConfig_t scene_table[] = {
     {SCENE_MATRIX_RAIN_HACKED, MATRIX_RAIN_DURATION, SCENE_TRANSITION_CLEAR, MatrixRainInit, AsciiRainHackedRender},
 
     {SCENE_RAIN_FADE_IN, RAIN_FADE_IN_DURATION, SCENE_TRANSITION_NONE, MatrixRainInit, AsciiRainFadeIn},
+
+    {SCENE_CREDITS, CREDITS_DURATION, SCENE_TRANSITION_CLEAR, SceneCreditsInit, SceneCreditsRender},
 };
 const uint8_t scene_table_count = sizeof(scene_table) / sizeof(scene_table[0]);
 
 // Playlist of scenes to cycle through in playlist mode and total count of scenes in the playlist
 static const SceneID_t scene_playlist[] = {
     SCENE_ATTRIBUTES_DEMO, SCENE_SMPTE_CALIBRATION, SCENE_RADIAL_GREYSCALE,   SCENE_ASCII_GLITCH_NOISE,
-    SCENE_RAIN_FADE_IN,    SCENE_ASCII_MATRIX_RAIN, SCENE_MATRIX_RAIN_HACKED,
+    SCENE_RAIN_FADE_IN,    SCENE_ASCII_MATRIX_RAIN, SCENE_MATRIX_RAIN_HACKED, SCENE_CREDITS,
 };
 const uint8_t scene_playlist_count = sizeof(scene_playlist) / sizeof(scene_playlist[0]);
 
