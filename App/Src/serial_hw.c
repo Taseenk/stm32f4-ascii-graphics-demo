@@ -26,6 +26,7 @@
 // Structure to hold UART status flags such as transmission complete
 typedef struct {
 	volatile uint8_t tx_complete; // Flag to indicate if the UART transmission has completed
+	volatile uint8_t error;       // Flag to indicate if there was an error during UART transmission
 } UART_Flags_t;
 
 static UART_Flags_t uart_flags = {0}; // Holds the status flags for UART operations
@@ -143,8 +144,9 @@ uint8_t SerialTransmitDMA(const char *str, uint16_t len)
 	if (p_uart->gState != HAL_UART_STATE_READY)
 		return FALSE;
 
-	// Clear the Tx complete flag before starting a new DMA transmission
+	// Clear the Tx complete and error flag before starting a new DMA transmission
 	uart_flags.tx_complete = FALSE;
+	uart_flags.error = FALSE;
 
 	// Start the DMA transmission and return the status of the UART DMA transmit
 	HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(p_uart, (uint8_t *)str, len);
@@ -177,6 +179,7 @@ void SerialReceiveInit(void)
 
 	// Reset UART flags before starting
 	uart_flags.tx_complete = FALSE;
+	uart_flags.error = FALSE;
 
 	// Stop any ongoing DMA reception before starting a new one
 	HAL_UART_DMAStop(p_uart);
@@ -290,5 +293,22 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	{
 		// Set the Tx complete flag to indicate that the transmission has completed
 		uart_flags.tx_complete = TRUE;
+	}
+}
+
+/**
+ * @fn void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+ * @brief UART error callback function that is called by the HAL library when a UART error occurs.
+ * This function checks if the error occurred on the UART handle used for serial communication
+ * and sets the error flag accordingly.
+ * @param huart Pointer to the UART handle that triggered the error callback.
+ */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	// Check if the callback is for the UART handle used for serial communication
+	if (huart == p_uart)
+	{
+		// Set the error flag to indicate that there was an error during UART transmission
+		uart_flags.error = TRUE;
 	}
 }
