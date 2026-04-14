@@ -89,10 +89,11 @@ static void DrawColourCube_(void)
 		uint8_t band_idx = green / 2;
 		uint16_t starting_row = COLOUR_START_ROW + ((COLOUR_HEIGHT + COLOUR_VERTICAL_GAP) * band_idx);
 
-		// odd green levels start in the second column and use black text for better contrast
-		// even levels start in the first column with default text colour
+		// Toggle column based on green parity to create a two-column grid layout
 		uint16_t starting_col = ((green % 2) == 0) ? START_COL : COLOUR_2ND_COL;
-		ForegroundColour_t fg_colour = ((green >= 2) == 0) ? FG_BLACK : FG_DEFAULT;
+
+		// Adjust contrast based on green intensity for better readability
+		ForegroundColour_t fg_colour = ((green < 2) == 0) ? FG_DEFAULT : FG_BLACK;
 
 		// Iterate through red and blue components to fill out the 6x6 grid for this green level
 		for (uint16_t red = 0; red < COLOUR_HEIGHT; red++)
