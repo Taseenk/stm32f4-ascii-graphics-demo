@@ -71,5 +71,6 @@ Detailed technical reference, architecture deep-dives, and tutorials are availab
 
 ## Acknowledgements & Inspiration
 
-- [ASCII AA Project BB Demo](https://youtu.be/FLlDt_4EGX4?si=c_ntV8wBtghTJN6d): Main Inspiration for the project
-- [VT100 ASCII Animation: TortureTest](https://youtu.be/4ZeDudfzAs0?si=S6oy03UdSebeTyBo): Inspiration for Attributes demo scene
+- [ASCII AA Project BB Demo youtube video](https://youtu.be/FLlDt_4EGX4?si=c_ntV8wBtghTJN6d): Main Inspiration for the project
+- [VT100 ASCII Animation TortureTest youtube video](https://youtu.be/4ZeDudfzAs0?si=S6oy03UdSebeTyBo): Inspiration for Attributes demo scene
+- [ANSI Code Generator repository](https://github.com/fidian/ansi) Inspiration for the xterm palette scene.
