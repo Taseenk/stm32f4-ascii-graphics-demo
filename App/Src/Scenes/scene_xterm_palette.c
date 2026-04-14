@@ -93,7 +93,7 @@ static void DrawColourCube_(void)
 		uint16_t starting_col = ((green % 2) == 0) ? START_COL : COLOUR_2ND_COL;
 
 		// Adjust contrast based on green intensity for better readability
-		ForegroundColour_t fg_colour = ((green < 2) == 0) ? FG_DEFAULT : FG_BLACK;
+		ForegroundColour_t fg_colour = ((green < 2) == 0) ? FG_BLACK : FG_DEFAULT;
 
 		// Iterate through red and blue components to fill out the 6x6 grid for this green level
 		for (uint16_t red = 0; red < COLOUR_HEIGHT; red++)
