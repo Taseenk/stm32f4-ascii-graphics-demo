@@ -23,6 +23,14 @@
 #define BACKSPACE       '\b'   // Backspace character for handling user input corrections
 
 /* Private Variables ---------------------------------------------------------*/
+// Structure to hold UART status flags such as transmission complete
+typedef struct {
+	volatile uint8_t tx_complete; // Flag to indicate if the UART transmission has completed
+} UART_Flags_t;
+
+static UART_Flags_t uart_flags = {0}; // Holds the status flags for UART operations
+
+// Structure to hold the received message and its length
 typedef struct {
 	volatile char buffer[UART_BUFFER_SIZE]; // Circular buffer to store incoming UART data via DMA
 	uint8_t read_index;                     // Read/Start position in the RxBuffer
@@ -33,7 +41,7 @@ extern UART_HandleTypeDef huart2;            // UART handle defined in usart
 static UART_HandleTypeDef *p_uart = &huart2; // Private pointer to the UART handle used for serial I/O
 Rx_Message_t rx_message;                     // Global structure to hold the incoming message
 
-/* Functions -----------------------------------------------------------------*/
+/* Public Functions ----------------------------------------------------------*/
 /**
  * @fn  uint8_t SerialPrintN(const char *str, uint16_t len)
  * @brief Prints a string of a specified length using the UART handle, avoiding strlen.
@@ -135,8 +143,10 @@ uint8_t SerialTransmitDMA(const char *str, uint16_t len)
 	if (p_uart->gState != HAL_UART_STATE_READY)
 		return FALSE;
 
-	// Start the DMA transmission
-	// Will return the status of the UART DMA transmit
+	// Clear the Tx complete flag before starting a new DMA transmission
+	uart_flags.tx_complete = FALSE;
+
+	// Start the DMA transmission and return the status of the UART DMA transmit
 	HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(p_uart, (uint8_t *)str, len);
 
 	// Check if the DMA started correctly
@@ -164,6 +174,9 @@ void SerialReceiveInit(void)
 
 	// Reset structures before starting
 	s_uart_rx.read_index = 0;
+
+	// Reset UART flags before starting
+	uart_flags.tx_complete = FALSE;
 
 	// Stop any ongoing DMA reception before starting a new one
 	HAL_UART_DMAStop(p_uart);
@@ -260,5 +273,22 @@ void SerialProcessData(void)
 		// Increment the message length and store the character in the message buffer
 		// If it no delimiter found, copy the character into the new buffer
 		rx_message.message[message_length++] = (char)s_uart_rx.buffer[buffer_index];
+	}
+}
+
+/**
+ * @fn void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+ * @brief UART transmission complete callback function that is called by the HAL library when a UART transmission
+ * completes. This function checks if the transmission completed on the UART handle used for serial communication and
+ * sets the Tx complete flag accordingly.
+ * @param huart Pointer to the UART handle that triggered the transmission complete callback.
+ */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+	// Check if the callback is for the UART handle used for serial communication
+	if (huart == p_uart)
+	{
+		// Set the Tx complete flag to indicate that the transmission has completed
+		uart_flags.tx_complete = TRUE;
 	}
 }
