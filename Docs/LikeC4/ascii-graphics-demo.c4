@@ -63,6 +63,9 @@ model {
                 scene_credits_module = component "scene_credits.c/h" {
                     description "Implements a movie-style vertical credit crawl with staggered line entry and dynamic ANSI-based line erasure."
                 }
+                scene_xterm_palette_module = component "scene_xterm_palette.c/h" {
+                    description "Renders a static xterm-256 colour palette test card. Displays the full 216-colour 6x6x6 RGB cube in three paired bands and the 24-step grayscale ramp, each cell labelled with its colour index."
+                }
             }
 
             // --- Utilities ---
@@ -144,6 +147,7 @@ model {
     scene_manager_module -> scene_glitch_module "Initialises and renders the glitch scene each frame"
     scene_manager_module -> scene_matrix_rain_module "Initialises and renders matrix rain scene variants each frame"
     scene_manager_module -> scene_credits_module "Initialises and renders the scrolling credits scene each frame"
+    scene_manager_module -> scene_xterm_palette_module "Initialises the palette test card once and holds the static frame"
 
     // Scene manager exit — returns to user input mode when all scenes complete
     scene_manager_module -> shell_module "Re-initialises the shell and prompt when all scenes in the sequence have finished"
