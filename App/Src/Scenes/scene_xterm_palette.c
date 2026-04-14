@@ -64,7 +64,7 @@ static void DrawColouredCell_(uint16_t colour, uint16_t col, uint16_t row, Foreg
 	char text_buffer[TEXT_COLOUR_SIZE];
 
 	// Convert the colour code to a string
-	int len = snprintf(text_buffer, sizeof(text_buffer), " %3u ", (colour - EXTENDED_COLOURS_OFFSET));
+	int len = snprintf(text_buffer, sizeof(text_buffer), " %3u ", (unsigned int)(colour - EXTENDED_COLOURS_OFFSET));
 
 	// Check if sprintf failed (len < 0) or if the formatted string exceeded the terminal size
 	if (len <= 0 || (size_t)len >= sizeof(text_buffer))
