@@ -161,4 +161,5 @@ void SceneXtermPaletteInit(void)
 
 void SceneXtermPaletteRender(uint32_t scene_frame)
 {
+	(void)scene_frame; // Static scene, no per-frame updates
 }
