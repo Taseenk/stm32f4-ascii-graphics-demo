@@ -43,14 +43,14 @@
 #define GRAY_BASE_COLOUR 232 // The starting index for grayscale in the xterm-256 palette
 
 /* Private Function Prototypes -----------------------------------------------*/
-static void DrawColouredCell(uint16_t colour, uint16_t col, uint16_t row, ForegroundColour_t fg);
+static void DrawColouredCell_(uint16_t colour, uint16_t col, uint16_t row, ForegroundColour_t fg);
 
 static void DrawColourCube_(void);
 static void DrawGrayScaleRamp_(void);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
- * @fn static void DrawColouredCell(uint16_t colour, uint16_t col, uint16_t row, ForegroundColour_t fg_colour)
+ * @fn static void DrawColouredCell_(uint16_t colour, uint16_t col, uint16_t row, ForegroundColour_t fg_colour)
  * @brief Renders a single cell in the colour cube or grayscale ramp with the specified background colour and
  * foreground colour for the text label.
  * @param colour The xterm-256 colour code to use for the background of the cell
@@ -58,7 +58,7 @@ static void DrawGrayScaleRamp_(void);
  * @param row The row position to print the cell (1-based index)
  * @param fg_colour The foreground colour to use for the text label within the cell
  */
-static void DrawColouredCell(uint16_t colour, uint16_t col, uint16_t row, ForegroundColour_t fg_colour)
+static void DrawColouredCell_(uint16_t colour, uint16_t col, uint16_t row, ForegroundColour_t fg_colour)
 {
 	// Format the colour code label to display within the cell
 	char text_buffer[TEXT_COLOUR_SIZE];
@@ -106,7 +106,7 @@ static void DrawColourCube_(void)
 				    EXTENDED_COLOURS_OFFSET + COLOUR_BASE_COLOUR + (red * RED_STEP) + (green * GREEN_STEP) + blue;
 
 				// Draw the coloured cell with the appropriate foreground colour
-				DrawColouredCell(colour, col, row, fg_colour);
+				DrawColouredCell_(colour, col, row, fg_colour);
 			}
 		}
 	}
@@ -142,7 +142,7 @@ static void DrawGrayScaleRamp_(void)
 			uint16_t colour = base_colour + scale_ramp + EXTENDED_COLOURS_OFFSET;
 
 			// Draw the coloured cell with the appropriate foreground colour
-			DrawColouredCell(colour, col, row, fg_colour);
+			DrawColouredCell_(colour, col, row, fg_colour);
 		}
 	}
 }
