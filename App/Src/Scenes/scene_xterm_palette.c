@@ -134,7 +134,7 @@ static void DrawGrayScaleRamp_(void)
 		uint16_t base_colour = GRAY_BASE_COLOUR + (GRAY_PER_ROW * row_idx);
 		ForegroundColour_t fg_colour = (row_idx == 1) ? FG_BLACK : FG_DEFAULT;
 
-		// Iterare through the shades for this row
+		// Iterate through the shades for this row
 		for (uint16_t scale_ramp = 0; scale_ramp < GRAY_PER_ROW; scale_ramp++)
 		{
 			// Calculate the column position and actual colour code for this shade
