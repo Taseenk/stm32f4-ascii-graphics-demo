@@ -35,8 +35,8 @@
 
 /* Private Variables ---------------------------------------------------------*/
 // Internal framebuffer arrays for double buffering
-static uint8_t framebuffer_a[TERMINAL_BUFFER_SIZE];
-static uint8_t framebuffer_b[TERMINAL_BUFFER_SIZE];
+static uint8_t framebuffer_a[TERMINAL_FULL_BUFFER_SIZE];
+static uint8_t framebuffer_b[TERMINAL_FULL_BUFFER_SIZE];
 
 // Pointers to the front and back buffers for double buffering
 static uint8_t *back_buffer = framebuffer_a;  // Used for drawing before flushing to the terminal
@@ -46,6 +46,7 @@ static uint8_t *front_buffer = framebuffer_b; // Represents the current state of
 static void NormalizeCoordinates_(uint16_t *col, uint16_t *row);
 static uint8_t IsValidPos_(uint16_t col, uint16_t row);
 static int BuildColourSequence_(char *buffer, size_t buf_size, uint16_t colour, uint8_t is_fg);
+static void InitFrameBuffers_(void);
 static void SwapBuffers_(void);
 static void DrawChar_(char c, uint16_t col, uint16_t row);
 static void DrawLineHorizontal_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
@@ -85,6 +86,27 @@ static uint8_t IsValidPos_(uint16_t col, uint16_t row)
 
 	// Return position is valid
 	return TRUE;
+}
+
+/**
+ * @fn static void InitFrameBuffers_(void)
+ * @brief Internal function to initialize the terminal framebuffers.
+ * This function fills both framebuffer arrays with the ANSI cursor home sequence
+ * at the start, ensuring that the terminal starts with a known state when the
+ * first flush occurs. The rest of the buffer is left uninitialized as it will
+ * be overwritten by drawing operations before being sent to the terminal.
+ */
+static void InitFrameBuffers_(void)
+{
+	// Fill both entire buffers with spaces first
+	memset(framebuffer_a, ' ', TERMINAL_FULL_BUFFER_SIZE);
+	memset(framebuffer_b, ' ', TERMINAL_FULL_BUFFER_SIZE);
+
+	// Copy the 3 bytes into the start of both buffers
+	// NOLINTNEXTLINE(bugprone-not-null-terminated-result)
+	memcpy(framebuffer_a, ANSI_CURSOR_HOME, HOME_SEQUENCE_TEXT_LEN);
+	// NOLINTNEXTLINE(bugprone-not-null-terminated-result)
+	memcpy(framebuffer_b, ANSI_CURSOR_HOME, HOME_SEQUENCE_TEXT_LEN);
 }
 
 /**
@@ -156,7 +178,7 @@ static void DrawChar_(char c, uint16_t col, uint16_t row)
 		return;
 
 	// Calculate the 1D array index for the 2D back buffer
-	uint32_t index = ((row - 1) * TERMINAL_WIDTH) + (col - 1);
+	uint32_t index = HOME_SEQUENCE_TEXT_LEN + ((row - 1) * TERMINAL_WIDTH) + (col - 1);
 
 	// Store the character in the back buffer
 	back_buffer[index] = c;
@@ -332,6 +354,9 @@ void TerminalInit(uint8_t cursor, uint16_t col, uint16_t row)
 
 	// Clear and home the terminal display
 	TerminalClearAndHome();
+
+	// Initialize the framebuffers
+	InitFrameBuffers_();
 
 	// Clear the internal framebuffer
 	TerminalBufferClear();
@@ -695,9 +720,8 @@ void TerminalBufferFlush(void)
 	// Swap the front and back buffers
 	SwapBuffers_();
 
-	// Move the cursor home and send the entire front buffer via DMA
-	TerminalCursorHome();
-	SerialTransmitDMA((const char *)front_buffer, TERMINAL_BUFFER_SIZE);
+	// Send the entire front buffer via DMA
+	SerialTransmitDMA((const char *)front_buffer, TERMINAL_FULL_BUFFER_SIZE);
 
 	// Clear the back buffer for the next frame of drawing operations
 	TerminalBufferClear();
@@ -710,8 +734,8 @@ void TerminalBufferFlush(void)
  */
 void TerminalBufferClear(void)
 {
-	// Fill the entire back buffer with space characters
-	memset(back_buffer, ' ', TERMINAL_BUFFER_SIZE);
+	// Fill the entire back buffer with space characters, skipping the initial home sequence bytes
+	memset(back_buffer + HOME_SEQUENCE_TEXT_LEN, ' ', TERMINAL_BUFFER_SIZE);
 }
 
 /**

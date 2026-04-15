@@ -19,19 +19,22 @@
 
 /* Defines -------------------------------------------------------------------*/
 // Screen Dimensions
-#define TERMINAL_WIDTH          80 // Width of the terminal in characters
-#define TERMINAL_HEIGHT         24 // Height of the terminal in characters
-#define TERMINAL_STARTING_POS   1  // Starting position for cursor (1,1) in 1-based coordinates
-#define TERMINAL_BUFFER_SIZE    (TERMINAL_WIDTH * TERMINAL_HEIGHT) // Total size of the terminal buffer
-#define EXTENDED_COLOURS_OFFSET 256                                // Offset number of extended ANSI colours supported
+#define TERMINAL_WIDTH        80 // Width of the terminal in characters
+#define TERMINAL_HEIGHT       24 // Height of the terminal in characters
+#define TERMINAL_STARTING_POS 1  // Starting position for cursor (1,1) in 1-based coordinates
+#define TERMINAL_BUFFER_SIZE  (TERMINAL_WIDTH * TERMINAL_HEIGHT) // Total size of the terminal buffer
+#define TERMINAL_FULL_BUFFER_SIZE                                                                                      \
+	(TERMINAL_BUFFER_SIZE + HOME_SEQUENCE_TEXT_LEN) // Size of the buffer including the cursor home sequence
+#define EXTENDED_COLOURS_OFFSET 256                 // Offset number of extended ANSI colours supported
 
 // Escape Sequence Base
 #define ANSI_ESC "\x1b[" // The standard ANSI Escape sequence initiator
 
 // Cursor Control
-#define ANSI_CURSOR_HOME      ANSI_ESC "H"    // Move cursor to home (1,1): ESC [ H
-#define ANSI_CURSOR_INVISIBLE ANSI_ESC "?25l" // Hide the cursor: ESC [ ? 25 l
-#define ANSI_CURSOR_VISIBLE   ANSI_ESC "?25h" // Show the cursor: ESC [ ? 25 h
+#define HOME_SEQUENCE_TEXT_LEN 3               // Length of "ESC[H" without the string terminator
+#define ANSI_CURSOR_HOME       ANSI_ESC "H"    // Move cursor to home (1,1): ESC [ H
+#define ANSI_CURSOR_INVISIBLE  ANSI_ESC "?25l" // Hide the cursor: ESC [ ? 25 l
+#define ANSI_CURSOR_VISIBLE    ANSI_ESC "?25h" // Show the cursor: ESC [ ? 25 h
 
 // Screen Control
 #define ANSI_CLEAR_SCREEN ANSI_ESC "2J" // Clear the entire screen: ESC [ 2 J
