@@ -312,3 +312,14 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 		uart_flags.error = TRUE;
 	}
 }
+
+/**
+ * @fn uint8_t SerialHasError(void)
+ * @brief Checks if there was an error during UART transmission by returning the state of the error flag.
+ * @return TRUE if error exists, FALSE otherwise.
+ */
+uint8_t SerialHasError(void)
+{
+	// Return the current state of the error flag
+	return uart_flags.error;
+}
