@@ -16,7 +16,7 @@ model {
             description "Responsible for the final formatting of data for the user. It handles the specific 'look' of the terminal and the protocols required to display the characters."
 
             terminal_module = component "terminal.c/h" {
-                description "Implements ANSI/VT100 control sequences for screen management, cursor positioning, colour control, and graphics primitives (lines, rectangles, circles)."
+                description "Hybrid display manager supporting direct-to-UART streaming or double-buffered frame rendering. Implements ANSI/VT100 control sequences for screen management, cursor positioning, colour control, and graphics primitives (lines, rectangles, circles)."
             }
             serial_hw_module = component "serial_hw.c/h" {
                 description "Bridges graphics logic and the UART hardware. Provides blocking transmit, DMA-backed non-blocking transmit, and circular DMA Rx reception with command extraction."
