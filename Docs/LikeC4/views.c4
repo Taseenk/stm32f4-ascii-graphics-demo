@@ -188,17 +188,6 @@ views 'Sequences' {
         autoLayout LeftRight
     }
 
-    dynamic view uartTxFlowView {
-        title "Scene Render to Terminal"
-        firmware.hardware_layer.main_module -> firmware.application_layer.scene_manager_module "Drives the scene each frame"
-        firmware.application_layer.scene_manager_module -> firmware.application_layer.scene_matrix_rain_module "Delegates render to the active scene"
-        firmware.application_layer.scene_matrix_rain_module -> firmware.presentation_layer.terminal_module "Sends character and position to the terminal layer"
-        firmware.presentation_layer.terminal_module -> firmware.presentation_layer.serial_hw_module "Passes formatted display data for transmission"
-        firmware.presentation_layer.serial_hw_module -> firmware.hardware_layer.hal_library.hal_uart "Hands off byte stream to the UART driver"
-        firmware.hardware_layer.hal_library.hal_uart -> terminal_system.terminal "Transmits bytes over the serial link"
-        autoLayout LeftRight
-    }
-
     dynamic view rxCommandFlowView {
         title "User Input to System Mode"
         terminal_system.terminal -> firmware.hardware_layer.hal_library.hal_uart "User types a command in the terminal"
@@ -207,6 +196,38 @@ views 'Sequences' {
         firmware.application_layer.shell_module -> firmware.application_layer.scene_manager_module "Valid run command activates scene playback"
         firmware.application_layer.scene_manager_module -> firmware.hardware_layer.main_module "System mode change takes effect on the next loop iteration"
         autoLayout LeftRight
+    }
+
+    dynamic view doubleBufferFlushFlow {
+        title "Double-Buffered Frame Update & DMA Flush"
+
+        firmware.application_layer.scenes_group -> firmware.presentation_layer.terminal_module "Renders graphics into the 'back_buffer'"
+        firmware.hardware_layer.main_module -> firmware.presentation_layer.terminal_module "Checks if DMA is ready (TerminalIsBufferReady)"
+        firmware.presentation_layer.terminal_module -> firmware.presentation_layer.serial_hw_module "TerminalBufferFlush: Swaps pointers and triggers DMA of full buffer (inc. ESC[H)"
+        firmware.presentation_layer.serial_hw_module -> firmware.hardware_layer.hal_library.hal_uart "Initiates HAL_UART_Transmit_DMA"
+        firmware.hardware_layer.hal_library.hal_uart -> terminal_system.terminal "Sends 1923 bytes (80x24 + ESC[H) in one burst"
+        autoLayout LeftRight
+    }
+
+    dynamic view directRenderingFlow {
+        title "Direct Rendering"
+
+        firmware.hardware_layer.main_module -> firmware.application_layer.scene_manager_module "Drives the scene each frame"
+        firmware.application_layer.scene_manager_module -> firmware.application_layer.scene_matrix_rain_module "Delegates render to the active scene"
+        firmware.application_layer.scene_matrix_rain_module -> firmware.presentation_layer.terminal_module "Calls Print/Cursor commands directyl sending character and position"
+        firmware.presentation_layer.terminal_module -> firmware.presentation_layer.serial_hw_module "Passes formatted bytes (Direct/Blocking) serial transmission"
+        firmware.presentation_layer.serial_hw_module -> firmware.hardware_layer.hal_library.hal_uart "Hands off byte stream"
+        firmware.hardware_layer.hal_library.hal_uart -> terminal_system.terminal "Output streams immediately to terminal"
+        autoLayout TopBottom
+    }
+
+    dynamic view bufferedRenderingFlow {
+        title "Double Buffered Rendering"
+        
+        // Path Double Buffered rendering
+        // TODO: ADD SEQUENCE SHOWING DOUBLE BUFFERED SCENE RENDERING
+
+        autoLayout TopBottom
     }
 }
 
