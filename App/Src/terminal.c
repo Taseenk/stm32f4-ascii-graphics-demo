@@ -721,7 +721,12 @@ void TerminalBufferFlush(void)
 	SwapBuffers_();
 
 	// Send the entire front buffer via DMA
-	SerialTransmitDMA((const char *)front_buffer, TERMINAL_FULL_BUFFER_SIZE);
+	if (SerialTransmitDMA((const char *)front_buffer, TERMINAL_FULL_BUFFER_SIZE) == FALSE)
+	{
+		// Restore the original buffer state by swapping back if the DMA transmission failed
+		SwapBuffers_();
+		return;
+	}
 
 	// Clear the back buffer for the next frame of drawing operations
 	TerminalBufferClear();
