@@ -314,6 +314,23 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 }
 
 /**
+ * @fn uint8_t SerialIsTransmitBusy(void)
+ * @brief Checks if the UART is currently busy with a transmission by checking both the hardware state and the Tx
+ * complete flag.
+ * @return TRUE if the UART is busy transmitting, FALSE otherwise.
+ */
+uint8_t SerialIsTransmitBusy(void)
+{
+	// Check hardware state AND software transmission completion flag
+	if (p_uart->gState != HAL_UART_STATE_READY || uart_flags.tx_complete == FALSE)
+	{
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+/**
  * @fn uint8_t SerialHasError(void)
  * @brief Checks if there was an error during UART transmission by returning the state of the error flag.
  * @return TRUE if error exists, FALSE otherwise.
