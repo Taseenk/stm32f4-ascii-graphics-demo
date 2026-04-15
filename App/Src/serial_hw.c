@@ -44,50 +44,64 @@ Rx_Message_t rx_message;                     // Global structure to hold the inc
 
 /* Public Functions ----------------------------------------------------------*/
 /**
- * @fn  uint8_t SerialPrintN(const char *str, uint16_t len)
- * @brief Prints a string of a specified length using the UART handle, avoiding strlen.
- * @param str The string (or buffer) to transmit. Does not need to be null-terminated.
- * @param len The exact number of bytes to transmit.
- * @return TRUE if transmission was successful, FALSE otherwise.
+ * @fn void SerialReceiveInit(void)
+ * @brief Initializes the console reception via UART in DMA mode in circular buffer.
+ * Allowing data to be transferred directly into a buffer in the background without
+ * constant CPU intervention. It resets the internal state and starts the DMA transfer process.
  */
-uint8_t SerialPrintN(const char *str, uint16_t len)
+void SerialReceiveInit(void)
+{
+	// Ensure the UART handle are not NULL
+	if (p_uart->Instance == NULL)
+		return;
+
+	// Reset structures before starting
+	s_uart_rx.read_index = 0;
+
+	// Reset UART flags before starting
+	uart_flags.tx_complete = FALSE;
+	uart_flags.error = FALSE;
+
+	// Stop any ongoing DMA reception before starting a new one
+	HAL_UART_DMAStop(p_uart);
+
+	// Start the reception of UART data in DMA mode
+	HAL_UART_Receive_DMA(p_uart, (uint8_t *)s_uart_rx.buffer, (uint16_t)UART_BUFFER_SIZE);
+}
+
+/**
+ * @fn uint8_t SerialTransmitDMA(const char *str)
+ * @brief Prints a null-terminated string using DMA (Non-blocking)
+ * @param str The string to transmit (Must remain valid until transmission completes)
+ * @param len The length of the string to transmit
+ * @return TRUE if transmission was started successfully, FALSE otherwise.
+ */
+uint8_t SerialTransmitDMA(const char *str, uint16_t len)
 {
 	// Ensure both the UART handle and the data pointer are not NULL
 	if (p_uart->Instance == NULL || str == NULL)
 		return FALSE;
 
-	// Call the HAL UART transmit function to send the string
-	// Timeout of 5ms to prevent blocking for too long
-	// Will return the status of the HAL UART transmit
-	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)str, len, 5);
+	// Ensure the UART is ready for a new transmission
+	if (p_uart->gState != HAL_UART_STATE_READY)
+		return FALSE;
 
-	// Check if the transmission was successful
+	// Clear the Tx complete and error flag before starting a new DMA transmission
+	uart_flags.tx_complete = FALSE;
+	uart_flags.error = FALSE;
+
+	// Start the DMA transmission and return the status of the UART DMA transmit
+	HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(p_uart, (uint8_t *)str, len);
+
+	// Check if the DMA started correctly
 	if (status != HAL_OK)
 	{
+		// Return transmission failed or UART is already busy with another DMA transmission
 		return FALSE;
 	}
 
 	// Return Transmission successful
 	return TRUE;
-}
-
-/**
- * @fn uint8_t SerialPrint(const char *str)
- * @brief Prints a null-terminated string using the private UART handle
- * @param str The string to transmit
- * @return TRUE if transmission was successful, FALSE otherwise.
- */
-uint8_t SerialPrint(const char *str)
-{
-	// Ensure the data pointer is not NULL
-	if (str == NULL)
-		return FALSE;
-
-	// Calculate the number of characters/bytes to send
-	uint16_t len = (uint16_t)strlen(str);
-
-	// Use SerialPrintN to send the string and return its result
-	return SerialPrintN(str, len);
 }
 
 /**
@@ -128,33 +142,45 @@ uint8_t SerialPrintLn(const char *str)
 }
 
 /**
- * @fn uint8_t SerialTransmitDMA(const char *str)
- * @brief Prints a null-terminated string using DMA (Non-blocking)
- * @param str The string to transmit (Must remain valid until transmission completes)
- * @param len The length of the string to transmit
- * @return TRUE if transmission was started successfully, FALSE otherwise.
+ * @fn uint8_t SerialPrint(const char *str)
+ * @brief Prints a null-terminated string using the private UART handle
+ * @param str The string to transmit
+ * @return TRUE if transmission was successful, FALSE otherwise.
  */
-uint8_t SerialTransmitDMA(const char *str, uint16_t len)
+uint8_t SerialPrint(const char *str)
+{
+	// Ensure the data pointer is not NULL
+	if (str == NULL)
+		return FALSE;
+
+	// Calculate the number of characters/bytes to send
+	uint16_t len = (uint16_t)strlen(str);
+
+	// Use SerialPrintN to send the string and return its result
+	return SerialPrintN(str, len);
+}
+
+/**
+ * @fn  uint8_t SerialPrintN(const char *str, uint16_t len)
+ * @brief Prints a string of a specified length using the UART handle, avoiding strlen.
+ * @param str The string (or buffer) to transmit. Does not need to be null-terminated.
+ * @param len The exact number of bytes to transmit.
+ * @return TRUE if transmission was successful, FALSE otherwise.
+ */
+uint8_t SerialPrintN(const char *str, uint16_t len)
 {
 	// Ensure both the UART handle and the data pointer are not NULL
 	if (p_uart->Instance == NULL || str == NULL)
 		return FALSE;
 
-	// Ensure the UART is ready for a new transmission
-	if (p_uart->gState != HAL_UART_STATE_READY)
-		return FALSE;
+	// Call the HAL UART transmit function to send the string
+	// Timeout of 5ms to prevent blocking for too long
+	// Will return the status of the HAL UART transmit
+	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)str, len, 5);
 
-	// Clear the Tx complete and error flag before starting a new DMA transmission
-	uart_flags.tx_complete = FALSE;
-	uart_flags.error = FALSE;
-
-	// Start the DMA transmission and return the status of the UART DMA transmit
-	HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(p_uart, (uint8_t *)str, len);
-
-	// Check if the DMA started correctly
+	// Check if the transmission was successful
 	if (status != HAL_OK)
 	{
-		// Return transmission failed or UART is already busy with another DMA transmission
 		return FALSE;
 	}
 
@@ -163,29 +189,31 @@ uint8_t SerialTransmitDMA(const char *str, uint16_t len)
 }
 
 /**
- * @fn void SerialReceiveInit(void)
- * @brief Initializes the console reception via UART in DMA mode in circular buffer.
- * Allowing data to be transferred directly into a buffer in the background without
- * constant CPU intervention. It resets the internal state and starts the DMA transfer process.
+ * @fn uint8_t SerialIsTransmitBusy(void)
+ * @brief Checks if the UART is currently busy with a transmission by checking both the hardware state and the Tx
+ * complete flag.
+ * @return TRUE if the UART is busy transmitting, FALSE otherwise.
  */
-void SerialReceiveInit(void)
+uint8_t SerialIsTransmitBusy(void)
 {
-	// Ensure the UART handle are not NULL
-	if (p_uart->Instance == NULL)
-		return;
+	// Check hardware state AND software transmission completion flag
+	if (p_uart->gState != HAL_UART_STATE_READY || uart_flags.tx_complete == FALSE)
+	{
+		return TRUE;
+	}
 
-	// Reset structures before starting
-	s_uart_rx.read_index = 0;
+	return FALSE;
+}
 
-	// Reset UART flags before starting
-	uart_flags.tx_complete = FALSE;
-	uart_flags.error = FALSE;
-
-	// Stop any ongoing DMA reception before starting a new one
-	HAL_UART_DMAStop(p_uart);
-
-	// Start the reception of UART data in DMA mode
-	HAL_UART_Receive_DMA(p_uart, (uint8_t *)s_uart_rx.buffer, (uint16_t)UART_BUFFER_SIZE);
+/**
+ * @fn uint8_t SerialHasError(void)
+ * @brief Checks if there was an error during UART transmission by returning the state of the error flag.
+ * @return TRUE if error exists, FALSE otherwise.
+ */
+uint8_t SerialHasError(void)
+{
+	// Return the current state of the error flag
+	return uart_flags.error;
 }
 
 /**
@@ -311,32 +339,4 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 		// Set the error flag to indicate that there was an error during UART transmission
 		uart_flags.error = TRUE;
 	}
-}
-
-/**
- * @fn uint8_t SerialIsTransmitBusy(void)
- * @brief Checks if the UART is currently busy with a transmission by checking both the hardware state and the Tx
- * complete flag.
- * @return TRUE if the UART is busy transmitting, FALSE otherwise.
- */
-uint8_t SerialIsTransmitBusy(void)
-{
-	// Check hardware state AND software transmission completion flag
-	if (p_uart->gState != HAL_UART_STATE_READY || uart_flags.tx_complete == FALSE)
-	{
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-/**
- * @fn uint8_t SerialHasError(void)
- * @brief Checks if there was an error during UART transmission by returning the state of the error flag.
- * @return TRUE if error exists, FALSE otherwise.
- */
-uint8_t SerialHasError(void)
-{
-	// Return the current state of the error flag
-	return uart_flags.error;
 }
