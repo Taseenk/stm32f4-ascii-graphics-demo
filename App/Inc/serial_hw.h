@@ -34,4 +34,7 @@ uint8_t SerialTransmitDMA(const char *str, uint16_t len);
 void SerialReceiveInit(void);
 void SerialProcessData(void);
 
+uint8_t SerialIsTransmitBusy(void);
+uint8_t SerialHasError(void);
+
 #endif /* __SERIAL_HW_H */
