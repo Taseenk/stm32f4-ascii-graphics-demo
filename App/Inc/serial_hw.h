@@ -24,14 +24,20 @@ typedef struct {
 extern Rx_Message_t rx_message; // Structure to hold the incoming rx message
 
 /* Function prototypes -------------------------------------------------------*/
-// Basic terminal output functions
-uint8_t SerialPrintN(const char *str, uint16_t len);
-uint8_t SerialPrint(const char *str);
-uint8_t SerialPrintLn(const char *str);
-
-// DMA related functions
-uint8_t SerialTransmitDMA(const char *str, uint16_t len);
+// Initialization & Management
 void SerialReceiveInit(void);
+
+// TX (Transmit) Functions
+uint8_t SerialTransmitDMA(const char *str, uint16_t len);
+uint8_t SerialPrintLn(const char *str);
+uint8_t SerialPrint(const char *str);
+uint8_t SerialPrintN(const char *str, uint16_t len);
+
+// Peripheral Status
+uint8_t SerialIsTransmitBusy(void);
+uint8_t SerialHasError(void);
+
+// RX (Receive) Processing
 void SerialProcessData(void);
 
 #endif /* __SERIAL_HW_H */
