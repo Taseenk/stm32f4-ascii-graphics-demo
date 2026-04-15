@@ -335,5 +335,8 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 	{
 		// Set the error flag to indicate that there was an error during UART transmission
 		uart_flags.error = TRUE;
+
+		// Set the Tx complete flag to TRUE to indicate that the transmission has completed (in an error)
+		uart_flags.tx_complete = TRUE;
 	}
 }
