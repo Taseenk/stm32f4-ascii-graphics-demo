@@ -59,7 +59,7 @@ void SerialReceiveInit(void)
 	s_uart_rx.read_index = 0;
 
 	// Reset UART flags before starting
-	uart_flags.tx_complete = FALSE;
+	uart_flags.tx_complete = TRUE;
 	uart_flags.error = FALSE;
 
 	// Stop any ongoing DMA reception before starting a new one
@@ -97,6 +97,8 @@ uint8_t SerialTransmitDMA(const char *str, uint16_t len)
 	if (status != HAL_OK)
 	{
 		// Return transmission failed or UART is already busy with another DMA transmission
+		// Set the Tx complete flag to TRUE to indicate that the transmission did not start and is not busy
+		uart_flags.tx_complete = TRUE;
 		return FALSE;
 	}
 
@@ -190,19 +192,14 @@ uint8_t SerialPrintN(const char *str, uint16_t len)
 
 /**
  * @fn uint8_t SerialIsTransmitBusy(void)
- * @brief Checks if the UART is currently busy with a transmission by checking both the hardware state and the Tx
- * complete flag.
- * @return TRUE if the UART is busy transmitting, FALSE otherwise.
+ * @brief Checks if the UART peripheral is currently busy transmitting data. This function evaluates the internal
+ * `tx_complete` flag. If the flag is FALSE, it indicates the DMA hardware is still processing a transfer.
+ * @return TRUE if the peripheral is currently busy, FALSE if it is idle.
  */
 uint8_t SerialIsTransmitBusy(void)
 {
-	// Check hardware state AND software transmission completion flag
-	if (p_uart->gState != HAL_UART_STATE_READY || uart_flags.tx_complete == FALSE)
-	{
-		return TRUE;
-	}
-
-	return FALSE;
+	// Return the inverse of the Tx complete flag to indicate if the peripheral is busy
+	return (uart_flags.tx_complete == FALSE);
 }
 
 /**
