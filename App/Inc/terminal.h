@@ -31,10 +31,10 @@
 #define ANSI_ESC "\x1b[" // The standard ANSI Escape sequence initiator
 
 // Cursor Control
-#define HOME_SEQUENCE_TEXT_LEN 3               // Length of "ESC[H" without the string terminator
-#define ANSI_CURSOR_HOME       ANSI_ESC "H"    // Move cursor to home (1,1): ESC [ H
-#define ANSI_CURSOR_INVISIBLE  ANSI_ESC "?25l" // Hide the cursor: ESC [ ? 25 l
-#define ANSI_CURSOR_VISIBLE    ANSI_ESC "?25h" // Show the cursor: ESC [ ? 25 h
+#define ANSI_CURSOR_HOME       ANSI_ESC "H"                    // Move cursor to home (1,1): ESC [ H
+#define HOME_SEQUENCE_TEXT_LEN (sizeof(ANSI_CURSOR_HOME) - 1U) // Length of "ESC[H" without the string terminator
+#define ANSI_CURSOR_INVISIBLE  ANSI_ESC "?25l"                 // Hide the cursor: ESC [ ? 25 l
+#define ANSI_CURSOR_VISIBLE    ANSI_ESC "?25h"                 // Show the cursor: ESC [ ? 25 h
 
 // Screen Control
 #define ANSI_CLEAR_SCREEN ANSI_ESC "2J" // Clear the entire screen: ESC [ 2 J
