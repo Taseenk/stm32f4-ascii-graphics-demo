@@ -50,6 +50,7 @@ static void SwapBuffers_(void);
 static void DrawChar_(char c, uint16_t col, uint16_t row);
 static void DrawLineHorizontal_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 static void DrawLineVertical_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+static void DrawLine_(char c, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 
 /* Private Functions ---------------------------------------------------------*/
 /**
@@ -665,14 +666,15 @@ void TerminalPrintString(const char *str, uint16_t col, uint16_t row)
 
 /**
  * @fn uint8_t TerminalIsBufferReady(void)
- * @brief Checks if the terminal is ready to receive new data by verifying that the serial transmission is not busy.
- * This function calls SerialIsTransmitBusy() to determine if the previous transmission has completed and the
- * terminal can accept new data.
- * @return TRUE if the terminal is ready for new data, FALSE if it is still busy transmitting.
+ * @brief Checks if the serial transmission buffer is available for a new request. This function acts as a wrapper for
+ * the hardware-level busy check. It negates the transmission complete status to provide a "Ready" logic state, making
+ * it suitable for flow control before calling DMA transmit functions.
+ * @return TRUE if the buffer is ready for a new transmission, FALSE if the hardware is currently busy transmitting.
  */
 uint8_t TerminalIsBufferReady(void)
 {
-	return SerialIsTransmitBusy();
+	// Return ready status by negating the hardware busy status. If the hardware is busy, the buffer is not ready.
+	return !SerialIsTransmitBusy();
 }
 
 /**
@@ -686,7 +688,7 @@ uint8_t TerminalIsBufferReady(void)
 void TerminalBufferFlush(void)
 {
 	// Wait until the terminal is ready to receive new data before flushing the buffer
-	while (TerminalIsBufferReady() == FALSE)
+	while (!TerminalIsBufferReady())
 	{
 	}
 
@@ -696,6 +698,9 @@ void TerminalBufferFlush(void)
 	// Move the cursor home and send the entire front buffer via DMA
 	TerminalCursorHome();
 	SerialTransmitDMA((const char *)front_buffer, TERMINAL_BUFFER_SIZE);
+
+	// Clear the back buffer for the next frame of drawing operations
+	TerminalBufferClear();
 }
 
 /**
