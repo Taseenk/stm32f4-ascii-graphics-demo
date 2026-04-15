@@ -29,7 +29,11 @@ typedef struct {
 	volatile uint8_t error;       // Flag to indicate if there was an error during UART transmission
 } UART_Flags_t;
 
-static UART_Flags_t uart_flags = {0}; // Holds the status flags for UART operations
+// Holds the status flags for UART operations
+static UART_Flags_t uart_flags = {
+    .tx_complete = TRUE,
+    .error = FALSE,
+};
 
 // Structure to hold the received message and its length
 typedef struct {
@@ -55,11 +59,10 @@ void SerialReceiveInit(void)
 	if (p_uart->Instance == NULL)
 		return;
 
-	// Reset structures before starting
+	// Reset error state before starting
 	s_uart_rx.read_index = 0;
 
 	// Reset UART flags before starting
-	uart_flags.tx_complete = TRUE;
 	uart_flags.error = FALSE;
 
 	// Stop any ongoing DMA reception before starting a new one
