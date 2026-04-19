@@ -38,6 +38,11 @@ theme:
 plugins:
   - search
   - likec4
+  - mkdoxy:
+        projects:
+          stm32f4_ascii_graphics_demo:
+            doxy-cfg-file: 'Docs\Doxyfile'
+            src-dirs: 'App'
 
 markdown_extensions:
   - admonition
