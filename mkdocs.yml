@@ -82,5 +82,6 @@ nav:
     # - Hardware Configuration: Reference/hardware-config.md
 
   - Explanation:
+    - Explanation/index.md
     # - Why 3-Tier Architecture?: Explanation/three-tier-architecture.md
     # - Why DMA + double-buffering: Explanation/dma-double-buffer.md
