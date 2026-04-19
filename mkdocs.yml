@@ -61,25 +61,25 @@ nav:
 
   - Tutorials:
     - Tutorial/index.md
-    - Setting Up the Toolchain: Tutorial/setup.md
-    - Flashing the Board: Tutorial/flashing.md
-    - Connecting a Terminal: Tutorial/terminal-setup.md
+    # - Setting Up the Toolchain: Tutorial/setup.md
+    # - Flashing the Board: Tutorial/flashing.md
+    # - Connecting a Terminal: Tutorial/terminal-setup.md
 
   - How-to Guides:
     - How-to/index.md
-    - Configure UART and DMA: How-to/configure-uart-dma.md
-    - Change Baud Rate or Frame Rate: How-to/change-baud-fps.md
-    - Add a New Scene: How-to/add-a-scene.md
+    # - Configure UART and DMA: How-to/configure-uart-dma.md
+    # - Change Baud Rate or Frame Rate: How-to/change-baud-fps.md
+    # - Add a New Scene: How-to/add-a-scene.md
     - Use the CLI Shell: How-to/use-the-shell.md
 
   - Reference:
     - Reference/index.md
-    - Module Overview: Reference/modules.md
-    - Public API: Reference/api.md
-    - UART Bandwidth & Frame Timing: Reference/uart-bandwidth.md
-    - UART Command Set: Reference/commands.md
-    - Hardware Configuration: Reference/hardware-config.md
+    # - Module Overview: Reference/modules.md
+    # - Public API: Reference/api.md
+    # - UART Bandwidth & Frame Timing: Reference/uart-bandwidth.md
+    # - UART Command Set: Reference/commands.md
+    # - Hardware Configuration: Reference/hardware-config.md
 
   - Explanation:
-    - Why 3-Tier Architecture?: Explanation/three-tier-architecture.md
-    - Why DMA + double-buffering: Explanation/dma-double-buffer.md
+    # - Why 3-Tier Architecture?: Explanation/three-tier-architecture.md
+    # - Why DMA + double-buffering: Explanation/dma-double-buffer.md
