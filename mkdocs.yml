@@ -74,6 +74,7 @@ nav:
 
   - Reference:
     - Reference/index.md
+    - Shell Commands: Reference/shell-commands.md
     # - Module Overview: Reference/modules.md
     # - Public API: Reference/api.md
     # - UART Bandwidth & Frame Timing: Reference/uart-bandwidth.md
