@@ -50,7 +50,7 @@ plugins:
   - mkdoxy: # Doxygen integration for technical C documentation
       projects:
         stm32f4_ascii_graphics_demo:
-          doxy-cfg-file: 'Docs\Doxyfile'
+          doxy-cfg-file: 'Docs/Doxyfile'
           src-dirs: 'App'
           doxy-cfg: # Overrides for Doxygen configuration
             OPTIMIZE_OUTPUT_FOR_C: YES
