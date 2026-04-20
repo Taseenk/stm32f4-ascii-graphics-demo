@@ -87,9 +87,14 @@ nav:
 
   - How-to Guides:
     - Use the CLI Shell: How-to/use-the-shell.md
+    # - Common Terminal Patterns: How-to/terminal-patterns.md
 
   - Reference:
     - Shell Commands: Reference/shell-commands.md
+    - Terminal Module:
+      - Screen & Cursor Control: Reference/terminal-screen-cursor.md
+      - Color & Attributes: Reference/terminal-color-attributes.md
+      - Rendering Modes: Reference/terminal-rendering.md
 
   - Explanation:
     - Explanation/index.md
