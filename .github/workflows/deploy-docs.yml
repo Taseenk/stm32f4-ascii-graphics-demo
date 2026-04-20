@@ -20,6 +20,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Doxygen and Graphviz
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y doxygen graphviz
+          
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
