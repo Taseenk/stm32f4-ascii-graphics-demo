@@ -28,6 +28,10 @@ Detailed technical data, including [Public API](Reference/api.md) documentation,
 
 Deep dives into the "Why" behind the design, such as the [3-Tier Architecture](Explanation/three-tier-architecture.md) and the [DMA Double-Buffering strategy](Explanation/dma-double-buffer.md).
 
+### [Technical Documentation](stm32f4_ascii_graphics_demo/annotated.md)
+
+Low-level code documentation generated from source headers, covering [Code Modules](stm32f4_ascii_graphics_demo/files.md), [Data Structures](stm32f4_ascii_graphics_demo/annotated.md), and the complete [C API Reference](stm32f4_ascii_graphics_demo/functions.md).
+
 ## System Overview
 
 The demo operates at **921,600 baud**, pushing the limits of standard UART communication to achieve smooth animations. It leverages the STM32F4's DMA (Direct Memory Access) controller to ensure that rendering doesn't stop while data is being transmitted.

@@ -35,8 +35,8 @@ jobs:
 
       - name: Build Site
         run: |
-          pip install mkdocs-material mkdocs-likec4
-          mkdocs build
+          pip install mkdocs-material mkdocs-likec4 mkdoxy
+          mkdocs build --strict
 
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
