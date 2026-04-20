@@ -1,3 +1,4 @@
+# Site project metadata
 site_name: STM32F4 ASCII Graphics Demo
 site_url: https://taseenk.github.io/stm32f4-ascii-graphics-demo/
 site_description: Real-time ASCII art demo scenes on a PC terminal, running bare-metal on the STM32F407 Discovery board.
@@ -5,22 +6,27 @@ site_author: Taseen Khan
 repo_name: Taseenk/stm32f4-ascii-graphics-demo
 repo_url: https://github.com/Taseenk/stm32f4-ascii-graphics-demo
 
+# Configuration for the Material theme
 theme:
   name: material
   palette:
+    # Dark mode color scheme configuration
     - scheme: slate
       primary: red
       accent: deep orange
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
-  
+
+    # Light mode color scheme configuration
     - scheme: default
       primary: red
       accent: deep orange
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
+
+  # UI features and navigation behaviors
   features:
     - navigation.tabs
     - navigation.tabs.sticky
@@ -28,6 +34,8 @@ theme:
     - navigation.sections
     - navigation.top
     - content.code.copy
+
+  # Typography settings
   font:
     text: Roboto
     code: Roboto Mono
@@ -35,27 +43,42 @@ theme:
     repo: fontawesome/brands/github
   language: en
 
+# Extension plugins for MkDocs functionality
 plugins:
-  - search
-  - likec4
-  - mkdoxy:
-        projects:
-          stm32f4_ascii_graphics_demo:
-            doxy-cfg-file: 'Docs\Doxyfile'
-            src-dirs: 'App'
+  - search  # Enables built-in search bar functionality
+  - likec4  # Support for LikeC4 architecture diagrams
+  - mkdoxy: # Doxygen integration for technical C documentation
+      projects:
+        stm32f4_ascii_graphics_demo:
+          doxy-cfg-file: 'Docs\Doxyfile'
+          src-dirs: 'App'
+          doxy-cfg: # Overrides for Doxygen configuration
+            OPTIMIZE_OUTPUT_FOR_C: YES
+            EXTRACT_ALL: YES
+            HIDE_UNDOC_MEMBERS: NO
+            SOURCE_BROWSER: NO
+            VERBATIM_HEADERS: NO
+            INLINE_SOURCES: NO
+            SHOW_USED_FILES: NO
+            SHOW_INCLUDE_FILES: NO
+            SHOW_NAMESPACES: NO
+            XML_PROGRAMLISTING: NO
 
+# Markdown parsing extensions
 markdown_extensions:
-  - admonition
-  - tables
-  - pymdownx.highlight:
+  - admonition  # Info, Note, and Warning boxes
+  - tables  # Standard GFM table support
+  - pymdownx.highlight: # Code syntax highlighting
       anchor_linenums: true
-  - pymdownx.superfences
-  - pymdownx.inlinehilite
-  - toc:
+  - pymdownx.superfences  # Code syntax highlighting
+  - pymdownx.inlinehilite # Inline code highlighting
+  - toc:  # Table of contents configuration
       permalink: true
 
+# Source directory for markdown files
 docs_dir: Docs
 
+# Navigation structure for the sidebar and tabs
 nav:
   - Home: index.md
 
@@ -66,14 +89,14 @@ nav:
     # - Connecting a Terminal: Tutorial/terminal-setup.md
 
   - How-to Guides:
-    - How-to/index.md
+    # - How-to/index.md
     # - Configure UART and DMA: How-to/configure-uart-dma.md
     # - Change Baud Rate or Frame Rate: How-to/change-baud-fps.md
     # - Add a New Scene: How-to/add-a-scene.md
     - Use the CLI Shell: How-to/use-the-shell.md
 
   - Reference:
-    - Reference/index.md
+    # - Reference/index.md
     - Shell Commands: Reference/shell-commands.md
     # - Module Overview: Reference/modules.md
     # - Public API: Reference/api.md
@@ -85,3 +108,83 @@ nav:
     - Explanation/index.md
     # - Why 3-Tier Architecture?: Explanation/three-tier-architecture.md
     # - Why DMA + double-buffering: Explanation/dma-double-buffer.md
+
+  - Technical Documentation:
+    - Overview:
+      - File List: stm32f4_ascii_graphics_demo/files.md
+      - Data Structures: stm32f4_ascii_graphics_demo/annotated.md
+      - Directory Structure: 
+        - Root: stm32f4_ascii_graphics_demo/dir_2d24c7b8815d54233acb7a85e7e20f52.md
+        - App: stm32f4_ascii_graphics_demo/dir_82df7b12fe58d38fb28719db2108769f.md
+        - Headers: stm32f4_ascii_graphics_demo/dir_54b4aa24c289cac9d513ebf24b28082b.md
+        - Sources: stm32f4_ascii_graphics_demo/dir_c81c1db0d8bdddf7e85da274428b63d4.md
+
+    - Code Modules:
+      - Dashboard: 
+        - Header: stm32f4_ascii_graphics_demo/dashboard_8h.md
+        - Source: stm32f4_ascii_graphics_demo/dashboard_8c.md
+      - Scene Manager: 
+        - Header: stm32f4_ascii_graphics_demo/scene__manager_8h.md
+        - Source: stm32f4_ascii_graphics_demo/scene__manager_8c.md
+      - Shell & Terminal:
+        - Terminal Header: stm32f4_ascii_graphics_demo/terminal_8h.md
+        - Terminal Source: stm32f4_ascii_graphics_demo/terminal_8c.md
+        - Shell Header: stm32f4_ascii_graphics_demo/shell_8h.md
+        - Shell Source: stm32f4_ascii_graphics_demo/shell_8c.md
+        - Shell Strings Header: stm32f4_ascii_graphics_demo/shell__strings_8h.md
+        - Shell Strings Source: stm32f4_ascii_graphics_demo/shell__strings_8c.md
+      - Hardware & Utils:
+        - Serial HW Header: stm32f4_ascii_graphics_demo/serial__hw_8h.md
+        - Serial HW Source: stm32f4_ascii_graphics_demo/serial__hw_8c.md
+        - RNG Utility Header: stm32f4_ascii_graphics_demo/rng__util_8h.md
+        - RNG Utility Source: stm32f4_ascii_graphics_demo/rng__util_8c.md
+
+    - Demo Scenes:
+      - Directory (Headers): stm32f4_ascii_graphics_demo/dir_b3d6e1e56b26d4df58b948e8a49bcaf9.md
+      - Directory (Sources): stm32f4_ascii_graphics_demo/dir_3b7607d4df980b2ffe0bb6beb825293b.md
+      - Matrix Rain:
+        - Header: stm32f4_ascii_graphics_demo/scene__matrix__rain_8h.md
+        - Source: stm32f4_ascii_graphics_demo/scene__matrix__rain_8c.md
+      - Glitch Effect:
+        - Header: stm32f4_ascii_graphics_demo/scene__glitch_8h.md
+        - Source: stm32f4_ascii_graphics_demo/scene__glitch_8c.md
+      - Xterm Palette:
+        - Header: stm32f4_ascii_graphics_demo/scene__xterm__palette_8h.md
+        - Source: stm32f4_ascii_graphics_demo/scene__xterm__palette_8c.md
+      - Colour Demo:
+        - Header: stm32f4_ascii_graphics_demo/scene__colour__demo_8h.md
+        - Source: stm32f4_ascii_graphics_demo/scene__colour__demo_8c.md
+      - Primitives:
+        - Header: stm32f4_ascii_graphics_demo/scene__primitives__demo_8h.md
+        - Source: stm32f4_ascii_graphics_demo/scene__primitives__demo_8c.md
+      - Attributes:
+        - Header: stm32f4_ascii_graphics_demo/scene__attributes__demo_8h.md
+        - Source: stm32f4_ascii_graphics_demo/scene__attributes__demo_8c.md
+      - Credits:
+        - Header: stm32f4_ascii_graphics_demo/scene__credits_8h.md
+        - Source: stm32f4_ascii_graphics_demo/scene__credits_8c.md
+
+    - API Reference:
+      - Data Structures:
+        - Scene Config: stm32f4_ascii_graphics_demo/struct_scene_config__t.md
+        - UART Flags: stm32f4_ascii_graphics_demo/struct_u_a_r_t___flags__t.md
+        - DMA Buffer: stm32f4_ascii_graphics_demo/struct_u_a_r_t___rx_dma_buffer__t.md
+        - Credit Line: stm32f4_ascii_graphics_demo/struct_credit_line__t.md
+        - RX Message: stm32f4_ascii_graphics_demo/struct_rx___message__t.md
+      - Symbols:
+        - Functions: stm32f4_ascii_graphics_demo/functions.md
+        - Variables: stm32f4_ascii_graphics_demo/variables.md
+        - Structs: stm32f4_ascii_graphics_demo/classes.md
+        - Macros: stm32f4_ascii_graphics_demo/macros.md
+      - Documentation Pages:
+        - pages: stm32f4_ascii_graphics_demo/pages.md
+        - links: stm32f4_ascii_graphics_demo/links.md
+
+# Pages generated by Doxy but hidden from primary navigation
+not_in_nav: |
+  stm32f4_ascii_graphics_demo/*_source.md
+  stm32f4_ascii_graphics_demo/namespaces.md
+  stm32f4_ascii_graphics_demo/hierarchy.md
+  stm32f4_ascii_graphics_demo/modules.md
+  stm32f4_ascii_graphics_demo/class_member*
+  stm32f4_ascii_graphics_demo/namespace_member*
