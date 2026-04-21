@@ -87,7 +87,6 @@ nav:
 
   - How-to Guides:
     - Use the CLI Shell: How-to/use-the-shell.md
-    # - Common Terminal Patterns: How-to/terminal-patterns.md
 
   - Reference:
     - Shell Commands: Reference/shell-commands.md
