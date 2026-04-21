@@ -181,13 +181,13 @@ The extended palette is accessed by adding a specific index to `EXTENDED_COLOURS
 
 | Index Range | Description | Implementation Context |
 | :--- | :--- | :--- |
-| 0–15 | Standard ANSI | Maps to basic 16-color codes (30–37, 40–47). |
-| 16–231 | RGB Color Cube | 216 fixed colors for UI elements and gradients. |
+| 0–15 | Standard ANSI | Maps to basic 16-colour codes (30–37, 40–47). |
+| 16–231 | RGB colour Cube | 216 fixed colours for UI elements and gradients. |
 | 232–255 | Grayscale Ramp | 24 shades from near-black to near-white. |
 
 ### Extended Palette Key Indices (16–231)
 
-The RGB color cube provides 216 colors (indices 16–231) by varying Red, Green, and Blue through six levels. To use these colors, add the specific index to the `EXTENDED_COLOURS_OFFSET`. This section lists the key indices within the RGB color cube that have specific constants defined in the module.
+The RGB colour cube provides 216 colours (indices 16–231) by varying Red, Green, and Blue through six levels. To use these colours, add the specific index to the `EXTENDED_COLOURS_OFFSET`. This section lists the key indices within the RGB colour cube that have specific constants defined in the module.
 
 | Index | Constant Defined | Visual Description |
 | :--- | :--- | :--- |

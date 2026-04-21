@@ -173,7 +173,7 @@ TerminalVisibleCursor();
 
 ## See Also
 
-Other modules cover character styling and color management. Applying these attributes to positioned elements enables frame construction and scene depth management. For shape and geometric primitive drawing, refer to the main graphics module implementation.
+Other modules cover character styling and colour management. Applying these attributes to positioned elements enables frame construction and scene depth management. For shape and geometric primitive drawing, refer to the main graphics module implementation.
 
-- [Color & Text Attributes](terminal-color-attributes.md) — Styling text with bold, colour, blink, etc.
+- [Colour & Text Attributes](terminal-colour-attributes.md) — Styling text with bold, colour, blink, etc.
 - [Rendering Modes & Graphics](terminal-rendering.md) — Sending characters and drawing primitives
