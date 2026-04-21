@@ -10,7 +10,7 @@ repo_url: https://github.com/Taseenk/stm32f4-ascii-graphics-demo
 theme:
   name: material
   palette:
-    # Dark mode color scheme configuration
+    # Dark mode colour scheme configuration
     - scheme: slate
       primary: red
       accent: deep orange
@@ -18,7 +18,7 @@ theme:
         icon: material/weather-sunny
         name: Switch to light mode
 
-    # Light mode color scheme configuration
+    # Light mode colour scheme configuration
     - scheme: default
       primary: red
       accent: deep orange
@@ -90,6 +90,10 @@ nav:
 
   - Reference:
     - Shell Commands: Reference/shell-commands.md
+    - Terminal Module:
+      - Screen & Cursor Control: Reference/terminal-screen-cursor.md
+      - colour & Attributes: Reference/terminal-colour-attributes.md
+      - Rendering Modes: Reference/terminal-rendering.md
 
   - Explanation:
     - Explanation/index.md
