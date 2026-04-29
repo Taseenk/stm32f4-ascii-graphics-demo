@@ -299,4 +299,4 @@ The module converts function calls into the raw escape sequences required by the
 Other documents explain how to move the cursor or clear parts of the screen. These functions work together with colour settings to control the full terminal output during real-time animation.
 
 * [Screen & Cursor Control](terminal-screen-cursor.md) — Positioning and clearing
-* [Rendering Modes & Graphics](terminal-rendering.md) — Sending styled text to the terminal
+* [Rendering Modes & Graphics](terminal-rendering.md) — Direct blocking output, double-buffering, and geometric primitives
