@@ -54,7 +54,7 @@ Blocking print sends cursor positioning and a single character byte for every up
 
 !!! note "Position Cost Calculation"
     Each position update costs 3 bytes (ESC[) + row digits + 1 byte separator (;) + column digits + 1 byte (H) + 1 byte (character).
-    $$Cost\ per\ Position = 3 + len(row) + 1 + len(column) + 1 + 1$$
+    $$ Cost\ per\ Position = 3 + len(row) + 1 + len(column) + 1 + 1 $$
 
 ## Frame Interval Impact of Full-Screen DMA Updates
   
