@@ -74,6 +74,11 @@ markdown_extensions:
   - pymdownx.inlinehilite # Inline code highlighting
   - toc:  # Table of contents configuration
       permalink: true
+  - pymdownx.arithmatex:  # LaTeX math support
+      generic: true
+
+extra_javascript:
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
 
 # Source directory for markdown files
 docs_dir: Docs
@@ -90,6 +95,9 @@ nav:
 
   - Reference:
     - Shell Commands: Reference/shell-commands.md
+    - UART Bandwidth & Timing:
+      - Frame Timing Reference: Reference/uart-bandwidth-timing.md
+      - ANSI Code Reference: Reference/uart-bandwidth-codes.md
     - Terminal Module:
       - Screen & Cursor Control: Reference/terminal-screen-cursor.md
       - colour & Attributes: Reference/terminal-colour-attributes.md
@@ -97,6 +105,9 @@ nav:
 
   - Explanation:
     - Explanation/index.md
+    - UART Bandwidth & Timing:
+      - Fundamentals: Explanation/uart-bandwidth.md
+      - Rendering Strategies: Explanation/uart-bandwidth-strategies.md
 
   - Technical Documentation:
     - Overview:
@@ -180,10 +191,6 @@ not_in_nav: |
   How-to/change-baud-fps.md
   Explanation/three-tier-architecture.md
   Explanation/dma-double-buffer.md
-  Reference/modules.md
-  Reference/api.md
-  Reference/uart-bandwidth.md
-  Reference/commands.md
   Reference/hardware-config.md
   Reference/index.md
   stm32f4_ascii_graphics_demo/*_source.md
