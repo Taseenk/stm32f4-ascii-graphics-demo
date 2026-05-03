@@ -1,0 +1,13 @@
+/* Style the TOC header text */
+.md-nav--secondary .md-nav__title {
+    color: var(--md-primary-fg-color);
+    /* Matches your main theme color */
+    font-weight: 700;
+    /* Makes it bolder for better hierarchy */
+    letter-spacing: 0.05em;
+    /* Adds a bit of professional spacing */
+    text-transform: uppercase;
+    /* Optional: makes it look like a formal sidebar label */
+    font-size: 0.65rem;
+    /* Optional: small caps style */
+}
