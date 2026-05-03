@@ -34,6 +34,7 @@ theme:
     - navigation.sections
     - navigation.top
     - content.code.copy
+    - content.footnote.tooltips
 
   # Typography settings
   font:
@@ -66,6 +67,7 @@ plugins:
 
 # Markdown parsing extensions
 markdown_extensions:
+  - footnotes # Support for footnotes in markdown
   - admonition  # Info, Note, and Warning boxes
   - tables  # Standard GFM table support
   - pymdownx.highlight: # Code syntax highlighting
@@ -73,12 +75,16 @@ markdown_extensions:
   - pymdownx.superfences  # Code syntax highlighting
   - pymdownx.inlinehilite # Inline code highlighting
   - toc:  # Table of contents configuration
+      toc_depth: 2
       permalink: true
   - pymdownx.arithmatex:  # LaTeX math support
       generic: true
 
 extra_javascript:
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+
+extra_css:
+  - Assets/extra.css
 
 # Source directory for markdown files
 docs_dir: Docs
