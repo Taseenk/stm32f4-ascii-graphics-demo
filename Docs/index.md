@@ -22,8 +22,6 @@ Recipe-style instructions for specific tasks, such as [Adding a New Scene](How-t
 
 ### [Technical Reference](Reference/index.md)
 
-Detailed technical data, including [Public API](Reference/api.md) documentation, hardware pinouts, and [UART Bandwidth Calculations](Reference/uart-bandwidth.md).
-
 ### [Explanations](Explanation/three-tier-architecture.md)
 
 Deep dives into the "Why" behind the design, such as the [3-Tier Architecture](Explanation/three-tier-architecture.md) and the [DMA Double-Buffering strategy](Explanation/dma-double-buffer.md).
