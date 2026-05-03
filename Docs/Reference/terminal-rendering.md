@@ -161,4 +161,3 @@ Positioning and clearing the screen provides the canvas for rendering. Text attr
 
 - [Screen & Cursor Control](terminal-screen-cursor.md) - Positioning without rendering
 - [Colour & Text Attributes](terminal-colour-attributes.md) - Styling rendered text
-- [Common Terminal Patterns](../How-to/terminal-patterns.md) - Complete rendering examples
