@@ -102,6 +102,7 @@ nav:
     - Add a New Scene: How-to/add-a-scene.md
 
   - Reference:
+    - Reference/index.md
     - Shell Commands: Reference/shell-commands.md
     - UART Bandwidth & Timing:
       - Frame Timing Reference: Reference/uart-bandwidth-timing.md
