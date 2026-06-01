@@ -28,7 +28,7 @@ Baud rate is a fundamental element for UART (Universal Asynchronous Receiver-Tra
 
 ### project configuration
 
-Followig the theoretical concepts of bandwidth and baud rate, it’s important to look at how these are applied in the context of this project. This demo is configured to use a baud rate of 921,600 baud. The highest available speed supported by the STM32F4 microcontroller. This configuration is necessary to maximize bandwidth for animation data. This enables higher frame rates, providing the stability needed for more complex scenes.
+Followig the theoretical concepts of bandwidth and baud rate, it’s important to look at how these are applied in the context of this project. This demo is configured to use a baud rate of 921.600 baud. The highest available speed supported by the STM32F4 microcontroller. This configuration is necessary to maximize bandwidth for animation data. This enables higher frame rates, providing the stability needed for more complex scenes.
 
 #### The 8-N-1 Packet Overhead
 
@@ -45,11 +45,11 @@ To calculate the actual throughput of data, it is necessary to look at how each 
 As show in the table, in this configuration each byte of data requires 10 bits to be transmitted.
 
 !!! note "Throughput Calculation"
-    The 10-bit frame directly impacts the maximum bytes per second. At 921,600 baud, the actual transfer capacity is calculated as:
+    The 10-bit frame directly impacts the maximum bytes per second. At 921.600 baud, the actual transfer capacity is calculated as:
 
-    $$ \frac{921,600 \text{ bits per second}}{10 \text{ bits per byte}} = 92,160 \text{ bytes per second} $$
+    $$ \frac{921.600 \text{ bits per second}}{10 \text{ bits per byte}} = 92.160 \text{ bytes per second} $$
     
-    This 92,160 bytes per second limit represents the total ceiling for all animation data and protocol overhead.
+    This 92.160 bytes per second limit represents the total ceiling for all animation data and protocol overhead.
 
 ### Why Bandwidth Matters
 
@@ -60,22 +60,22 @@ Every animation frame has a limited time window to complete rendering and transm
 
 ## The Display Canvas
 
-The demo targets an **80-column by 24-row character display**, matching the standard VT100 terminal dimension. This provides exactly **1,920 character positions** on screen. Each character position stores one byte of data. A full screen refresh therefore requires 1,920 bytes of character data.
+The demo targets an **80-column by 24-row character display**, matching the standard VT100 terminal dimension. This provides exactly **1.920 character positions** on screen. Each character position stores one byte of data. A full screen refresh therefore requires 1.920 bytes of character data.
 
 ### Full-Screen Transmission Cost
 
-To calculate the overhead of a complete refresh, the 1,920 bytes of display data must be paired with the terminal control sequence required to reset the cursor position. Moving the cursor to the top-left corner ensures that the incoming stream aligns correctly with the hardware buffer. The table below breaks down these components to arrive at the total transmission size.
+To calculate the overhead of a complete refresh, the 1.920 bytes of display data must be paired with the terminal control sequence required to reset the cursor position. Moving the cursor to the top-left corner ensures that the incoming stream aligns correctly with the hardware buffer. The table below breaks down these components to arrive at the total transmission size.
 
 | Component | Description | Data Size |
 | :--- | :--- | :--- |
 | **Home Cursor** | `ESC[H` (Row 1, Col 1) | 3 bytes |
-| **Character Data** | Entire 1,920-byte buffer | 1,920 bytes |
-| **Total Cost** | Sum of sequence and data | **1,923 bytes** |
+| **Character Data** | Entire 1.920-byte buffer | 1.920 bytes |
+| **Total Cost** | Sum of sequence and data | **1.923 bytes** |
 
-The 1,923-byte figure represents the **fixed baseline cost** for a full-screen DMA transmission. This value functions as a benchmark for evaluating the efficiency of blocking print updates.
+The 1.923-byte figure represents the **fixed baseline cost** for a full-screen DMA transmission. This value functions as a benchmark for evaluating the efficiency of blocking print updates.
 
 !!! hint "Baseline Reference"
-    The 1,923-byte cost appears in every frame rate and bandwidth calculation throughout the project. Memorizing this number helps predict frame timings quickly.
+    The 1.923-byte cost appears in every frame rate and bandwidth calculation throughout the project. Memorizing this number helps predict frame timings quickly.
 
 ## Frame Intervals and Byte Budgets
 
@@ -85,7 +85,7 @@ The following section breaks down how to calculate these values and what they me
 
 ### Calculating Available Time per Frame
 
-Stability at 921,600 baud requires a fixed transmission window. Setting a target frame rate defines this window. For example, at 30 FPS, the frame interval is approximately 33,3 ms and is calculated as follows:
+Stability at 921.600 baud requires a fixed transmission window. Setting a target frame rate defines this window. For example, at 30 FPS, the frame interval is approximately 33,3 ms and is calculated as follows:
 
 $$ \text{Frame Interval (ms)} = \frac{1000}{\text{Target FPS}} $$
 
@@ -93,20 +93,20 @@ This interval establishes the hard deadline for all serial communication before 
 
 ### Byte Budget Calculation
 
-The byte budget represents the total volume of data allowed within a single frame interval. As calculated earlier, the effective throughput of the UART interface at 921,600 baud is 92,160 bytes per second. To determine how many bytes can be sent within each frame, the following formula is used:
+The byte budget represents the total volume of data allowed within a single frame interval. As calculated earlier, the effective throughput of the UART interface at 921.600 baud is 92.160 bytes per second. To determine how many bytes can be sent within each frame, the following formula is used:
 
-$$ \text{Bytes Available per Frame} = \frac{92,160}{\text{Target FPS}} $$
+$$ \text{Bytes Available per Frame} = \frac{92.160}{\text{Target FPS}} $$
 
 The table below provides a lookup for common targets:
 
 | Target FPS | Frame Interval (ms) | Bytes Available per Frame |
 | :--- | :--- | :--- |
-| 10 | 100 | 9,216 |
-| 30 | 33,3 | 3,072 |
-| 60 | 16.7 | 1,536 |
+| 10 | 100 | 9.216 |
+| 30 | 33,3 | 3.072 |
+| 60 | 16,7 | 1.536 |
 
 !!! tip "Constraint Awareness"
-    As the frame rate increases, the byte budget shrinks rapidly. While 30 FPS allows for 3,072 bytes, a move to 60 FPS cuts that capacity in half to 1,536 bytes. This reduction is critical because a full screen DMA refresh requires 1,923 bytes, making it impossible to sustain 60 FPS using DMA without exceeding the budget.
+    As the frame rate increases, the byte budget shrinks rapidly. While 30 FPS allows for 3.072 bytes, a move to 60 FPS cuts that capacity in half to 1.536 bytes. This reduction is critical because a full screen DMA refresh requires 1.923 bytes, making it impossible to sustain 60 FPS using DMA without exceeding the budget.
 
 For detailed tables on transmission times and a breakdown of how different rendering strategies impact these budgets, see the full [bandwidth and timing reference](../Reference/uart-bandwidth-timing.md).
 
@@ -123,10 +123,10 @@ While individual escape sequences appear small, they represent a significant hid
 For a complete breakdown of costs, see the [ANSI Code Reference](../Reference/uart-bandwidth-codes.md) on the exact byte costs for each escape sequence.
 
 !!! warning "Budget Exhaustion"
-    At 30 FPS, the total budget is 3,072 bytes. Updating just 220 characters with individual color and position codes can exceed this limit:
-    $$ 220 \times (8 \text{ bytes pos} + 5 \text{ bytes color} + 1 \text{ byte char}) = 3,080 \text{ bytes} $$
+    At 30 FPS, the total budget is 3.072 bytes. Updating just 220 characters with individual color and position codes can exceed this limit:
+    $$ 220 \times (8 \text{ bytes pos} + 5 \text{ bytes color} + 1 \text{ byte char}) = 3.080 \text{ bytes} $$
 
-    This calculation shows how 3,080 bytes surpasses the 3,072 byte limit, leading to frame drops or tearing.
+    This calculation shows how 3.080 bytes surpasses the 3.072 byte limit, leading to frame drops or tearing.
 
 ## Rendering Strategies
 
@@ -138,7 +138,7 @@ The primary constraint is the byte budget of the UART interface. While blocking 
 
 | Category | Blocking Print | Full-Screen DMA |
 | :--- | :--- | :--- |
-| **Data Cost** | Variable (based on changes) | Fixed (1,923 bytes) |
+| **Data Cost** | Variable (based on changes) | Fixed (1.923 bytes) |
 | **CPU Impact** | Blocks during transmission | CPU is free during transfer |
 | **Complexity** | High (must track changes) | Low (linear buffer dump) |
 | **Best For** | Sparse UI, text, particles | Heavy motion, full-screen FX |
@@ -152,19 +152,19 @@ $$ \text{Total Bytes} \approx \text{Number of Position Changes} \times 9,5 \text
 
 The following calculation shows the **theoretical threshold** where blocking direct print becomes less efficient than a full-screen DMA transfer.
 
-$$ 1,923 \text{ DMA bytes} \div 9,5 \text{ bytes/pos} \approx 202 \text{ positions} $$
+$$ 1.923 \text{ DMA bytes} \div 9,5 \text{ bytes/pos} \approx 202 \text{ positions} $$
 
-Based on this calculation, if a scene modifies **fewer than 200 character positions**, block printing is theoretically more efficient. If **more than 200 position changes** occur, full-screen DMA is the superior choice because the cost remains capped at 1,923 bytes.
+Based on this calculation, if a scene modifies **fewer than 200 character positions**, block printing is theoretically more efficient. If **more than 200 position changes** occur, full-screen DMA is the superior choice because the cost remains capped at 1.923 bytes.
 
 ### Performance Implications
 
-At 30 FPS, the hardware must complete all transmission within a 33,3 ms frame interval. With a 921,600 baud rate (8-N-1), the total capacity per frame is 3,072 bytes. The table below details how the data volume of each strategy consumes this 33,3 ms time window:
+At 30 FPS, the hardware must complete all transmission within a 33,3 ms frame interval. With a 921.600 baud rate (8-N-1), the total capacity per frame is 3.072 bytes. The table below details how the data volume of each strategy consumes this 33,3 ms time window:
 
 | Strategy | Changed Positions | Total Bytes | Frame Interval Consumed |
 | :--- | :--- | :--- | :--- |
-| **Blocking Print** | 50 | 475 | $5.2\%$ |
-| **Blocking Print** | 200 | 1,900 | $20.6\%$ |
-| **Full-Screen DMA** | 1,920 | 1,923 | $20.9\%$ |
+| **Blocking Print** | 50 | 475 | $5,2\%$ |
+| **Blocking Print** | 200 | 1.900 | $20,6\%$ |
+| **Full-Screen DMA** | 1.920 | 1.923 | $20,9\%$ |
 
 For the logic and trade-offs behind these strategies, refer to [rendering strategies](../Explanation/uart-bandwidth-strategies.md). For timing constraints and budget tables, refer to [bandwidth and timing reference](../Reference/uart-bandwidth-timing.md).
 
@@ -178,7 +178,7 @@ Higher frame rates look smoother but demand more bandwidth. A scene running at 3
 Scenes using blocking print for sparse updates can achieve 45 to 60 FPS. Scenes using full-screen DMA are limited to 20 to 30 FPS.
 
 !!! note "Default Frame Rate Selection"
-    30 FPS was chosen because it provides sufficient smoothness for most animations while leaving 1,149 bytes per frame for animation logic and effects after DMA transmission.
+    30 FPS was chosen because it provides sufficient smoothness for most animations while leaving 1.149 bytes per frame for animation logic and effects after DMA transmission.
 
 ## Key Metrics at a Glance
 
@@ -186,13 +186,13 @@ Below is a summary of the key metrics and calculations that are referenced throu
 
 | Metric | Value | Context |
 | :--- | :--- | :--- |
-| Baud Rate | 921,600 bits/sec | Hardware limit on serial link |
-| Effective Throughput | 92,160 bytes/sec | After 10-bit framing overhead |
-| Screen Size | 80×24 = 1,920 bytes | VT100 standard dimensions |
-| Full-Screen Cost | 1,923 bytes | Including ESC[H home command |
+| Baud Rate | 921.600 bits/sec | Hardware limit on serial link |
+| Effective Throughput | 92.160 bytes/sec | After 10-bit framing overhead |
+| Screen Size | 80×24 = 1.920 bytes | VT100 standard dimensions |
+| Full-Screen Cost | 1.923 bytes | Including ESC[H home command |
 | Blocking Print per Position | ~9,5 bytes average | Varies by coordinate length |
-| 30 FPS Byte Budget | 3,072 bytes | Leaves 1,149 bytes after DMA |
-| 60 FPS Byte Budget | 1,536 bytes | Full-screen DMA exceeds this |
+| 30 FPS Byte Budget | 3.072 bytes | Leaves 1.149 bytes after DMA |
+| 60 FPS Byte Budget | 1.536 bytes | Full-screen DMA exceeds this |
 
 ## See Also
 

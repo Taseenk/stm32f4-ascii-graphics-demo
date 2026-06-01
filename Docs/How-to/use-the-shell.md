@@ -1,8 +1,8 @@
 # How to Use the Shell
 
-The Shell serves as a command-line interface (CLI) for interaction with the STM32F4 ASCII Graphics Demo application. This terminal-based environment facilitates command execution, access to help information, and navigation between various modes and scenes.
+The Shell is a command-line interface for the STM32F4 ASCII Graphics Demo. This terminal-based environment can run the demo program, access help, and switch between modes and scenes from the terminal.
 
-Adhering to a standardized OpenVMS command syntax ensures consistency and ease of reference. Implementing this syntax mimics a VT100 terminal environment over serial communication. This approach recreates a traditional computing experience for managing the system through a serial console.
+It uses OpenVMS-style command syntax, which is clear and predictable. This means commands follow a familiar structure that resembles vintage VT100 terminals.
 
 ## What is the Shell?
 

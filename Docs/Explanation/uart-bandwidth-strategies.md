@@ -1,6 +1,6 @@
 # Rendering Strategies
 
-The demo supports two rendering strategies with different bandwidth costs and performance tradeoffs. Full-screen double-buffered DMA transmits the entire 1,920-byte screen every frame at a fixed cost. Blocking/direct print updates only changed positions, costing fewer bytes for sparse updates but requiring careful synchronization. This page compares both approaches and guides strategy selection for new scenes.
+The demo supports two rendering strategies with different bandwidth costs and performance tradeoffs. Full-screen double-buffered DMA transmits the entire 1.920-byte screen every frame at a fixed cost. Blocking/direct print updates only changed positions, costing fewer bytes for sparse updates but requiring careful synchronization. This page compares both approaches and guides strategy selection for new scenes.
 
 ## Blocking/Direct Print Mode
 
@@ -31,7 +31,7 @@ Persistent UI elements provide a great example of this efficiency. A scoreboard 
 
 In DMA mode, the entire 80x24 screen buffer is rendered by the CPU into a back buffer in memory. When the frame is complete, a buffer swap and DMA trigger command transmit the complete frame as a single burst to the terminal, freeing the CPU to prepare the next frame while data flows over the serial link.
 
-This strategy ensures predictability with a fixed cost of 1,923 bytes per frame. Stable data loads enable reliable timing and consistent performance across different scenes. This method keeps the entire screen in sync during transmission, eliminating visual tearing and terminal-specific positioning errors.
+This strategy ensures predictability with a fixed cost of 1.923 bytes per frame. Stable data loads enable reliable timing and consistent performance across different scenes. This method keeps the entire screen in sync during transmission, eliminating visual tearing and terminal-specific positioning errors.
 
 DMA simplifies development by rendering directly to a linear buffer. By relying only on a "home cursor" command and a full buffer dump. The following section summarizes the technical trade-offs regarding system resources and performance limits when using this approach.
 
@@ -42,8 +42,8 @@ The following table compares the trade-offs of full-screen DMA transmission, spe
 | Category | Advantages | Disadvantages |
 | :--- | :--- | :--- |
 | **Efficiency** | Scene logic remains simple because the code renders to a linear buffer without tracking specific changes. | Fixed transmission costs mean sparse scene updates do not reduce overhead or save bandwidth. |
-| **Performance** | Timing is entirely predictable; every frame costs exactly 1,923 bytes regardless of what is happening on screen. | Bandwidth limits are easily reached; at 60 FPS, transmission takes 20.85 ms, which exceeds a standard 16.7 ms frame budget. |
-| **CPU Impact** | No complex calculations are needed to determine which areas of the screen require refreshing. | Transmission consumes 62.5% of the frame interval at 30 FPS, leaving only 37.5% for computation and state management. |
+| **Performance** | Timing is entirely predictable; every frame costs exactly 1.923 bytes regardless of what is happening on screen. | Bandwidth limits are easily reached; at 60 FPS, transmission takes 20,85 ms, which exceeds a standard 16,7 ms frame budget. |
+| **CPU Impact** | No complex calculations are needed to determine which areas of the screen require refreshing. | Transmission consumes 62,5% of the frame interval at 30 FPS, leaving only 37,5% for computation and state management. |
 | **Reliability** | The entire screen remains in sync during transmission, eliminating tearing and terminal-specific positioning errors. | High bandwidth consumption can starve the CPU of time needed for complex per-frame logic. |
 
 ### When to Use DMA
@@ -60,13 +60,13 @@ The following table breaks down the data transmission costs for different levels
 
 | Scenario | Changed Positions | Blocking Print Bytes | DMA Bytes | Winner | Efficiency |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Sparse changes | 1-50 | 52-375 | 1,923 | **Blocking Print** | 25-37x more efficient |
-| Moderate changes | 50-255 | 375-1,912 | 1,923 | **Blocking Print** | Comparable |
-| Heavy changes | 255-500 | 1,912-3,750 | 1,923 | **DMA** | Fixed cost more efficient |
+| Sparse changes | 1-50 | 52-375 | 1.923 | **Blocking Print** | 25-37x more efficient |
+| Moderate changes | 50-255 | 375-1.912 | 1.923 | **Blocking Print** | Comparable |
+| Heavy changes | 255-500 | 1.912-3.750 | 1.923 | **DMA** | Fixed cost more efficient |
 
 !!! note "Byte Cost Calculations"
-    Blocking print per-position cost: cursor positioning (6-8 bytes) + character (1 byte) = 7.5 bytes average
-    Full-screen DMA cost: 1,920-byte buffer + 3-byte home sequence (ESC[H) = 1,923 bytes
+    Blocking print per-position cost: cursor positioning (6-8 bytes) + character (1 byte) = 7,5 bytes average
+    Full-screen DMA cost: 1.920-byte buffer + 3-byte home sequence (ESC[H) = 1.923 bytes
     For detailed baud rate conversions and frame budget calculations, see [Fundamentals](../Explanation/uart-bandwidth.md)
 
 ## Hybrid Approach
