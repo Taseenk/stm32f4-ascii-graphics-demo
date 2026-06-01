@@ -72,6 +72,7 @@ markdown_extensions:
   - tables  # Standard GFM table support
   - pymdownx.highlight: # Code syntax highlighting
       anchor_linenums: true
+  - pymdownx.details # Collapsible block sections
   - pymdownx.superfences  # Code syntax highlighting
   - pymdownx.inlinehilite # Inline code highlighting
   - toc:  # Table of contents configuration
@@ -98,6 +99,7 @@ nav:
 
   - How-to Guides:
     - Use the CLI Shell: How-to/use-the-shell.md
+    - Add a New Scene: How-to/add-a-scene.md
 
   - Reference:
     - Shell Commands: Reference/shell-commands.md
@@ -111,6 +113,7 @@ nav:
 
   - Explanation:
     - Explanation/index.md
+    - Scene Architecture: Explanation/scenes-architecture.md
     - UART Bandwidth & Timing:
       - Fundamentals: Explanation/uart-bandwidth.md
       - Rendering Strategies: Explanation/uart-bandwidth-strategies.md
@@ -192,7 +195,6 @@ not_in_nav: |
   Tutorial/flashing.md
   Tutorial/terminal-setup.md
   How-to/index.md
-  How-to/add-a-scene.md
   How-to/configure-uart-dma.md
   How-to/change-baud-fps.md
   Explanation/three-tier-architecture.md
