@@ -32,6 +32,14 @@ Scenes follow a strict functional architecture to manage the flow. The following
 
 Each scene requires exactly two public functions, an init function and a render function. Private helper functions within the scene file organize rendering logic into logical modules. For example, a scene might have separate helper functions to draw a border, update animated elements, and render text. This organization keeps the code modular and maintainable.
 
+### Scene Functions: Init
+
+The init function receives no frame information and executes only a single time when the scene manager transitions into the START state. Typical use cases are static layout elements that remain constant across frames. While typical operations are clearing the display, rendering fixed text, and setting the initial values for scene-local variables.
+
+### Scene Functions: Render
+
+The render function executes every frame while the scene remains active. During execution, the function constantly receives the **scene_frame** count, which begins at zero. This counter serves as the foundation for all animations, providing the necessary data for timing, position calculations, and conditional rendering logic. Since this code runs continuously, maintaining high performance and efficiency remains a top priority.
+
 ## Scene Manager Integration
 
 The scene manager operates a lookup table of registered scenes and automatically cycles through them based on the selected mode. It manages scene timing via the frame counter, handles state transitions (START to RUN to EXIT), and resets the terminal between scenes. The manager also handles switching between auto and playlist modes. The following table details the core files and their specific roles within the scene manager architecture:
@@ -45,6 +53,29 @@ Scenes depend on the scene manager to call init and render at the correct times 
 
 !!! note "Scene and Manager Separation of Concerns"
     Scenes are designed to be independent and reusable, while the manager provides the necessary infrastructure for scene execution and lifecycle management.
+
+### Scene Configuration Structure
+
+The scene manager makes use of the **SceneConfig_t structure** to store metadata for every scene. This structure contains the scene identifier, the duration measured in frames, the transition style, and function pointers for both the init and render functions. See the table below for a breakdown of the scene field properties:
+
+| Field | Description |
+| :--- | :--- |
+| id | A unique identification number assigned to each specific scene |
+| duration | The total count of frames a scene runs before the next sequence starts |
+| screen_transition | Controls how the display behaves when switching between active scenes |
+| init | A reference to the public function that handles scene setup |
+| render | A reference to the public function responsible for drawing the scene |
+
+???+ "Scene Configuration Structure in scene_manager.h"
+    ```c
+    typedef struct {
+        SceneID_t id;                        // Scene identifier
+        uint32_t duration;                   // Duration of the scene in frames
+        SceneTransition_t screen_transition; // Type of screen transition effect
+        void (*init)(void);                  // Initialization function pointer
+        void (*render)(uint32_t scene_frame); // Render function pointer
+    } SceneConfig_t;
+    ```
 
 ### Scene Lifecycle
 
@@ -61,6 +92,28 @@ The **START** phase serves as the initialization point where the scene manager c
 The **RUN** phase represents the active state where the render function is called repeatedly. It makes use of the scene frame counter for animation timing and position calculations until the specified duration is met.
 
 The **EXIT** phase handles the cleanup automatically once the frame counter reaches the configured limit. The manager resets terminal styling to default values so the scene itself does not need to manage cleanup logic.
+
+#### Understanding Transition Types
+
+Transition types determine the behavior of the display during the movement from one scene to the next. The **SceneTransition_t enum** within `scene_manager.h` defines two distinct styles. See the table below for a comparison of the transition types:
+
+| Transition Type | Behavior | Use Case |
+| :-- | :-- | :-- |
+| SCENE_TRANSITION_CLEAR | Wipes the screen and buffer before the next scene starts | Standard scenes requiring a clean slate |
+| SCENE_TRANSITION_NONE | Immediate switch where the new scene renders over old content | Continuous animations like rain or scrolling text |
+
+**SCENE_TRANSITION_CLEAR** is the standard choice for most scenarios by wiping the display and resetting styles before a new scene begins. Ensuring a clean start for scenes with unique layouts.
+
+In contrast, **SCENE_TRANSITION_NONE** keeps the previous frame visible as the next scene starts rendering. This supports visual continuity for specific implementations that would benefit from the previous frame's content remaining on screen.
+
+???+ "SceneTransition_t Enumeration in scene_manager.h"
+    ```c
+    typedef enum {
+        SCENE_TRANSITION_NONE,  // Instant switch with no visual effect
+        SCENE_TRANSITION_CLEAR, // Clear the screen and buffer before next scene
+        SCENE_TOTAL_TRANSITIONS // Total number of available transition types
+    } SceneTransition_t;
+    ```
 
 ### Playback Modes
 
@@ -102,11 +155,28 @@ Playlist Mode allows scenes to run in the order specified by the scene_playlist 
     };
     ```
 
+### Scene Identifiers
+
+Scene identifiers are enumeration values defined in the **SceneID_t enum** in `scene_manager.h`. Each scene must have a unique identifier. The identifier serves as the lookup key when the scene manager searches the scene_table to find a scene's configuration. When adding a new scene, insert the identifier before `SCENE_TOTAL_SCENES`:
+
+???+ Scene_ID_t Enumeration in scene_manager.h
+    ```c
+    typedef enum {
+        SCENE_ATTRIBUTES_DEMO,
+        // ... existing scenes ...
+        SCENE_MYEFFECT,        // The new scene
+        SCENE_TOTAL_SCENES     // Must remain last
+    } SceneID_t;
+    ```
+
+!!! none "Naming conventions for scene identifiers"
+    Scene identifiers follow the naming convention `SCENE_<NAME>` where `<NAME>` describes the scene in uppercase (for example, `SCENE_MATRIX_RAIN`, `SCENE_ATTRIBUTES_DEMO`). The enum must end with `SCENE_TOTAL_SCENES`, which is used internally by the manager.
+
 ## See Also
 
 Scenes depend on the terminal.h API for all output operations. The terminal module provides cursor positioning, text rendering, color control, and attribute management. Reference documentation for these capabilities and bandwidth constraints is available in the technical reference section.
 
-- [Add a New Scene](../How-to/add-a-scene-how-to.md) — Step-by-step guide to create and register a new scene
+- [Add a New Scene](../How-to/add-a-scene.md) — Step-by-step guide to create and register a new scene
 - [Screen & Cursor Control](../Reference/terminal-screen-cursor.md) — Positioning and clearing the display
 - [Rendering Modes & Graphics](../Reference/terminal-rendering.md) — Direct and buffered rendering strategies
 - [Bandwidth and Timing](../Reference/uart-bandwidth-timing.md) — Frame timing constraints and byte budgets
