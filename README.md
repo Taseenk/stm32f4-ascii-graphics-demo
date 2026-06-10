@@ -7,7 +7,7 @@
 
 > Real-time ASCII art demo scenes rendered on a PC terminal over a high-speed UART link, running bare-metal on the STM32F407 Discovery board.
 
-![terminal-boot-sequence](/Docs/Assets/images/terminal-boot-sequence.gif)
+![terminal-boot-sequence](Docs/Assets/Images/terminal-boot-sequence.gif)
 
 ## Overview
 
@@ -54,7 +54,7 @@ The firmware uses a layered architecture to separate concerns between applicatio
 
 The firmware implements a strict 3-Tiered Architecture designed to decouple high-level application logic from the low-level physical layers of the STM32F4 microcontroller.
 
-![The 3-Tiered Structure](/Docs/Assets/images/the-3-tiered-structure.png)
+![The 3-Tiered Structure](Docs/Assets/Images/the-3-tiered-structure.png)
 
 #### Application Layer
 
