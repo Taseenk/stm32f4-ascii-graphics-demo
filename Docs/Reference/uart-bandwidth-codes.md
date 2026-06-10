@@ -1,6 +1,6 @@
 # ANSI Code Reference
 
-Escape sequences (ANSI/VT100 codes) control text formatting, colors, and cursor position. Each code consumes bytes from the frame's transmission "budget". This page catalogs the codes used in the project and quantifies their cost.
+Escape sequences (ANSI/VT100 codes) control text formatting, colours, and cursor position. Each code consumes bytes from the frame's transmission "budget". This page catalogs the codes used in the project and quantifies their cost.
 
 ## Screen Control
 
@@ -35,7 +35,7 @@ This command provides a fixed-length shortcut to return the cursor to the top-le
 
 ### Absolute Cursor Positioning
 
-The command moves the cursor to a specific screen row and column. Byte counts increase as coordinates transition from single digits (1-9) to double digits (10-80).
+The command moves the cursor to a specific screen row and column. Byte counts increase as coordinates transition from single digits (1–9) to double digits (10–80).
 
 | Sequence | Bytes | Example |
 | --- | --- | --- |
@@ -49,13 +49,13 @@ These commands shift the cursor up, down, left, or right from its current spot. 
 
 | Sequence | Bytes | Example |
 | --- | --- | --- |
-| `ESC[nA` | 4-5 | Move up N rows |
-| `ESC[nB` | 4-5 | Move down N rows |
-| `ESC[nC` | 4-5 | Move right N columns |
-| `ESC[nD` | 4-5 | Move left N columns |
+| `ESC[nA` | 4–5 | Move up N rows |
+| `ESC[nB` | 4–5 | Move down N rows |
+| `ESC[nC` | 4–5 | Move right N columns |
+| `ESC[nD` | 4–5 | Move left N columns |
 
 !!! warning "Total Transmission Overhead"
-    Keep in mind that these byte counts represent only the overhead for moving the cursor. the additional bytes required to print the actual content or characters at the new destination must also be factored in.
+    Keep in mind that these byte counts represent only the overhead for moving the cursor. The additional bytes required to print the actual content or characters at the new destination must also be factored in.
 
 !!! example "Cursor Movement Implementation"
     ```c
@@ -120,8 +120,8 @@ Each command in the standard palette uses a two-digit code to represent a specif
 
 | Sequence | Bytes | Purpose |
 | :--- | :--- | :--- |
-| `ESC[3Xm` | 5 | Standard Foreground (30-37) |
-| `ESC[4Xm` | 5 | Standard Background (40-47) |
+| `ESC[3Xm` | 5 | Standard Foreground (30–37) |
+| `ESC[4Xm` | 5 | Standard Background (40–47) |
 | `ESC[39m` | 5 | Default Foreground |
 | `ESC[49m` | 5 | Default Background |
 
@@ -136,21 +136,21 @@ Each command in the standard palette uses a two-digit code to represent a specif
 | Cyan | `ESC[36m` | `ESC[46m` | 5 |
 | White | `ESC[37m` | `ESC[47m` | 5 |
 
-### Extended 256-colour Palette
+### Extended 256-Colour Palette
 
 The Extended 256-colour sequences are significantly larger because they require a multi-parameter format to specify the xterm index.
 
 | Sequence | Bytes | Purpose |
 | :--- | :--- | :--- |
-| `ESC[38;5;Nm` | 7-11 | Extended Foreground (0-255) |
-| `ESC[48;5;Nm` | 7-11 | Extended Background (0-255) |
+| `ESC[38;5;Nm` | 7–11 | Extended Foreground (0–255) |
+| `ESC[48;5;Nm` | 7–11 | Extended Background (0–255) |
 
 !!! example "Colour Sequence Implementation"
     ```c
     // Set a standard red foreground
     // Byte breakdown:
     // ESC (1) + [ (1) + 3 (1) + 1 (1) + m (1) = 5 bytes total
-    SET text_color TO RED
+    SET text_colour TOO RED
 
     // Set an extended bright green foreground (index 82)
     // Byte breakdown:
@@ -162,9 +162,9 @@ The Extended 256-colour sequences are significantly larger because they require 
 
 The efficiency of terminal updates depends on the total data volume transmitted. Every byte saved in an escape sequence reduces the time the serial interface is occupied, allowing for higher frame rates and more responsive visuals.
 
-### Using Basic Colors over Extended Palette
+### Using Basic Colours Overextended Palette
 
-Selecting the standard 16 colour palette is a fundamental way to reduce byte counts. Each standard colour command costs only 5 bytes. In contrast, an extended palette command requires between 7 and 11 bytes because the index is sent as an ASCII string where values in the range (10-80) or higher require more digits than those in the (1-9) range.
+Selecting the standard 16 colour palette is a fundamental way to reduce byte counts. Each standard colour command costs only 5 bytes. In contrast, an extended palette command requires between 7 and 11 bytes because the index is sent as an ASCII string where values in the range (10–80) or higher require more digits than those in the (1–9) range.
 
 Evaluate whether a specific shade from the extended palette is necessary for the display or if a standard colour provides sufficient contrast for the UI element.
 
@@ -199,7 +199,7 @@ Multiple attributes can be applied in a single command by separating the paramet
     // Inefficient: Two separate commands
     // ESC[1m (4 bytes) + ESC[31m (5 bytes) = 9 bytes
     APPLY STYLE BOLD
-    SET COLOR TO RED
+    SET Colour TOO RED
 
     // Optimized: Single combined command
     // ESC[1:31m = 6 bytes

@@ -4,7 +4,7 @@ The Shell is a command-line interface for the STM32F4 ASCII Graphics Demo. This 
 
 It uses OpenVMS-style command syntax, which is clear and predictable. This means commands follow a familiar structure that resembles vintage VT100 terminals.
 
-## What is the Shell?
+## What Is the Shell?
 
 The Shell serves as a text-based command interpreter, functioning as the primary user interface for the STM32F4 system. System capabilities include:
 
@@ -33,7 +33,7 @@ Each element serves a specific purpose:
 
 * **COMMAND**: The primary action (e.g., `RUN`, `HELP`)
 * **TOPIC**: The target of the command (e.g., `DEMO`, the program to run or help topic)
-* **QUALIFIER**: Optional modifiers that refine behavior, always prefixed with `/` (e.g., `/MODE=AUTO`)
+* **QUALIFIER**: Optional modifiers that refine behaviour, always prefixed with `/` (e.g., `/MODE=AUTO`)
 
 **Example Breakdown:**
 
@@ -45,7 +45,7 @@ COMMAND     TOPIC         QUALIFIER
 
 ### Qualifier Formats
 
-Qualifiers are optional parameters that modify command behavior. They follow the format `/QUALIFIER=VALUE`:
+Qualifiers are optional parameters that modify command behaviour. They follow the format `/QUALIFIER=VALUE`:
 
 | Qualifier | Valid Values        | Example              |
 |-----------|---------------------|----------------------|
@@ -148,7 +148,7 @@ STM32F4> RUN DEMO /MODE=PLAYLIST
 
 This explicitly launches the demo in **Playlist mode**.
 
-**Result:** Same as Example 1 (default behavior).
+**Result:** Same as Example 1 (default behaviour).
 
 ---
 
@@ -394,4 +394,4 @@ Allow all scenes to complete. The application automatically returns to Shell mod
 
 ### Jumbled Characters
 
-Verify terminal emulator is set to support ANSI color codes and UTF-8 encoding.
+Verify terminal emulator is set to support ANSI colour codes and UTF-8 encoding.

@@ -10,7 +10,7 @@ Rather than a full-screen refresh, this mode allows each scene to selectively id
 
 This strategy is built for localized updates where the byte cost varies directly with the number of changed positions. While highly efficient for sparse scenes, this advantage diminishes as the volume of updates increases. In scenes with heavy movement, the overhead of sending individual coordinates for every character can eventually exceed the cost of a single full-screen dump. The following section breaks down how these factors impact system performance and reliability.
 
-### Advantages vs. Disadvantages for blocking print transmission
+### Advantages Vs. Disadvantages for Blocking Print Transmission
 
 The following table outlines the trade-offs of using blocking print for terminal updates, focusing on resource allocation, performance scalability, and potential technical bottlenecks.
 
@@ -23,7 +23,7 @@ The following table outlines the trade-offs of using blocking print for terminal
 
 ### When to Use Blocking Print
 
-Blocking print works best for visuals where only specific parts of the screen change at a time. It can manmage individual character animations or falling particles by focusing strictly on the changing coordinates. Because the logic only processes these active fragments, the display remains fluid and responsive without straining the hardware.
+Blocking print works best for visuals where only specific parts of the screen change at a time. It can manage individual character animations or falling particles by focusing strictly on the changing coordinates. Because the logic only processes these active fragments, the display remains fluid and responsive without straining the hardware.
 
 Persistent UI elements provide a great example of this efficiency. A scoreboard or a clock display highlights the core strength of the technique. The static background remains untouched, while the system only pushes data when a number or a digit actually changes.
 
@@ -35,13 +35,13 @@ This strategy ensures predictability with a fixed cost of 1.923 bytes per frame.
 
 DMA simplifies development by rendering directly to a linear buffer. By relying only on a "home cursor" command and a full buffer dump. The following section summarizes the technical trade-offs regarding system resources and performance limits when using this approach.
 
-### Advantages vs. Disadvantages for full screen DMA transmission
+### Advantages Vs. Disadvantages for Full Screen DMA Transmission
 
 The following table compares the trade-offs of full-screen DMA transmission, specifically regarding timing consistency, bandwidth usage, and hardware compatibility.
 
 | Category | Advantages | Disadvantages |
 | :--- | :--- | :--- |
-| **Efficiency** | Scene logic remains simple because the code renders to a linear buffer without tracking specific changes. | Fixed transmission costs mean sparse scene updates do not reduce overhead or save bandwidth. |
+| **Efficiency** | Scene logic remains simple because the code renders to a linear buffer without tracking specific changes. | Fixed transmission costs mean to sparse scene updates do not reduce overhead or save bandwidth. |
 | **Performance** | Timing is entirely predictable; every frame costs exactly 1.923 bytes regardless of what is happening on screen. | Bandwidth limits are easily reached; at 60 FPS, transmission takes 20,85 ms, which exceeds a standard 16,7 ms frame budget. |
 | **CPU Impact** | No complex calculations are needed to determine which areas of the screen require refreshing. | Transmission consumes 62,5% of the frame interval at 30 FPS, leaving only 37,5% for computation and state management. |
 | **Reliability** | The entire screen remains in sync during transmission, eliminating tearing and terminal-specific positioning errors. | High bandwidth consumption can starve the CPU of time needed for complex per-frame logic. |
@@ -52,7 +52,7 @@ DMA is the best choice for visuals that require a total screen refresh all at on
 
 This method ensures that every pixel on the screen updates at the same time. This prevents visual "tearing" and keeps the image perfectly synced during fast motion.
 
-## Trade-Off Byte Cost by Scenario
+## Trade-off Byte Cost by Scenario
 
 The choice between blocking print and DMA depends on how many positions change per frame. The byte cost comparison reveals the threshold where one strategy becomes more efficient than the other.
 
@@ -60,12 +60,12 @@ The following table breaks down the data transmission costs for different levels
 
 | Scenario | Changed Positions | Blocking Print Bytes | DMA Bytes | Winner | Efficiency |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Sparse changes | 1-50 | 52-375 | 1.923 | **Blocking Print** | 25-37x more efficient |
-| Moderate changes | 50-255 | 375-1.912 | 1.923 | **Blocking Print** | Comparable |
-| Heavy changes | 255-500 | 1.912-3.750 | 1.923 | **DMA** | Fixed cost more efficient |
+| Sparse changes | 1–50 | 52–375 | 1.923 | **Blocking Print** | 25–37x more efficient |
+| Moderate changes | 50–255 | 375–1.912 | 1.923 | **Blocking Print** | Comparable |
+| Heavy changes | 255–500 | 1.912–3.750 | 1.923 | **DMA** | Fixed cost more efficient |
 
 !!! note "Byte Cost Calculations"
-    Blocking print per-position cost: cursor positioning (6-8 bytes) + character (1 byte) = 7,5 bytes average
+    Blocking print per-position cost: cursor positioning (6–8 bytes) + character (1 byte) = 7,5 bytes average
     Full-screen DMA cost: 1.920-byte buffer + 3-byte home sequence (ESC[H) = 1.923 bytes
     For detailed baud rate conversions and frame budget calculations, see [Fundamentals](../Explanation/uart-bandwidth.md)
 

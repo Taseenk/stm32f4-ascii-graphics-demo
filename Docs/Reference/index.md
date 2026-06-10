@@ -4,7 +4,7 @@ Reference documentation provides technical lookup information organized by funct
 
 ## Terminal Module
 
-The terminal module handles all serial output and screen control. Documentation covers cursor positioning and screen management, text styling with colors and attributes, and two rendering strategies with graphics support.
+The terminal module handles all serial output and screen control. Documentation covers cursor positioning and screen management, text styling with colours and attributes, and two rendering strategies with graphics support.
 
 - [Screen & Cursor Control](../Reference/terminal-screen-cursor.md)
 - [Colour & Text Attributes](../Reference/terminal-colour-attributes.md)
@@ -12,7 +12,7 @@ The terminal module handles all serial output and screen control. Documentation 
 
 ## Shell Interface
 
-The shell provides an OpenVMS-style command interface for controlling system behavior. Documentation covers command syntax, available commands and qualifiers, and error codes.
+The shell provides an OpenVMS-style command interface for controlling system behaviour. Documentation covers command syntax, available commands and qualifiers, and error codes.
 
 - [Shell Command Reference](../Reference/shell-commands.md)
 

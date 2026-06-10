@@ -23,11 +23,11 @@ Three functions handle direct output. `TerminalPrint()` sends a null-terminated 
 
 Direct output is appropriate for sparse text updates. Use it when rendering only a few characters per frame or when text must appear immediately without buffering delay. Avoid direct output for full-screen rendering. Sending 1920 characters each frame at 921,600 baud requires roughly 20ms per frame, which blocks the main loop.
 
-## Framebuffer & Double Buffering (Non-blocking)
+## Frame Buffer & Double Buffering (Non-Blocking)
 
 Double buffering separates rendering from transmission. Code writes to a back buffer. When ready, a buffer swap triggers DMA transmission of the entire frame without blocking the CPU.
 
-### Function Reference (Non-blocking)
+### Function Reference (Non-Blocking)
 
 Five functions manage buffered rendering. `TerminalIsBufferReady()` checks if the previous DMA transfer is complete. `TerminalBufferFlush()` swaps buffers and initiates transmission. `TerminalBufferClear()` fills the back buffer with spaces. `TerminalBufferDrawChar()` and `TerminalBufferDrawString()` write to the buffer at specified positions.
 
@@ -49,7 +49,7 @@ Five functions manage buffered rendering. `TerminalIsBufferReady()` checks if th
 !!! warning "Buffer ready check"
     Always call `TerminalIsBufferReady()` before writing to the back buffer. If a DMA transfer is in progress, writing corrupts the transmitted frame. Skip the frame if not ready.
 
-### When to Use (Non-blocking)
+### When to Use (Non-Blocking)
 
 Use buffered output for complete scene redraws, animation, and graphical scenes. Buffering eliminates flicker by guaranteeing complete frames only. Avoid buffering for small, latency-sensitive updates (a status line or cursor position that must appear instantly).
 

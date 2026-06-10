@@ -1,14 +1,14 @@
 # Fundamentals
 
-## What is Bandwidth?
+## What Is Bandwidth?
 
-bandwidth is the maximum capacity to transmit data within a set timeframe.[^1] In serial communication, this refers to the total volume of data that can be sent over the serial interface per second. This is a physical limit that determines animation smoothness and frame rate feasibility. Staying within these capacity limits ensures a consistent signal and reliable data transfer.
+Bandwidth is the maximum capacity to transmit data within a set time frame.[^1] In serial communication, this refers to the total volume of data that can be sent over the serial interface per second. This is a physical limit that determines animation smoothness and frame rate feasibility. Staying within these capacity limits ensures a consistent signal and reliable data transfer.
 
-### bandwidth in real-world scenarios
+### Bandwidth in Real-World Scenarios
 
 Now that bandwidth is defined as the physical limit of a connection, it’s important to differentiate it from related concepts. While bandwidth sets the maximum data capacity, other factors determine how effectively that bandwidth is utilized in real-world scenarios.
 
-#### Bandwidth vs speed
+#### Bandwidth Vs Speed
 
 Bandwidth is often confused with speed, but they are distinct concepts. Speed refers to how fast data is transmitted, while bandwidth is the total amount of data that can be transmitted in a given time.[^1]
 
@@ -18,17 +18,17 @@ Throughput is the measure of data successfully delivered over a connection in re
 
 #### Latency
 
-Latency is the duration of the delay between a sender initiating a transfer and the receiver obtaining that data. This measurement focuses on the time spent traveling.[^1] Even with high bandwidth, significant latency results in noticeable pauses or lag during communication.
+Latency is the duration of the delay between a sender initiating a transfer and the receiver obtaining that data. This measurement focuses on the time spent travelling.[^1] Even with high bandwidth, significant latency results in noticeable pauses or lag during communication.
 
 ### Understanding Baud Rate
 
 While bandwidth is the maximum capacity, baud rate determines the actual speed at which individual bits travel to fill that capacity. In the context of serial communication, baud rate measures the number of signal transitions per second.[^2] In this project this rate directly corresponds to the number of bits per second being moved.
 
-Baud rate is a fundamental element for UART (Universal Asynchronous Receiver-Transmitter), which serves as the primary method for serial data communication in this project. When communicating via UART it is important that the transmitter and receiver have matching baudrate. An difference in the baud rate often results in corrupted data, transmission errors, or a total loss of connectivity.[^3]
+Baud rate is a fundamental element for UART (Universal Asynchronous Receiver-Transmitter), which serves as the primary method for serial data communication in this project. When communicating via UART it is important that the transmitter and receiver have matching baud rate. A difference in the baud rate often results in corrupted data, transmission errors, or a total loss of connectivity.[^3]
 
-### project configuration
+### Project Configuration
 
-Followig the theoretical concepts of bandwidth and baud rate, it’s important to look at how these are applied in the context of this project. This demo is configured to use a baud rate of 921.600 baud. The highest available speed supported by the STM32F4 microcontroller. This configuration is necessary to maximize bandwidth for animation data. This enables higher frame rates, providing the stability needed for more complex scenes.
+Following the theoretical concepts of bandwidth and baud rate, it’s important to look at how these are applied in the context of this project. This demo is configured to use a baud rate of 921.600 baud. The highest available speed supported by the STM32F4 microcontroller. This configuration is necessary to maximize bandwidth for animation data. This enables higher frame rates, providing the stability needed for more complex scenes.
 
 #### The 8-N-1 Packet Overhead
 
@@ -83,7 +83,7 @@ Frame intervals and byte budgets are at the core of understanding the constraint
 
 The following section breaks down how to calculate these values and what they mean for animation performance at different frame rates.
 
-### Calculating Available Time per Frame
+### Calculating Available Time Per Frame
 
 Stability at 921.600 baud requires a fixed transmission window. Setting a target frame rate defines this window. For example, at 30 FPS, the frame interval is approximately 33,3 ms and is calculated as follows:
 
@@ -110,7 +110,7 @@ The table below provides a lookup for common targets:
 
 For detailed tables on transmission times and a breakdown of how different rendering strategies impact these budgets, see the full [bandwidth and timing reference](../Reference/uart-bandwidth-timing.md).
 
-## The hidden cost with escape sequences
+## The Hidden Cost with Escape Sequences
 
 While individual escape sequences appear small, they represent a significant hidden cost that can quickly consume the frame budget. Because these sequences are non-printable control characters, they occupy transmission time without contributing to the actual scene on the screen. The table below details example sequences and their associated costs:
 

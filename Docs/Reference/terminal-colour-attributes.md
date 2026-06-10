@@ -1,6 +1,6 @@
 # Colour & Text Attributes
 
-Text attributes such as bold, dim, underline, blink, reverse, and strikethrough combined with foreground and background colours to define visually distinct interface regions. This document catalogs all available attributes and colour codes for terminal output.
+Text attributes such as bold, dim, underline, blink, reverse, and strike through combined with foreground and background colours to define visually distinct interface regions. This document catalogs all available attributes and colour codes for terminal output.
 
 ## Text Attributes
 
@@ -63,10 +63,10 @@ TerminalPrint("Normal text");
 | **Underline** | `ESC[4m` | Single line below text | Universal |
 | **Blink** | `ESC[5m` | Slow blink (~1 Hz) | Common, some terminals disable for accessibility |
 | **Reverse** | `ESC[7m` | Swap foreground & background | Universal |
-| **Strikethrough** | `ESC[9m` | Line through text | Modern terminals only (less reliable) |
+| **Strike through** | `ESC[9m` | Line through text | Modern terminals only (less reliable) |
 
 !!! warning "Terminal compatibility"
-    Blink and strikethrough are not supported by all terminal emulators. Test on your target terminals.
+    Blink and strike through are not supported by all terminal emulators. Test on your target terminals.
 
 !!! note "Selective reset"
     Use `TERM_ATTR_RESET_BOLD`, `TERM_ATTR_RESET_UNDERLINE`, etc. to disable individual attributes without resetting colours. Full reset with `TERM_ATTR_RESET` will clear all styling *and* colours.
@@ -75,7 +75,7 @@ TerminalPrint("Normal text");
 
 The module manages text colour through the basic 16-colour ANSI set or the 256-colour extended system. The user can select specific colours to define different object types or layers within a scene.
 
-### Standard 16-Colour Palette (foreground)
+### Standard 16-Colour Palette (Foreground)
 
 ```c
 typedef enum {
@@ -91,9 +91,9 @@ typedef enum {
 } ForegroundColour_t;
 ```
 
-### Extended 256-Colour Palette (foreground)
+### Extended 256-Colour Palette (Foreground)
 
-The module also supports xterm-256, which provides 216 RGB colours plus a 24-step grayscale ramp.
+The module also supports xterm-256, which provides 216 RGB colours plus a 24-step greyscale ramp.
 
 ```c
 // Example: Extended colours use an offset of 256
@@ -133,7 +133,7 @@ TerminalPrint("White on blue");
 
 Background colours fill the space behind each character. The user typically applies these to render solid shapes, define screen regions, or manage the depth of field in animated frames.
 
-### Standard 16-Colour Palette (background)
+### Standard 16-Colour Palette (Background)
 
 ```c
 typedef enum {
@@ -149,7 +149,7 @@ typedef enum {
 } BackgroundColour_t;
 ```
 
-### Extended 256-Colour Palette (background)
+### Extended 256-Colour Palette (Background)
 
 ```c
 BG_DARK_BLUE = EXTENDED_COLOURS_OFFSET + 17,     // xterm index 17
@@ -173,7 +173,7 @@ TerminalSetBackgroundColour(BG_DARK_BLUE);
 TerminalPrint("White text on dark blue background");
 ```
 
-## xterm-256 Colour Index Reference
+## Xterm-256 Colour Index Reference
 
 The extended palette is accessed by adding a specific index to `EXTENDED_COLOURS_OFFSET`. The `BuildColourSequence_` function uses this offset to generate the `38;5;n` (foreground) or `48;5;n` (background) ANSI sequences.
 
@@ -181,9 +181,9 @@ The extended palette is accessed by adding a specific index to `EXTENDED_COLOURS
 
 | Index Range | Description | Implementation Context |
 | :--- | :--- | :--- |
-| 0–15 | Standard ANSI | Maps to basic 16-colour codes (30–37, 40–47). |
+| 0–15 | Standard ANSI | Maps too basic 16-colour codes (30–37, 40–47). |
 | 16–231 | RGB colour Cube | 216 fixed colours for UI elements and gradients. |
-| 232–255 | Grayscale Ramp | 24 shades from near-black to near-white. |
+| 232–255 | Greyscale Ramp | 24 shades from near-black to near-white. |
 
 ### Extended Palette Key Indices (16–231)
 
@@ -206,15 +206,15 @@ TerminalSetTextColour(FG_BRIGHT_GREEN);
 TerminalSetBackgroundColour(EXTENDED_COLOURS_OFFSET + 82);
 ```
 
-### Grayscale Reference (indices 232–255)
+### Greyscale Reference (Indices 232–255)
 
-The grayscale ramp provides 24 shades (indices 232–255) ranging from near-black to near-white. To use these shades, add the specific index to the `EXTENDED_COLOURS_OFFSET`. This section lists the grayscale indices that have specific constants defined in the module for UI depth and contrast.
+The greyscale ramp provides 24 shades (indices 232–255) ranging from near-black to near-white. To use these shades, add the specific index to the `EXTENDED_COLOURS_OFFSET`. This section lists the greyscale indices that have specific constants defined in the module for UI depth and contrast.
 
 | Index | Constant defined | Visual Description |
 | :--- | :--- | :--- |
 | **232** | `BG_NEAR_BLACK_1` | Deep Charcoal (Step 1) |
-| **234** | `BG_NEAR_BLACK_2` | Darkest Gray (Step 3) |
-| **238** | `BG_DARK_GRAY` | Visible Slate Gray (Step 7) |
+| **234** | `BG_NEAR_BLACK_2` | Darkest Grey (Step 3) |
+| **238** | `BG_DARK_GRAY` | Visible Slate Grey (Step 7) |
 | **244** | `BG_MID_GRAY` | Neutral Mid-Tone (Step 13) |
 
 ```c
@@ -288,7 +288,7 @@ The module converts function calls into the raw escape sequences required by the
 | Underline | `ESC[4m` | `ANSI_UNDERLINE` | `TerminalSetAttribute(TERM_ATTR_UNDERLINE)` |
 | Blink | `ESC[5m` | `ANSI_BLINK` | `TerminalSetAttribute(TERM_ATTR_BLINK)` |
 | Reverse | `ESC[7m` | `ANSI_REVERSE_MODE` | `TerminalSetAttribute(TERM_ATTR_REVERSE)` |
-| Strikethrough | `ESC[9m` | `ANSI_STRIKETHROUGH` | `TerminalSetAttribute(TERM_ATTR_STRIKE)` |
+| Strike through | `ESC[9m` | `ANSI_STRIKETHROUGH` | `TerminalSetAttribute(TERM_ATTR_STRIKE)` |
 | **Foreground colour** | `ESC[3Xm` (X=0–7) | — | `TerminalSetTextColour()` |
 | **Background colour** | `ESC[4Xm` (X=0–7) | — | `TerminalSetBackgroundColour()` |
 | **Extended FG (256)** | `ESC[38;5;Nm` (N=0–255) | — | `TerminalSetTextColour(EXTENDED_COLOURS_OFFSET + N)` |
