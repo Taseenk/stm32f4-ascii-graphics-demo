@@ -4,6 +4,11 @@
 ![Language](https://img.shields.io/badge/Language-C-orange?style=flat-square)
 [![Toolchain](https://img.shields.io/badge/Toolchain-CubeMX%20%2F%20VS%20Code%20%2F%20CMake-blue?style=flat-square)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+[![Docs](https://github.com/Taseenk/stm32f4-ascii-graphics-demo/actions/workflows/deploy-docs.yml/badge.svg?branch=master)](https://github.com/Taseenk/stm32f4-ascii-graphics-demo/actions/workflows/deploy-docs.yml)
+
+[![Build Status](https://github.com/Taseenk/stm32f4-ascii-graphics-demo/actions/workflows/build-debug.yml/badge.svg?branch=develop)](https://github.com/Taseenk/stm32f4-ascii-graphics-demo/actions/workflows/build-debug.yml)
+[![Release](https://github.com/Taseenk/stm32f4-ascii-graphics-demo/actions/workflows/release-creator.yml/badge.svg)](https://github.com/Taseenk/stm32f4-ascii-graphics-demo/actions/workflows/release-creator.yml)
+[![Latest Release](https://img.shields.io/github/v/release/Taseenk/stm32f4-ascii-graphics-demo?style=flat-square)](https://github.com/Taseenk/stm32f4-ascii-graphics-demo/releases)
 
 > Real-time ASCII art demo scenes rendered on a PC terminal over a high-speed UART link, running bare-metal on the STM32F407 Discovery board.
 
