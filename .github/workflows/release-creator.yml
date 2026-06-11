@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   check-labels:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'master'
     runs-on: ubuntu-latest
     outputs:
       version-label: ${{ steps.verify.outputs.version-label }}
