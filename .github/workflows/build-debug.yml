@@ -1,0 +1,39 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ "develop", "!master" ]
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y gcc-arm-none-eabi ninja-build clang-tidy clang-format
+
+      - name: Configure (Debug)
+        run: cmake --preset Debug
+
+      - name: Build (Debug)
+        run: cmake --build --preset Debug
+
+      - name: Check formatting
+        run: |
+          find App/Src App/Inc -type f \( -name '*.c' -o -name '*.h' \) \
+            -exec clang-format --dry-run --Werror {} +
+
+      - name: Run clang-tidy
+        run: |
+          clang-tidy App/Src/*.c App/Src/Scenes/*.c \
+            -p build/Debug/compile_commands.json \
+            --extra-arg=--sysroot=/usr/lib/arm-none-eabi \
+            --extra-arg=-I/usr/lib/arm-none-eabi/include
