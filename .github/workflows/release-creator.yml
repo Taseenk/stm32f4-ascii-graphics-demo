@@ -1,0 +1,161 @@
+name: Create Release
+
+on:
+  pull_request:
+    branches: [ "master" ]
+    types: [ "closed" ]
+
+permissions:
+  contents: write
+
+jobs:
+  check-labels:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      version-label: ${{ steps.verify.outputs.version-label }}
+
+    steps:
+      - name: Determine version bump
+        id: verify
+        run: |
+          LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
+          echo "Labels: $LABELS"
+          
+          VERSION_LABEL=""
+          
+          # Check for explicit version labels first
+          if echo "$LABELS" | grep -q '"version: major"'; then
+            VERSION_LABEL="major"
+          elif echo "$LABELS" | grep -q '"version: minor"'; then
+            VERSION_LABEL="minor"
+          elif echo "$LABELS" | grep -q '"version: patch"'; then
+            VERSION_LABEL="patch"
+          fi
+          
+          # Fallback: infer from type labels if no explicit version label
+          if [ -z "$VERSION_LABEL" ]; then
+            if echo "$LABELS" | grep -qE '"type: feature"|"type: enhancement"'; then
+              VERSION_LABEL="minor"
+              echo "ℹ️ Inferring minor bump from type: feature/enhancement"
+            elif echo "$LABELS" | grep -qE '"type: bug"|"type: fix"'; then
+              VERSION_LABEL="patch"
+              echo "ℹ️ Inferring patch bump from type: bug/fix"
+            fi
+          fi
+          
+          # Final check: if still empty, fail
+          if [ -z "$VERSION_LABEL" ]; then
+            echo "❌ ERROR: Could not determine version bump"
+            echo "Add an explicit label (version: major/minor/patch) or use type labels (feature/bug)"
+            exit 1
+          fi
+          
+          echo "version-label=$VERSION_LABEL" >> $GITHUB_OUTPUT
+
+  build-release:
+    needs: check-labels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y gcc-arm-none-eabi ninja-build doxygen graphviz
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install LikeC4
+        run: npm install -g likec4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Build Debug firmware
+        run: |
+          cmake --preset Debug
+          cmake --build --preset Debug
+          mkdir -p release-assets
+          cp build/Debug/stm32f4-ascii-graphics-demo.elf release-assets/
+
+      - name: Build Release firmware
+        run: |
+          cmake --preset Release
+          cmake --build --preset Release
+          cp build/Release/stm32f4-ascii-graphics-demo.elf release-assets/firmware-release.elf
+
+      - name: Generate Doxygen documentation
+        run: |
+          cd Docs
+          doxygen Doxyfile
+          cd ..
+          zip -r release-assets/doxygen-docs.zip Docs/doxygen-output/html/
+
+      - name: Build MkDocs documentation
+        run: |
+          pip install -q mkdocs-material mkdocs-likec4 mkdoxy
+          mkdocs build
+          zip -r release-assets/mkdocs-site.zip site/
+
+      - name: Create codebase archive
+        run: |
+          zip -r release-assets/stm32f4-source.zip App/ Core/ Docs/ cmake/ \
+            -x "*.o" "*.elf" "*/doxygen-output/*" "*/site/*" "*/build/*"
+
+      - name: Calculate next version
+        id: version
+        run: |
+          VERSION_LABEL="${{ needs.check-labels.outputs.version-label }}"
+          
+          # Get latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+          LATEST_TAG="${LATEST_TAG#v}"
+          
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_TAG"
+          MAJOR=${MAJOR:-0}
+          MINOR=${MINOR:-0}
+          PATCH=${PATCH:-0}
+          
+          case "$VERSION_LABEL" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+          
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.version }}
+          files: |
+            release-assets/stm32f4-ascii-graphics-demo.elf
+            release-assets/firmware-release.elf
+            release-assets/doxygen-docs.zip
+            release-assets/mkdocs-site.zip
+            release-assets/stm32f4-source.zip
+          draft: false
+          generate_release_notes: true
