@@ -2,7 +2,7 @@
 
 Developing a new visual effect for the demo requires building a scene from scratch, registering it within the scene manager, and integrating it directly into the playback system.
 
-This guide assumes familiarity with C programming and the terminal rendering API. For scene structure and lifecycle concepts, see [Scene Concepts and Architecture](../Explanation/scenes-architecture.md).
+This guide assumes familiarity with C programming and the terminal rendering API. For scene structure and life cycle concepts, see [Scene Concepts and Architecture](../Explanation/scenes-architecture.md).
 
 ## Step 1: Create the Header File
 
@@ -193,7 +193,7 @@ static const SceneConfig_t scene_table[] = {
 ```
 
 !!! note "Scene table fields"
-    The **scene identifier** maps a scene to its enumeration value. **Duration** defines its execution length (typically 150–400 frames). **Transition types** dictate display behavior: `SCENE_TRANSITION_CLEAR` wipes the screen prior to the next scene, whereas `SCENE_TRANSITION_NONE` renders over the previous frame for continuous animations. Finally, dedicated function pointers reference the scene's respective **initialization** and **render functions**.
+    The **scene identifier** maps a scene to its enumeration value. **Duration** defines its execution length (typically 150–400 frames). **Transition types** dictate display behaviour: `SCENE_TRANSITION_CLEAR` wipes the screen prior to the next scene, whereas `SCENE_TRANSITION_NONE` renders over the previous frame for continuous animations. Finally, dedicated function pointers reference the scene's respective **initialization** and **render functions**.
 
 ## Step 7: Add to Playlist (Optional)
 
@@ -234,26 +234,26 @@ To ensure the new scene is integrated correctly, here are key points to verify d
 
 Below are common issues that may arise when adding a new scene, along with steps to diagnose and resolve them.
 
-### Undefined reference to scene functions
+### Undefined Reference to Scene Functions
 
 Verify the source file is listed in `App/CMakeLists.txt` under the scene sources section. Confirm function names in the source file match the declarations in the header file exactly, including capitalization.
 
-### Scene does not appear in the demo cycle
+### Scene Does Not Appear in the Demo Cycle
 
 Check that the scene identifier is registered in `scene_table[]` in `scene_manager.c` with the correct function pointers. Verify that `SCENE_TOTAL_SCENES` remains the final entry in the `SceneID_t` enumeration. Confirm the identifier spelling matches between the enumeration definition and the scene table entry.
 
-### Scene appears but renders at wrong position
+### Scene Appears but Renders at Wrong Position
 
-The scene table order determines playback sequence in auto mode. Verify the scene entry position in `scene_table[]` matches the intended location in the cycle. For playlist mode, check the scene identifier position in `scene_playlist[]`.
+The scene table order determines play back sequence in auto mode. Verify the scene entry position in `scene_table[]` matches the intended location in the cycle. For playlist mode, check the scene identifier position in `scene_playlist[]`.
 
-### Scene duration is incorrect
+### Scene Duration Is Incorrect
 
 Verify the duration value in the scene table entry (third parameter) matches the intended frame count. Remember that duration is measured in frames, not seconds. At approximately 30 FPS, 300 frames equals about 10 seconds. Adjust the duration value and rebuild if the timing does not match expectations.
 
 ## See Also
 
-The following documentation provides essential background information regarding scene architecture, rendering strategies, and performance constraints within the demo enviroment.
+The following documentation provides essential background information regarding scene architecture, rendering strategies, and performance constraints within the demo environment.
 
-- [Scene Concepts and Architecture](../Explanation/scenes-architecture.md) - Explanation of scene lifecycle, state management, and design patterns
+- [Scene Concepts and Architecture](../Explanation/scenes-architecture.md) - Explanation of scene life cycle, state management, and design patterns
 - [Terminal Rendering Modes](../Reference/terminal-rendering.md) - Buffered versus direct rendering strategies and performance implications
 - [UART Bandwidth and Timing](../Explanation/uart-bandwidth.md) - Frame timing constraints and byte budgets for high-speed UART communication

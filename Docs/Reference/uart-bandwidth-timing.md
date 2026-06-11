@@ -41,7 +41,7 @@ For a screen to update without tearing, the entire data payload must finish send
     The transmission time represents the duration required to push data through the interface. This is calculated by dividing the byte count by the bytes per second and multiplying by 1.000 to convert to milliseconds.
     $$ \text{Transmission Time (ms)} = (\frac{\text{Bytes}}{92.160}) \times 1000 $$
 
-## Blocking Print Cost per Position
+## Blocking Print Cost Per Position
 
 Blocking print sends cursor positioning and a single character byte for every updated position. Byte data payload depends on coordinate length because single digit coordinates require fewer bytes than double digit rows and columns. This table breaks down the byte payload for scene updates using blocking print.
 
@@ -74,7 +74,7 @@ The following table illustrates what percentage of the available frame interval 
     The percentage of the frame consumed is the ratio between the transmission time and the available frame interval.
     $$ \text{Percentage of Frame} = \left( \frac{\text{DMA Transmission Time}}{\text{Frame Interval}} \right) \times 100 $$
 
-## Rendering Strategy Comparison: Blocking Print vs. DMA
+## Rendering Strategy Comparison: Blocking Print Vs. DMA
 
 Selecting between blocking print and full-screen DMA depends on the number of position changes per frame. The comparison below outlines the byte costs and frame consumption for typical scenes at 921.600 baud. This data identifies whether multiple blocking updates or a single full-screen DMA transfer fits the frame budget.
 

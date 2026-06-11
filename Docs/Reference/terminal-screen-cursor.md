@@ -14,7 +14,7 @@ TerminalSetCursorPos(40, 12);
 ```
 
 !!! warning "Out-of-bounds coordinates"
-    Coordinates outside the defined range (1–80 for columns, 1–24 for rows) are silently discarded. The function terminates without transmitting an ANSI sequence. For example, a call to TerminalSetCursorPos(100, 50) results in no state change. the cursor remains at its previous valid position.
+    Coordinates outside the defined range (1–80 for columns, 1–24 for rows) are silently discarded. The function terminates without transmitting an ANSI sequence. For example, a call to TerminalSetCursorPos(100, 50) results in no state change. The cursor remains at its previous valid position.
 
 !!! note "Coordinate normalization"
     If a coordinate is 0, the module automatically normalizes it to 1. This is a safety feature. The ANSI terminal cannot position a cursor where either the column (0, y) or row (x, 0) are set to 0.
@@ -31,7 +31,7 @@ This function does the following:
 1. Sets terminal dimensions via ANSI escape sequence
 2. Clears the screen and homes the cursor to (1, 1)
 3. Shows or hides the cursor based on the parameter
-4. Initializes internal framebuffers (used for buffered rendering)
+4. Initializes internal frame buffers (used for buffered rendering)
 5. Resets all text styling to default (no bold, dim, colour, etc.)
 
 ```c

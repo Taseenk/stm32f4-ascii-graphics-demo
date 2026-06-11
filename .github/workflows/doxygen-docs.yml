@@ -1,16 +1,12 @@
-name: Generate doxygen documentation
+name: Generate Doxygen documentation
 
 on:
   push:
-    branches: [ "master", "develop" ]
+    branches: [ "develop", "master" ]
     paths:
       - 'App/**'
       - 'Core/**'
-  pull_request:
-    branches: [ "master", "develop" ]
-    paths:
-      - 'App/**'
-      - 'Core/**'
+      - 'Docs/Doxyfile'
   workflow_dispatch:
 
 jobs:
@@ -26,14 +22,14 @@ jobs:
           sudo apt-get update -q
           sudo apt-get install -y doxygen graphviz
 
-      - name: Run Doxygen
+      - name: Generate Doxygen
         run: |
           cd Docs
           doxygen Doxyfile
 
-      - name: Upload Doxygen output
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: doxygen-html-${{ github.sha }}
           path: Docs/doxygen-output/html/
-          retention-days: 30
+          retention-days: 7

@@ -69,8 +69,8 @@ HELP [TOPIC] [/QUALIFIER]
 |Parameter|Type|Options|Required|Description|
 |---------|----|-------|--------|-----------|
 |TOPIC|Literal|`RUN`, `DEMO`|No|Help topic|
-|`/MODE`|Qualifier|N/A|No|Sub-topic for DEMO modes|
-|`/SCENE`|Qualifier|N/A|No|Sub-topic for DEMO scenes|
+|`/MODE`|Qualifier|N/A|No|Subtopic for DEMO modes|
+|`/SCENE`|Qualifier|N/A|No|Subtopic for DEMO scenes|
 
 **Examples:**
 
@@ -82,23 +82,23 @@ HELP DEMO /MODE
 HELP DEMO /SCENE
 ```
 
-**Behavior:**
+**Behaviour:**
 
 * `HELP` alone returns `SHELL_ERROR_MISSING_TOPIC`
-* Sub-topics require a parent topic (e.g., `HELP DEMO /MODE`)
+* Subtopics require a parent topic (e.g., `HELP DEMO /MODE`)
 * Invalid topics return `SHELL_ERROR_UNKNOWN_TOPIC`
 
 ## Qualifiers
 
-Qualifiers are optional parameters that modify command behavior and use the format: `/QUALIFIER=VALUE`. They follow a consistent naming pattern and format, allowing flexible command construction while maintaining strict syntax validation.
+Qualifiers are optional parameters that modify command behaviour and use the format: `/QUALIFIER=VALUE`. They follow a consistent naming pattern and format, allowing flexible command construction while maintaining strict syntax validation.
 
 ### `/MODE`
 
-Specifies execution behavior for the DEMO program.
+Specifies execution behaviour for the DEMO program.
 
 **Valid Values:**
 
-|Value|Behavior|
+|Value|Behaviour|
 |-----|--------|
 |`AUTO`|Displays all scenes sequentially at set intervals|
 |`PLAYLIST`|Plays curated scenes back-to-back (default)|

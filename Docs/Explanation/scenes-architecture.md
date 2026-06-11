@@ -2,17 +2,17 @@
 
 This document provides the foundational concepts and architecture behind scenes in the STM32F4 ASCII Graphics Demo. It covers what a scene is, how scenes are structured, how they integrate with the scene manager, and the different playback modes available. This information is essential for understanding how to create new scenes and how they operate within the overall demo environment.
 
-## What is a Scene?
+## What Is a Scene?
 
-A scene is modular and independent visual animation or display that runs within the demo. Scenes render ASCII art to a 80x24 terminal display using color, text attributes (bold, underline, blink, inverse, dim, strikethrough), and cursor positioning to create effects ranging from static frames to animated sequences.
+A scene is modular and independent visual animation or display that runs within the demo. Scenes render ASCII art to a 80x24 terminal display using colour, text attributes (bold, underline, blink, inverse, dim, strike through), and cursor positioning to create effects ranging from static frames to animate sequences.
 
-Each scene operates independently from others. The scene manager automatically cycles through scenes in order, handles timing and state transitions, and resets the terminal environment between scenes. This separation allows scenes to focus solely on animation logic without worrying about scene lifecycle management or shared states.
+Each scene operates independently from others. The scene manager automatically cycles through scenes in order, handles timing and state transitions, and resets the terminal environment between scenes. This separation allows scenes to focus solely on animation logic without worrying about scene life cycle management or shared states.
 
-Scenes have two primary requirements. They must render the ouput to the terminal, run for a configurable duration before transitioning to the next scene and can only use the provided terminal API for output. Beyond that, there are no restrictions on how scenes are implemented, allowing for a wide variety of visual effects and animation styles.
+Scenes have two primary requirements. They must render the output to the terminal, run for a configurable duration before transitioning to the next scene and can only use the provided terminal API for output. Beyond that, there are no restrictions on how scenes are implemented, allowing for a wide variety of visual effects and animation styles.
 
 ## Scene Structure
 
-Scenes primarily consist of two files, a header file containing function prototypes and an source file containing the animation logic. The following table provides the specific directory locations and purposes for these files.
+Scenes primarily consist of two files, a header file containing function prototypes and a source file containing the animation logic. The following table provides the specific directory locations and purposes for these files.
 
 | File | Location | Purpose |
 | --- | --- | --- |
@@ -52,7 +52,7 @@ The scene manager operates a lookup table of registered scenes and automatically
 Scenes depend on the scene manager to call init and render at the correct times and handle state transitions automatically. The scene manager depends on correct function signatures and proper registration.
 
 !!! note "Scene and Manager Separation of Concerns"
-    Scenes are designed to be independent and reusable, while the manager provides the necessary infrastructure for scene execution and lifecycle management.
+    Scenes are designed to be independent and reusable, while the manager provides the necessary infrastructure for scene execution and life cycle management.
 
 ### Scene Configuration Structure
 
@@ -77,9 +77,9 @@ The scene manager makes use of the **SceneConfig_t structure** to store metadata
     } SceneConfig_t;
     ```
 
-### Scene Lifecycle
+### Scene Life Cycle
 
-The scene manager controls the lifecycle of each scene, which consists of three main states: START, RUN, and EXIT. This lifecycle ensures predictable scene behavior and allows the scene manager to handle common tasks like screen clearing and color resetting without duplicating code across all scenes. The following table describes each state and its purpose within the scene lifecycle.
+The scene manager controls the life cycle of each scene, which consists of three main states: START, RUN, and EXIT. This life cycle ensures predictable scene behaviour and allows the scene manager to handle common tasks like screen clearing and colour resetting without duplicating code across all scenes. The following table describes each state and its purpose within the scene life cycle.
 
 | Phase | Action | Timing | Responsibilities |
 | --- | --- | --- | --- |
@@ -95,9 +95,9 @@ The **EXIT** phase handles the cleanup automatically once the frame counter reac
 
 #### Understanding Transition Types
 
-Transition types determine the behavior of the display during the movement from one scene to the next. The **SceneTransition_t enum** within `scene_manager.h` defines two distinct styles. See the table below for a comparison of the transition types:
+Transition types determine the behaviour of the display during the movement from one scene to the next. The **SceneTransition_t enum** within `scene_manager.h` defines two distinct styles. See the table below for a comparison of the transition types:
 
-| Transition Type | Behavior | Use Case |
+| Transition Type | Behaviour | Use Case |
 | :-- | :-- | :-- |
 | SCENE_TRANSITION_CLEAR | Wipes the screen and buffer before the next scene starts | Standard scenes requiring a clean slate |
 | SCENE_TRANSITION_NONE | Immediate switch where the new scene renders over old content | Continuous animations like rain or scrolling text |
@@ -115,7 +115,7 @@ In contrast, **SCENE_TRANSITION_NONE** keeps the previous frame visible as the n
     } SceneTransition_t;
     ```
 
-### Playback Modes
+### Play back Modes
 
 The demo supports two playback modes that determine how scenes are selected and cycled. The following table highlights the differences in scene ordering and duration management between these modes.
 
@@ -142,7 +142,7 @@ Auto Mode ensures that all available scenes run in the order defined by the scen
     }
     ```
 
-Playlist Mode allows scenes to run in the order specified by the scene_playlist array in scene_manager.c. Each scene runs for its individually configured duration from the scene_table array. Terminal reset behavior in this mode depends on the transition type. A reset occurs if the transition is set to SCENE_TRANSITION_CLEAR. If set to SCENE_TRANSITION_NONE, the terminal does not clear. The system returns to the CLI shell upon completion of the final scene. This mode provides flexibility for custom scene sequences and durations.
+Playlist Mode allows scenes to run in the order specified by the scene_playlist array in scene_manager.c. Each scene runs for its individually configured duration from the scene_table array. Terminal reset behaviour in this mode depends on the transition type. A reset occurs if the transition is set to SCENE_TRANSITION_CLEAR. If set to SCENE_TRANSITION_NONE, the terminal does not clear. The system returns to the CLI shell upon completion of the final scene. This mode provides flexibility for custom scene sequences and durations.
 
 !!! note "Scene Registration in Playlist Mode"
     To include a scene in playlist mode, it must be added to the `scene_playlist` array in `scene_manager.c`. The playlist mode uses this array to determine the order.
@@ -174,7 +174,7 @@ Scene identifiers are enumeration values defined in the **SceneID_t enum** in `s
 
 ## See Also
 
-Scenes depend on the terminal.h API for all output operations. The terminal module provides cursor positioning, text rendering, color control, and attribute management. Reference documentation for these capabilities and bandwidth constraints is available in the technical reference section.
+Scenes depend on the terminal.h API for all output operations. The terminal module provides cursor positioning, text rendering, colour control, and attribute management. Reference documentation for these capabilities and bandwidth constraints is available in the technical reference section.
 
 - [Add a New Scene](../How-to/add-a-scene.md) — Step-by-step guide to create and register a new scene
 - [Screen & Cursor Control](../Reference/terminal-screen-cursor.md) — Positioning and clearing the display
