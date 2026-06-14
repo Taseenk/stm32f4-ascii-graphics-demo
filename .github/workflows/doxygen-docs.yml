@@ -9,6 +9,9 @@ on:
       - 'Docs/Doxyfile'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   doxygen:
     runs-on: ubuntu-latest
