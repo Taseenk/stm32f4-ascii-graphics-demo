@@ -5,13 +5,12 @@ on:
     branches: [ "master" ]
     types: [ "closed" ]
 
-permissions:
-  contents: write
-
 jobs:
   check-labels:
     if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'master'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       version-label: ${{ steps.verify.outputs.version-label }}
 
@@ -56,6 +55,8 @@ jobs:
   build-release:
     needs: check-labels
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
