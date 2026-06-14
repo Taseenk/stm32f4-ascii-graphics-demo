@@ -8,14 +8,11 @@ on:
       - 'mkdocs.yml'
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
 jobs:
   build-docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -59,6 +56,9 @@ jobs:
   deploy-pages:
     needs: build-docs
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
 
     environment:
       name: github-pages
