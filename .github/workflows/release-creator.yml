@@ -1,5 +1,9 @@
 name: Create Release
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 on:
   pull_request:
     branches: [ "master" ]
