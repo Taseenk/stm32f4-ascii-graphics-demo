@@ -1,0 +1,25 @@
+changelog:
+  categories:
+    - title: "New Features & Enhancements"
+      labels:
+        - "type: enhancement"
+        - "type: feature"
+    - title: "Bug Fixes"
+      labels:
+        - "type: bug"
+        - "type: fix"
+    - title: "Refactoring & Performance"
+      labels:
+        - "type: refactor"
+        - "type: refactoring"
+        - "type: performance"
+    - title: "Documentation Updates"
+      labels:
+        - "type: documentation"
+        - "type: docs"
+    - title: "CI/CD & Build Infrastructure"
+      labels:
+        - "type: ci/cd"
+        - "type: build"
+        - "type: dependencies"
+        - "type: chore"

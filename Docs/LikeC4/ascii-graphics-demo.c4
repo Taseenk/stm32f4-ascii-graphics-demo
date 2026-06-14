@@ -16,37 +16,87 @@ model {
             description "Responsible for the final formatting of data for the user. It handles the specific 'look' of the terminal and the protocols required to display the characters."
 
             terminal_module = component "terminal.c/h" {
-                description "Implements ANSI/VT100 control sequences for screen management and cursor positioning."
+                description "Hybrid display manager supporting direct-to-UART streaming or double-buffered frame rendering. Implements ANSI/VT100 control sequences for screen management, cursor positioning, colour control, and graphics primitives (lines, rectangles, circles)."
             }
             serial_hw_module = component "serial_hw.c/h" {
-                description "Bridges the graphics logic and the UART hardware to ensure fast data delivery."
+                description "Bridges graphics logic and the UART hardware. Provides blocking transmit, DMA-backed non-blocking transmit, and circular DMA Rx reception with command extraction."
             }
         }
 
         /* Application Layer -------------------------------------------------------------------*/
         application_layer = container "Application Layer" {
-            description "Contains the \"high-level animation logic\". It calculates what should happen in a scene without worrying about how it is done"
+            description "Contains the high-level animation logic and system orchestration. Calculates what happens in a scene without worrying about how data is sent."
+
+            scene_manager_module = component "scene_manager.c/h" {
+                description "Orchestrates the demo by cycling through scenes, managing state transitions, and controlling playback timing in both AUTO and PLAYLIST modes. When the last scene finishes, resets the system to USER_INPUT mode and re-initialises the shell."
+            }
+
+            // --- Shell / CLI ---
+            shell_module = component "shell.c/h" {
+                description "Implements the CLI shell interface. Parses incoming user commands and directs system mode changes."
+            }
+            shell_strings_module = component "shell_strings.c/h" {
+                description "Centralised string table for all user-visible shell output: boot messages, help topics, error messages, and the CLI prompt."
+            }
+
+            // --- Dashboard / UI ---
+            dashboard_module = component "dashboard.c/h" {
+                description "Renders the interactive main-menu UI and manages page navigation, visual selection feedback, and transitions into scene playback modes."
+            }
+
+            // --- Scenes ---
+            scenes_group = component "Scenes/" {
+                description "One .c/.h pair per visual effect. Each scene is self-contained and registered in the scene manager's scene table."
+
+                scene_attributes_demo_module = component "scene_attributes_demo.c/h" {
+                    description "A VT100 attribute torture test that showcases every supported ANSI text attribute: bold, dim, underline, blink, inverse, strikethrough and their common two-attribute combinations across a structured static layout."
+                }
+                scene_colour_demo_module = component "scene_colour_demo.c/h" {
+                    description "Demonstrates the terminal's colour depth through three distinct effects: a sequenced SMPTE calibration pattern, an animated radial greyscale gradient using a character-shading LUT, and a radial block-colour gradient cycling through the extended 256-colour palette."
+                }
+                scene_glitch_module = component "scene_glitch.c/h" {
+                    description "Renders ASCII and binary character noise with a fading brightness progression."
+                }
+                scene_matrix_rain_module = component "scene_matrix_rain.c/h" {
+                    description "Implements the Matrix falling-rain effect. Includes variants for ASCII, binary, hacked corruption, and a fade-in transition."
+                }
+                scene_credits_module = component "scene_credits.c/h" {
+                    description "Implements a movie-style vertical credit crawl with staggered line entry and dynamic ANSI-based line erasure."
+                }
+                scene_xterm_palette_module = component "scene_xterm_palette.c/h" {
+                    description "Renders a static xterm-256 colour palette test card. Displays the full 216-colour 6x6x6 RGB cube in three paired bands and the 24-step grayscale ramp, each cell labelled with its colour index."
+                }
+            }
+
+            // --- Utilities ---
+            rng_util_module = component "rng_util.c/h" {
+                description "Provides random number generation for animations, sourced from the hardware TRNG"
+            }
         }
 
         /* Hardware Layer -------------------------------------------------------------------*/
         hardware_layer = container "Hardware Layer" {
-            description "The physical hardware configuration and the low-level drivers provided by the chip manufacturer"
+            description "Physical hardware configuration and low-level drivers provided by the chip manufacturer. Managed via STM32CubeMX."
 
             main_module = component "main.c" {
-                description "Entry point & System Clock configuration"
+                description "Firmware entry point. Initialises all peripherals, owns the top-level system mode state machine, and runs the main frame-timing loop."
             }
 
             peripheral_config = component "Peripheral Drivers" {
-                description "Project-specific hardware setup"
+                description "Project-specific hardware configuration generated by STM32CubeMX."
 
                 usart_module = component "usart.c/h" {
-                    description "Sets the communication speed and connection rules for sending text to the terminal."
+                    description "Configures the UART peripheral for high-speed serial communication with the terminal."
                 }
                 dma_module = component "dma.c/h" {
-                    description "Sets up the automated data mover so the processor doesn't have to handle every single byte."
+                    description "Configures the DMA controller to offload data transfers from the CPU."
                 }
                 gpio_module = component "gpio.c/h" {
-                    description "Maps the internal functions of the chip to the physical pins on the outside."
+                    description "Maps chip functions to the physical pins on the board."
+                }
+
+                rng_module = component "rng.c/h" {
+                    description "Initialises the hardware True Random Number Generator peripheral."
                 }
             }
 
@@ -54,132 +104,68 @@ model {
                 description "ST Microelectronics Hardware Abstraction Layer"
 
                 hal_uart = component "stm32_hal_uart.c/h" {
-                    description "Provides standardized functions to transmit and receive data over serial lines."
+                    description "Standardised driver for UART transmit and receive operations."
                 }
                 hal_dma = component "stm32_hal_dma.c/h" {
-                    description "Provides the background engine that moves data blocks without using the CPU."
+                    description "Standardised driver for background DMA data transfers."
                 }
                 hal_gpio = component "stm32_hal_gpio.c/h" {
-                    description "Provides direct control logic to read or write signals to the pins."
+                    description "Standardised driver for reading and writing GPIO pins."
+                }
+                hal_rng = component "stm32f4xx_hal_rng.c/h" {
+                    description "Standardised driver for the hardware random number generator."
                 }
             }
         }
     }
 
     /* Relationships -------------------------------------------------------------------*/
-    // user -> pc "Views demo output"
-    user -> terminal_system "Views demo output"
+    // ---  user -> pc "Views demo output" ---
+    user -> terminal_system "Views demo output on screen"
 
-    // Global Cross-Layer Relationships
-    application_layer -> presentation_layer "Sends raw scene data and coordinates"
-    presentation_layer -> hardware_layer "Sends formatted ANSI/VT100 byte data"
-    hardware_layer -> terminal "Transmits serial data via UART/DMA"
+    // ---  Global Cross-Layer Relationships ---
+    application_layer -> presentation_layer "Sends scene data and display instructions"
+    presentation_layer -> hardware_layer "Sends formatted byte streams for transmission"
+    application_layer -> hardware_layer "Requests random numbers and timing"
+    hardware_layer -> terminal "Transmits serial data over UART"
 
-    // Internal Presentation Layer Relationship
-    terminal_module -> serial_hw_module "Sends formatted ANSI control strings and framebuffer data."
+    // ---  Application Layer Internal Relationship ---
+    // top level
+    main_module -> scene_manager_module "Drives scene playback each frame in AUTO and PLAYLIST modes"
+    main_module -> shell_module "Initialises the shell on boot and processes incoming commands each frame"
+    main_module -> dashboard_module "Renders and updates the dashboard UI in DASHBOARD mode"
 
-    // Hardware Internal Relationships
+    // Interface & Input
+    shell_module -> scene_manager_module "Initialises and activates scene playback on a valid run command"
+    shell_module -> shell_strings_module "Reads all user-visible text for output"
+
+    dashboard_module -> scene_manager_module "Initialises and activates scene playback on menu selection"
+
+    // Scene Management & Rendering
+    scene_manager_module -> scene_attributes_demo_module "Initialises and renders the attributes demo scene each frame"
+    scene_manager_module -> scene_colour_demo_module "Initialises and renders colour demo scene variants each frame"
+    scene_manager_module -> scene_glitch_module "Initialises and renders the glitch scene each frame"
+    scene_manager_module -> scene_matrix_rain_module "Initialises and renders matrix rain scene variants each frame"
+    scene_manager_module -> scene_credits_module "Initialises and renders the scrolling credits scene each frame"
+    scene_manager_module -> scene_xterm_palette_module "Initialises the palette test card once and holds the static frame"
+
+    // Scene manager exit — returns to user input mode when all scenes complete
+    scene_manager_module -> shell_module "Re-initialises the shell and prompt when all scenes in the sequence have finished"
+
+    // Low-Level Utilities & Logic
+    scene_glitch_module -> rng_util_module "Requests random numbers for character and position generation"
+    scene_matrix_rain_module -> rng_util_module "Requests random numbers for column and character generation"
+
+    // ---  Presentation Layer Internal Relationship ---
+    terminal_module -> serial_hw_module "Passes formatted display data for transmission"
+
+    // ---  Hardware Layer Internal Relationship ---
     main_module -> peripheral_config "Starts the setup process for project hardware and clocks."
-    peripheral_config -> hal_library "Utilizes HAL libraries to turn on and manage the physical hardware features."
+    peripheral_config -> hal_library "Uses HAL drivers to configure and operate hardware"
 
-    usart_module -> hal_uart "Sets up speed and pins for the UART."
-    dma_module -> hal_dma "Configure project-specific DMA settings and initialize hardware clocks."
-    gpio_module -> hal_gpio "Configures physical pin functions."
-}
-
-views {
-    deployment view index {
-        title "Physical Deployment"
-        include stm32f4, host_pc
-        autoLayout LeftRight
-    }
-
-    view systemView of terminal_system {
-        title "System Overview"
-        include *
-        // Show external incoming and outgoing relationships
-        include user, firmware
-        autoLayout BottomTop
-    }
-
-    view architectureView of firmware {
-        title "3-Tier Firmware Architecture"
-        include *, user
-        // Show external incoming and outgoing relationships
-        include terminal
-        style application_layer {
-            color blue
-        }
-        style presentation_layer {
-            color red
-        }
-        style hardware_layer {
-            color green
-        }
-        autoLayout BottomTop
-    }
-}
-
-views '3-Tier Layer / Application Layer' {
-    view applicationView of application_layer {
-        title "Application Layer"
-        include *, firmware
-        // Show external incoming and outgoing relationships
-        include presentation_layer
-        style firmware.application_layer {
-            color blue
-        }
-        autoLayout TopBottom
-    }
-}
-
-views '3-Tier Layer / Presentation Layer' {
-    view presentationView of presentation_layer {
-        title "Presentation Layer"
-        include *, firmware
-        // Show external incoming and outgoing relationships
-        include application_layer
-        include hardware_layer
-        style presentation_layer {
-            color red
-            opacity 50%
-        }
-        autoLayout TopBottom
-    }
-}
-
-views '3-Tier Layer / Hardware Layer' {
-    view hardwareView of hardware_layer {
-        title "Hardware Layer"
-        include *, firmware
-        // Show external incoming and outgoing relationships
-        include terminal_system
-        autoLayout TopBottom
-        style firmware.hardware_layer {
-            color green
-            opacity 50%
-        }
-    }
-
-    view ConfigurationView of peripheral_config {
-        include *, hardware_layer, terminal_system
-        // Show external incoming and outgoing relationships
-        include hardware_layer.main_module
-        include hardware_layer.hal_library.*
-        style firmware.hardware_layer {
-            color green
-        }
-        autoLayout LeftRight
-    }
-
-    view hal_libraryView of hal_library {
-        include *, hardware_layer, terminal_system
-        // Show external incoming and outgoing relationships
-        include hardware_layer.main_module
-        include hardware_layer.peripheral_config.*
-        style firmware.hardware_layer {
-            color green
-        }
-        autoLayout LeftRight
-    }
+    usart_module -> hal_uart "Configures and operates the UART peripheral"
+    dma_module -> hal_dma "Configures and operates the DMA controller"
+    gpio_module -> hal_gpio "Configures physical pin functions"
+    rng_module -> hal_rng "Initialises and operates the TRNG peripheral"
+    rng_util_module -> rng_module "Fetches raw random values from the hardware peripheral"
 }

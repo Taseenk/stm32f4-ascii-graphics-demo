@@ -7,6 +7,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "serial_hw.h"
+#include "shell.h"
 
 // STM32 specific libraries
 #include "main.h"
@@ -15,7 +16,26 @@
 #include <stdio.h>
 #include <string.h>
 
+/* Private Defines -----------------------------------------------------------*/
+#define TERMINAL_EOL    "\r\n" // End of line characters for the terminal
+#define CARRIAGE_RETURN '\r'   // Delimiter character to signify the end of a message
+#define NULL_TERMINATOR '\0'   // String termination character
+#define BACKSPACE       '\b'   // Backspace character for handling user input corrections
+
 /* Private Variables ---------------------------------------------------------*/
+// Structure to hold UART status flags such as transmission complete
+typedef struct {
+	volatile uint8_t tx_complete; // Flag to indicate if the UART transmission has completed
+	volatile uint8_t error;       // Flag to indicate if there was an error during UART transmission
+} UART_Flags_t;
+
+// Holds the status flags for UART operations
+static UART_Flags_t uart_flags = {
+    .tx_complete = TRUE,
+    .error = FALSE,
+};
+
+// Structure to hold the received message and its length
 typedef struct {
 	volatile char buffer[UART_BUFFER_SIZE]; // Circular buffer to store incoming UART data via DMA
 	uint8_t read_index;                     // Read/Start position in the RxBuffer
@@ -26,27 +46,99 @@ extern UART_HandleTypeDef huart2;            // UART handle defined in usart
 static UART_HandleTypeDef *p_uart = &huart2; // Private pointer to the UART handle used for serial I/O
 Rx_Message_t rx_message;                     // Global structure to hold the incoming message
 
-/* Functions -----------------------------------------------------------------*/
+/* Public Functions ----------------------------------------------------------*/
 /**
- * @fn  uint8_t SerialPrintN(const char *str, uint16_t len)
- * @brief Prints a string of a specified length using the UART handle, avoiding strlen.
- * @param str The string (or buffer) to transmit. Does not need to be null-terminated.
- * @param len The exact number of bytes to transmit.
- * @return TRUE if transmission was successful, FALSE otherwise.
+ * @fn void SerialReceiveInit(void)
+ * @brief Initializes the console reception via UART in DMA mode in circular buffer.
+ * Allowing data to be transferred directly into a buffer in the background without
+ * constant CPU intervention. It resets the internal state and starts the DMA transfer process.
  */
-uint8_t SerialPrintN(const char *str, uint16_t len)
+void SerialReceiveInit(void)
+{
+	// Ensure the UART handle are not NULL
+	if (p_uart->Instance == NULL)
+		return;
+
+	// Reset error state before starting
+	s_uart_rx.read_index = 0;
+
+	// Reset UART flags before starting
+	uart_flags.error = FALSE;
+
+	// Stop any ongoing DMA reception before starting a new one
+	HAL_UART_DMAStop(p_uart);
+
+	// Start the reception of UART data in DMA mode
+	HAL_UART_Receive_DMA(p_uart, (uint8_t *)s_uart_rx.buffer, (uint16_t)UART_BUFFER_SIZE);
+}
+
+/**
+ * @fn uint8_t SerialTransmitDMA(const char *str)
+ * @brief Prints a null-terminated string using DMA (Non-blocking)
+ * @param str The string to transmit (Must remain valid until transmission completes)
+ * @param len The length of the string to transmit
+ * @return TRUE if transmission was started successfully, FALSE otherwise.
+ */
+uint8_t SerialTransmitDMA(const char *str, uint16_t len)
 {
 	// Ensure both the UART handle and the data pointer are not NULL
 	if (p_uart->Instance == NULL || str == NULL)
 		return FALSE;
 
+	// Ensure the UART is ready for a new transmission
+	if (p_uart->gState != HAL_UART_STATE_READY)
+		return FALSE;
+
+	// Clear the Tx complete and error flag before starting a new DMA transmission
+	uart_flags.tx_complete = FALSE;
+	uart_flags.error = FALSE;
+
+	// Start the DMA transmission and return the status of the UART DMA transmit
+	HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(p_uart, (uint8_t *)str, len);
+
+	// Check if the DMA started correctly
+	if (status != HAL_OK)
+	{
+		// Return transmission failed or UART is already busy with another DMA transmission
+		// Set the Tx complete flag to TRUE to indicate that the transmission did not start and is not busy
+		uart_flags.tx_complete = TRUE;
+		return FALSE;
+	}
+
+	// Return Transmission successful
+	return TRUE;
+}
+
+/**
+ * @fn uint8_t SerialPrintLn(const char *str)
+ * @brief Prints a null-terminated string followed by a newline using the private UART handle
+ * @param str The string to transmit
+ * @return TRUE if transmission was successful, FALSE otherwise.
+ */
+uint8_t SerialPrintLn(const char *str)
+{
+	// Ensure both the UART handle and the data pointer are not NULL
+	if (p_uart->Instance == NULL || str == NULL)
+		return FALSE;
+
+	// Create a temporary buffer to hold the string with newline
+	char buffer[UART_BUFFER_SIZE];
+
+	// Append newline characters to the string
+	uint8_t len = snprintf(buffer, sizeof(buffer), "%s" TERMINAL_EOL, str);
+
+	// Check for snprintf errors or buffer overflow
+	if (len <= 0 || len >= sizeof(buffer))
+		return FALSE;
+
 	// Call the HAL UART transmit function to send the string
-	// HAL_MAX_DELAY ensures the function BLOCKS until all data is transmitted
+	// Timeout of 5ms to prevent blocking for too long
 	// Will return the status of the HAL UART transmit
-	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)str, len, HAL_MAX_DELAY);
+	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)buffer, len, 5);
 
 	// Check if the transmission was successful
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return FALSE;
 	}
 
@@ -74,34 +166,26 @@ uint8_t SerialPrint(const char *str)
 }
 
 /**
- * @fn uint8_t SerialPrintLn(const char *str)
- * @brief Prints a null-terminated string followed by a newline using the private UART handle
- * @param str The string to transmit
+ * @fn  uint8_t SerialPrintN(const char *str, uint16_t len)
+ * @brief Prints a string of a specified length using the UART handle, avoiding strlen.
+ * @param str The string (or buffer) to transmit. Does not need to be null-terminated.
+ * @param len The exact number of bytes to transmit.
  * @return TRUE if transmission was successful, FALSE otherwise.
  */
-uint8_t SerialPrintLn(const char *str)
+uint8_t SerialPrintN(const char *str, uint16_t len)
 {
 	// Ensure both the UART handle and the data pointer are not NULL
 	if (p_uart->Instance == NULL || str == NULL)
-		return FALSE;
-
-	// Create a temporary buffer to hold the string with newline
-	char buffer[UART_BUFFER_SIZE];
-
-	// Append newline characters to the string
-	uint8_t len = snprintf(buffer, sizeof(buffer), "%s" TERMINAL_EOL, str);
-
-	// Check for snprintf errors or buffer overflow
-	if (len <= 0 || len >= sizeof(buffer))
 		return FALSE;
 
 	// Call the HAL UART transmit function to send the string
-	// HAL_MAX_DELAY ensures the function BLOCKS until all data is transmitted
+	// Timeout of 5ms to prevent blocking for too long
 	// Will return the status of the HAL UART transmit
-	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)buffer, len, HAL_MAX_DELAY);
+	HAL_StatusTypeDef status = HAL_UART_Transmit(p_uart, (uint8_t *)str, len, 5);
 
 	// Check if the transmission was successful
-	if (status != HAL_OK) {
+	if (status != HAL_OK)
+	{
 		return FALSE;
 	}
 
@@ -110,65 +194,32 @@ uint8_t SerialPrintLn(const char *str)
 }
 
 /**
- * @fn uint8_t SerialTransmitDMA(const char *str)
- * @brief Prints a null-terminated string using DMA (Non-blocking)
- * @param str The string to transmit (Must remain valid until transmission completes)
- * @param len The length of the string to transmit
- * @return TRUE if transmission was started successfully, FALSE otherwise.
+ * @fn uint8_t SerialIsTransmitBusy(void)
+ * @brief Checks if the UART peripheral is currently busy transmitting data. This function evaluates the internal
+ * `tx_complete` flag. If the flag is FALSE, it indicates the DMA hardware is still processing a transfer.
+ * @return TRUE if the peripheral is currently busy, FALSE if it is idle.
  */
-uint8_t SerialTransmitDMA(const char *str, uint16_t len)
+uint8_t SerialIsTransmitBusy(void)
 {
-	// Ensure both the UART handle and the data pointer are not NULL
-	if (p_uart->Instance == NULL || str == NULL)
-		return FALSE;
-
-	// Ensure the UART is ready for a new transmission
-	if (p_uart->gState != HAL_UART_STATE_READY)
-		return FALSE;
-
-	// Start the DMA transmission
-	// Will return the status of the UART DMA transmit
-	HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(p_uart, (uint8_t *)str, len);
-
-	// Check if the DMA started correctly
-	if (status != HAL_OK) {
-		// Return transmission failed or UART is already busy with another DMA transmission
-		return FALSE;
-	}
-
-	// Return Transmission successful
-	return TRUE;
+	// Return the inverse of the Tx complete flag to indicate if the peripheral is busy
+	return (uart_flags.tx_complete == FALSE);
 }
 
 /**
- * @fn void SerialReceiveInit(void)
- * @brief Initializes the console reception via UART in DMA mode in circular buffer.
- * Allowing data to be transferred directly into a buffer in the background without
- * constant CPU intervention. It resets the internal state and starts the DMA transfer process.
+ * @fn uint8_t SerialHasError(void)
+ * @brief Checks if there was an error during UART transmission by returning the state of the error flag.
+ * @return TRUE if error exists, FALSE otherwise.
  */
-void SerialReceiveInit(void)
+uint8_t SerialHasError(void)
 {
-	// Ensure the UART handle are not NULL
-	if (p_uart->Instance == NULL)
-		return;
-
-	// Reset structures before starting
-	s_uart_rx.read_index = 0;
-
-	// Stop any ongoing DMA reception before starting a new one
-	HAL_UART_DMAStop(p_uart);
-
-	// Start the reception of UART data in DMA mode
-	HAL_UART_Receive_DMA(p_uart, (uint8_t *)s_uart_rx.buffer, (uint16_t)UART_BUFFER_SIZE);
-
-	// Log successful initialization of the DMA transfer
-	SerialPrint("DEBUG: DMA has been started\r\n\n");
+	// Return the current state of the error flag
+	return uart_flags.error;
 }
 
 /**
  * @fn void SerialProcessData(void)
  * @brief Processes received data from the UART circular buffer.
- * Iterates through the buffer to find delimiters (in this case, '\r').
+ * Iterates through the buffer to find delimiters (in this case, `'\r'`).
  * When a delimiter is found, it performs associated data processing and
  * updates the buffer's read position.
  */
@@ -189,18 +240,21 @@ void SerialProcessData(void)
 		return;
 
 	// Variables used to calculate and track positions within the circular buffer
-	size_t message_length, buffer_index;
+	size_t buffer_index, message_length = 0;
+	char current_char;
 
 	// Iterate through the newly received data
-	for (message_length = 0; message_length < rx_received_length; message_length++) {
+	for (int i = 0; i < rx_received_length; i++)
+	{
 		// Calculate the absolute index for the circular buffer
-		buffer_index = (s_uart_rx.read_index + message_length) % UART_BUFFER_SIZE;
+		buffer_index = (s_uart_rx.read_index + i) % UART_BUFFER_SIZE;
+
+		// The current character being processed from the buffer
+		current_char = (char)s_uart_rx.buffer[buffer_index];
 
 		// Check if the message is too long for the buffer to hold
-		if (message_length > (sizeof(rx_message.message) - 1)) {
-			// Log a warning message
-			SerialPrint("WARNING: Received message was too long");
-
+		if (message_length >= (sizeof(rx_message.message) - 1))
+		{
 			// Update and save the new start reading position
 			s_uart_rx.read_index = (buffer_index + 1) % UART_BUFFER_SIZE;
 
@@ -208,27 +262,84 @@ void SerialProcessData(void)
 			return;
 		}
 
+		// If the first character(s) are spaces, skip them and update the read index to the first non-space character
+		if (current_char == ' ' && message_length == 0)
+		{
+			// Continue to the next character in the buffer
+			continue;
+		}
+
+		// Handle user spelling mistakes, if a backspace character ('\b') is found
+		// Remove the last character from the message buffer (if there is one) and continue to the next character
+		if (current_char == BACKSPACE)
+		{
+			// Handle backspace: if message_length > 0, remove the last character from the message buffer
+			if (message_length > 0)
+				message_length--;
+
+			// Continue to the next character in the buffer
+			continue;
+		}
+
 		// Check if the end-of-message ('\r') delimiter is found
-		if (s_uart_rx.buffer[buffer_index] == CARRIAGE_RETURN) {
+		if (current_char == CARRIAGE_RETURN)
+		{
 			// Null-terminate the message in the buffer at the location of the \r
 			rx_message.message[message_length] = NULL_TERMINATOR;
 
 			// Store the length of the received message with null terminator
 			rx_message.length = message_length + 1;
 
-			// Print the received string
-			SerialPrint("DEBUG: Received: ");
-			SerialPrintLn(rx_message.message);
-
 			// Update and save the new start reading position
-			// Wrap the circular buffer back to the start using modulo (remainder)
+			// Wrap the circular buffer back to the start using modulo
 			s_uart_rx.read_index = (buffer_index + 1) % UART_BUFFER_SIZE;
+
+			// Send the received message to the command parser for processing
+			ShellCommandParser(rx_message.message);
 
 			// Exit loop safely
 			return;
 		}
 
+		// Increment the message length and store the character in the message buffer
 		// If it no delimiter found, copy the character into the new buffer
-		rx_message.message[message_length] = (char)s_uart_rx.buffer[buffer_index];
+		rx_message.message[message_length++] = (char)s_uart_rx.buffer[buffer_index];
+	}
+}
+
+/**
+ * @fn void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+ * @brief UART transmission complete callback function that is called by the HAL library when a UART transmission
+ * completes. This function checks if the transmission completed on the UART handle used for serial communication and
+ * sets the Tx complete flag accordingly.
+ * @param huart Pointer to the UART handle that triggered the transmission complete callback.
+ */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+	// Check if the callback is for the UART handle used for serial communication
+	if (huart == p_uart)
+	{
+		// Set the Tx complete flag to indicate that the transmission has completed
+		uart_flags.tx_complete = TRUE;
+	}
+}
+
+/**
+ * @fn void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+ * @brief UART error callback function that is called by the HAL library when a UART error occurs.
+ * This function checks if the error occurred on the UART handle used for serial communication
+ * and sets the error flag accordingly.
+ * @param huart Pointer to the UART handle that triggered the error callback.
+ */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	// Check if the callback is for the UART handle used for serial communication
+	if (huart == p_uart)
+	{
+		// Set the error flag to indicate that there was an error during UART transmission
+		uart_flags.error = TRUE;
+
+		// Set the Tx complete flag to TRUE to indicate that the transmission has completed (in an error)
+		uart_flags.tx_complete = TRUE;
 	}
 }

@@ -1,16 +1,40 @@
 Checks: >
+  -*,
+
+  # Bug detection & static analysis
   clang-analyzer-*,
   bugprone-*,
+  -bugprone-easily-swappable-parameters,
+
+  # Miscellaneous correctness checks
   misc-*,
-  readability-*,
-  portability-*,
+  -misc-include-cleaner,
+
+  # Header guard enforcement
   llvm-header-guard,
 
-  -*,
+  # Readability & style
+  readability-*,
+  -readability-redundant-declaration,
+  -readability-function-cognitive-complexity,
+  -readability-function-size,
+  -readability-identifier-length,
+
+  # Portability
+  portability-*,
+  -portability-restrict-system-includes,
+
+  # Disabled - guideline sets not applicable to this project
   -cppcoreguidelines-*,
   -hicpp-*,
   -modernize-*,
   -cert-*-cpp,
-  -performance-no-int-to-ptr
-WarningsAsErrors: ''
-HeaderFilterRegex: "(.*(Core|Drivers).*|.*startup_.*\\.s)"
+  -performance-no-int-to-ptr,
+
+  # Disabled - C++ focused, irrelevant for embedded C
+  -clang-analyzer-cplusplus-*,
+  -clang-analyzer-osx-*,
+  -clang-analyzer-webkit-*,
+  -clang-analyzer-optin.cplusplus-*,
+WarningsAsErrors: 'clang-analyzer-*, bugprone-*'
+HeaderFilterRegex: "^(?!.*(Core|Drivers|STM32CubeIDE|Middlewares|USB_HOST|startup_)).*\\.(h|hpp)$"

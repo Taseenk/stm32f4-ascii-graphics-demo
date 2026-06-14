@@ -1,0 +1,30 @@
+'type: ci/cd':
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**/*'
+          - 'cmake/**/*'
+          - 'CMakeLists.txt'
+          - 'CMakePresets.json'
+
+'type: documentation':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Docs/**/*'
+          - 'mkdocs.yml'
+          - 'README.md'
+          - 'Doxyfile'
+
+'type: chore':
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.vscode/**/*'
+          - '.settings/**/*'
+          - '.clang-format'
+          - '.clang-tidy'
+          - '.clangd'
+          - '.gitignore'
+          - '.mxproject'
+          - '.project'
+          - 'stm32f4-ascii-graphics-demo.ioc'
+          - 'STM32F407XX_FLASH.ld'
+          - 'startup_stm32f407xx.s'
