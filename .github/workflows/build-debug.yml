@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y gcc-arm-none-eabi ninja-build clang-tidy clang-format
+          sudo apt-get install -y gcc-arm-none-eabi=15:13.2.rel1-2 ninja-build clang-tidy clang-format
 
       - name: Configure (Debug)
         run: cmake --preset Debug

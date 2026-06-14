@@ -72,7 +72,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y gcc-arm-none-eabi ninja-build doxygen graphviz
+          sudo apt-get install -y gcc-arm-none-eabi=15:13.2.rel1-2 ninja-build doxygen graphviz
 
       - name: Setup Node
         uses: actions/setup-node@v4
