@@ -239,6 +239,12 @@ static void RenderMatrixRainFrame_(uint32_t scene_frame, uint8_t noise_mode)
  */
 void MatrixRainInit(void)
 {
+	// Reset all columns to inactive at the start of the scene
+	for (int i = 0; i < TERMINAL_WIDTH; i++)
+	{
+		matrix_rain_active_col[i] = COLUMN_INACTIVE;
+	}
+
 	// Initialize by generating a random number to minimise overhead when the scene starts
 	if (GetRandomNumber(&rand_number) != TRUE)
 		rand_number = 1;
