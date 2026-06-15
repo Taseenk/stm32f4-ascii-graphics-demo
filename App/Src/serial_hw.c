@@ -1,7 +1,11 @@
 /**
  ******************************************************************************
  * @file           : serial_hw.c
- * @brief          :
+ * @brief          : Hardware abstraction layer wrapper for serial communication.
+ * This module bridges the STM32 Hardware Abstraction Layer (HAL) and the custom
+ * upper-level software application. It encapsulates all low-level peripheral
+ * configurations, interrupt handling, and ring buffers, preventing higher-level
+ * modules from requiring direct knowledge of the underlying STM32 HAL.
  ******************************************************************************
  */
 

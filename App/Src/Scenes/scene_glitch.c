@@ -1,7 +1,10 @@
 /**
  ******************************************************************************
  * @file           : scene_glitch.c
- * @brief          :
+ * @brief          : Implementation of ASCII and binary glitch noise effects.
+ * This module handles the initialization and rendering functions for generating
+ * pseudo-random character corruption, simulating visual static,
+ * data line distortion, and sporadic software malfunctions.
  ******************************************************************************
  */
 

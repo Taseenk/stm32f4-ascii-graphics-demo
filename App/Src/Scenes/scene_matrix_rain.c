@@ -123,7 +123,7 @@ static void RainUpdater_(uint8_t density, uint8_t speed, uint8_t noise_mode)
 				// Only erase if the tail is actually on the screen
 				if (erase_row >= COORDINATE_OFFSET && erase_row <= TERMINAL_HEIGHT)
 				{
-					TerminalPrintString(" ", i, erase_row);
+					TerminalPrintString(" ", i + COORDINATE_OFFSET, erase_row);
 				}
 			}
 
@@ -146,7 +146,7 @@ static void RainUpdater_(uint8_t density, uint8_t speed, uint8_t noise_mode)
 					}
 
 					// Move cursor and draw the character on the terminal
-					TerminalPrintString(char_buffer, i, draw_row);
+					TerminalPrintString(char_buffer, i + COORDINATE_OFFSET, draw_row);
 				}
 			}
 
@@ -239,6 +239,12 @@ static void RenderMatrixRainFrame_(uint32_t scene_frame, uint8_t noise_mode)
  */
 void MatrixRainInit(void)
 {
+	// Reset all columns to inactive at the start of the scene
+	for (int i = 0; i < TERMINAL_WIDTH; i++)
+	{
+		matrix_rain_active_col[i] = COLUMN_INACTIVE;
+	}
+
 	// Initialize by generating a random number to minimise overhead when the scene starts
 	if (GetRandomNumber(&rand_number) != TRUE)
 		rand_number = 1;

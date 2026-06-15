@@ -1,8 +1,9 @@
 /**
  ******************************************************************************
  * @file           : scene_glitch.h
- * @brief          :
- *
+ * @brief          : Header file for the glitch noise animation scenes.
+ * This module exports the initialization and frame-rendering functions for both
+ * ASCII-based and binary-based sporadic glitch effects within the scene manager.
  ******************************************************************************
  */
 

@@ -1,7 +1,10 @@
 /**
  ******************************************************************************
  * @file           : scene_primitives_demo.c
- * @brief          :
+ * @brief          : Demonstration scenes showcasing geometric drawing primitives.
+ * This module implements dedicated animation scenes that utilize external vector
+ * drawing functions (lines, rectangles, circles) to display structured,
+ * character-based graphical rendering tests within the scene manager framework.
  ******************************************************************************
  */
 
