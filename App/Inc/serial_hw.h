@@ -17,7 +17,7 @@
 /* typedefs ------------------------------------------------------------------*/
 typedef struct {
 	char message[UART_BUFFER_SIZE]; // The extracted, null-terminated string.
-	size_t length;                  // The actual length of the message (excluding the null terminator).
+	size_t length;                  // The actual length of the message (inlcuding the null terminator).
 } Rx_Message_t;
 
 /* External Variables --------------------------------------------------------*/
