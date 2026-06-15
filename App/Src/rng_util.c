@@ -1,7 +1,9 @@
 /**
  ******************************************************************************
  * @file           : rng_util.c
- * @brief          :
+ * @brief          : Hardware Random Number Generator (RNG) utility functions.
+ * This module provides abstraction and helper functions for generating random
+ * numbers utilizing the hardware RNG peripheral on the STM32F4 microcontroller.
  ******************************************************************************
  */
 

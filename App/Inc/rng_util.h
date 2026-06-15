@@ -1,8 +1,10 @@
 /**
  ******************************************************************************
  * @file           : rng_util.h
- * @brief          :
- *
+ * @brief          : Header file for Hardware Random Number Generator (RNG) utility
+ * functions. This module defines the interface for generating hardware-based
+ * random numbers used across various display and scene modules on the
+ * STM32F4 platform.
  ******************************************************************************
  */
 

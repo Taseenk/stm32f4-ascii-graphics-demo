@@ -1,7 +1,10 @@
 /**
  ******************************************************************************
  * @file           : serial_hw.h
- * @brief          :
+ * @brief          : Header file for the serial communication abstraction wrapper.
+ * This module exports the interface needed to interact with the serial hardware
+ * without exposing STM32 HAL-specific dependencies or direct hardware control
+ * registers to the application layer.
  ******************************************************************************
  */
 
