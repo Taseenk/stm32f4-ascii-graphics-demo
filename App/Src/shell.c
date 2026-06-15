@@ -293,7 +293,7 @@ static void ParseHelpCommand_(char *rx_buffer, uint8_t command_offset)
 	}
 
 	/* --- Case: Run topic --- */
-	else if (strncmp(topic, run_command_text, RUN_COMMAND_TEXT_LEN) == 0)
+	else if (strcmp(topic, run_command_text) == 0)
 	{
 		PrintHelpKey1Run_();
 	}
