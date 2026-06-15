@@ -129,6 +129,10 @@ static void DisplayErrorMessage_(ShellError_t error_type)
 
 	switch (error_type)
 	{
+		// No error, should not display a message
+		case SHELL_ERROR_NONE:
+			break;
+
 		case SHELL_ERROR_UNKNOWN_COMMAND:
 			TerminalPrintString(shell_error[SHELL_ERROR_UNKNOWN_COMMAND], SHELL_COL_POSITION, input_row++);
 			break;
@@ -149,6 +153,7 @@ static void DisplayErrorMessage_(ShellError_t error_type)
 			TerminalPrintString(shell_error[SHELL_ERROR_INVALID_PARAMETER], SHELL_COL_POSITION, input_row++);
 			break;
 
+		// Unexpected error type, display a generic error message
 		default:
 			TerminalPrintString(shell_error[6], SHELL_COL_POSITION, input_row++);
 			break;
@@ -293,7 +298,7 @@ static void ParseHelpCommand_(char *rx_buffer, uint8_t command_offset)
 	}
 
 	/* --- Case: Run topic --- */
-	else if (strncmp(topic, run_command_text, RUN_COMMAND_TEXT_LEN) == 0)
+	else if (strcmp(topic, run_command_text) == 0)
 	{
 		PrintHelpKey1Run_();
 	}
