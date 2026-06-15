@@ -199,7 +199,8 @@ static void RenderGlitchFrame_(uint32_t scene_frame, uint8_t noise_mode)
 void GlitchInit(void)
 {
 	// Initialize by generating a random number to minimise overhead when the scene starts
-	rand_number = GetRandomNumber();
+	if (GetRandomNumber(&rand_number) != TRUE)
+		rand_number = 1;
 
 	// Reset all previous styles
 	TerminalResetStyle();
