@@ -68,8 +68,15 @@ void SerialReceiveInit(void)
 	// Stop any ongoing DMA reception before starting a new one
 	HAL_UART_DMAStop(p_uart);
 
-	// Start the reception of UART data in DMA mode
-	HAL_UART_Receive_DMA(p_uart, (uint8_t *)s_uart_rx.buffer, (uint16_t)UART_BUFFER_SIZE);
+	// Start the reception of UART data in DMA mode and return the status
+	HAL_StatusTypeDef rx_status = HAL_UART_Receive_DMA(p_uart, (uint8_t *)s_uart_rx.buffer, (uint16_t)UART_BUFFER_SIZE);
+
+	// Check if the DMA started correctly
+	if (rx_status != HAL_OK)
+	{
+		uart_flags.error = TRUE;
+		return;
+	}
 }
 
 /**

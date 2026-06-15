@@ -19,7 +19,7 @@
 #define XORSHIFT_S3 5  // Shift constant 3
 
 /* Function prototypes -------------------------------------------------------*/
-uint32_t GetRandomNumber(void);
+uint8_t GetRandomNumber(uint32_t *value);
 void XorshiftRandomNumber(uint32_t *rand_num);
 
 #endif /* __RNG_UTIL_H */
