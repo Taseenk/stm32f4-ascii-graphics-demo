@@ -72,6 +72,7 @@
 
 /* Private Variables ---------------------------------------------------------*/
 DashboardPages_t current_page = DASHBOARD_HELP; // Initialize the current dashboard page to the help page
+static uint32_t page_frame_counter = 0;         // Counter tracking the frames spent on the current dashboard page
 
 /* Private Function Prototypes -----------------------------------------------*/
 static void ApplyMenuHighlight_(uint32_t global_frame);
@@ -229,14 +230,22 @@ void DashboardFooter(void)
  */
 void DashboardMenuSelection(uint32_t global_frame)
 {
-	// Calculate the time spent in the current scene based on the global frame count and the defined interval for scene
-	uint16_t time_in_scene = global_frame % MENU_SELECTION_INTERVAL;
+	// Track the last page and reset when the page changes
+	static DashboardPages_t last_page = DASHBOARD_TOTAL_PAGES;
+	if (current_page != last_page)
+	{
+		page_frame_counter = 0;   // Reset counter when page changes
+		last_page = current_page; // Update to the new current page
+	}
+
+	// Icrement and track the number of frames spent on the current page
+	uint16_t time_in_scene = page_frame_counter % MENU_SELECTION_INTERVAL;
 
 	switch (current_page)
 	{
 		case DASHBOARD_HELP:
 			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
-			ApplyMenuHighlight_(global_frame);
+			ApplyMenuHighlight_(page_frame_counter);
 
 			// Print the menu option text with the blinking effect
 			TerminalPrintString(HELP_TEXT, OPTIONS_COL_POSITION, HELP_ROW_POSITION);
@@ -246,7 +255,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 
 		case DASHBOARD_AUTO:
 			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
-			ApplyMenuHighlight_(global_frame);
+			ApplyMenuHighlight_(page_frame_counter);
 
 			// Print the menu option text with the blinking effect
 			TerminalPrintString(AUTO_TEXT, OPTIONS_COL_POSITION, AUTO_ROW_POSITION);
@@ -265,7 +274,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 
 		case DASHBOARD_PLAYLIST:
 			// Apply the blinking highlight effect to the currently selected menu option based on the global frame count
-			ApplyMenuHighlight_(global_frame);
+			ApplyMenuHighlight_(page_frame_counter);
 
 			// Print the menu option text with the blinking effect
 			TerminalPrintString(PLAYLIST_TEXT, OPTIONS_COL_POSITION, PLAYLIST_ROW_POSITION);
@@ -306,4 +315,7 @@ void DashboardMenuSelection(uint32_t global_frame)
 			// break out of the switch
 			break;
 	}
+
+	// Increment the page frame counter
+	page_frame_counter++;
 }
