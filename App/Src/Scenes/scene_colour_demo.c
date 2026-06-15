@@ -222,7 +222,7 @@ static void RenderRadialPattern_(uint32_t frame, uint8_t is_greyscale, uint8_t i
 			}
 
 			// Retrieve pre-calculated distance
-			uint8_t distance = distance_lut[(y * TERMINAL_WIDTH) + x];
+			uint8_t distance = distance_lut[(y - 1) * TERMINAL_WIDTH + (x - 1)];
 
 			// Determine the colour value based on the distance and frame count to create a dynamic pattern
 			// Can be either greyscale or colour depending on the mode, and uses the extended colour range
@@ -284,7 +284,7 @@ void ColourDemoInit(void)
 				arm_sqrt_f32(sum_sq, &distance);
 
 				// Store the distance in the 1D array
-				distance_lut[y * TERMINAL_WIDTH + x] = (uint8_t)distance;
+				distance_lut[(y - 1) * TERMINAL_WIDTH + (x - 1)] = (uint8_t)distance;
 			}
 		}
 		lut_initialized = TRUE;
