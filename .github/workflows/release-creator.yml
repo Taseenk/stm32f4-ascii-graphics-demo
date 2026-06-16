@@ -113,6 +113,16 @@ jobs:
           mkdocs build
           zip -r release-assets/mkdocs-site.zip site/
 
+      - name: Export LikeC4 Diagrams to PNG
+        uses: likec4/actions@v1
+        with:
+          export: png
+          path: 'Docs/LikeC4'
+          output: Docs/Assets/Diagrams
+
+      - name: Zip LikeC4 diagrams
+        run: zip -r release-assets/likec4-diagrams.zip Docs/Assets/Diagrams/
+
       - name: Create codebase archive
         run: |
           zip -r release-assets/stm32f4-source.zip App/ Core/ Docs/ cmake/ \
@@ -161,6 +171,7 @@ jobs:
             release-assets/firmware-release.elf
             release-assets/doxygen-docs.zip
             release-assets/mkdocs-site.zip
+            release-assets/likec4-diagrams.zip
             release-assets/stm32f4-source.zip
           draft: false
           generate_release_notes: true

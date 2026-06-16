@@ -226,6 +226,8 @@ views 'Sequences' {
         
         // Path Double Buffered rendering
         // TODO: ADD SEQUENCE SHOWING DOUBLE BUFFERED SCENE RENDERING
+        // Temporary placeholder to allow compilation
+        firmware.hardware_layer.main_module -> firmware.application_layer.scenes_group "Drives double buffered rendering pipeline"
 
         autoLayout TopBottom
     }

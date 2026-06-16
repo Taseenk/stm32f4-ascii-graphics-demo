@@ -1,0 +1,41 @@
+name: Generate LikeC4 Diagrams
+
+on:
+  push:
+    branches: [ "develop", "master" ]
+    paths:
+      - 'Docs/LikeC4/**'
+  workflow_dispatch:
+
+# Restrict workflow to read-only access
+permissions:
+  contents: read
+
+# Automatically cancels older running builds on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-diagrams:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Export LikeC4 Diagrams to PNG
+        uses: likec4/actions@v1
+        with:
+          export: png
+          path: 'Docs/LikeC4'
+          output: Docs/Assets/Diagrams
+
+      - name: Upload Generated Diagrams as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: likec4-diagrams-${{ github.ref_name }}-${{ github.sha }}
+          path: Docs/Assets/Diagrams/
+          retention-days: 7
