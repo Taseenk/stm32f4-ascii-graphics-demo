@@ -24,6 +24,7 @@ target_sources(AppModule PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Src/Scenes/scene_attributes_demo.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Src/Scenes/scene_credits.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Src/Scenes/scene_xterm_palette.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Src/Scenes/scene_wireframe.c
 )
 
 # Project include paths
