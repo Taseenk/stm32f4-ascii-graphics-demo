@@ -100,14 +100,14 @@ jobs:
           cmake --build --preset Release
           cp build/Release/stm32f4-ascii-graphics-demo.elf release-assets/firmware-release.elf
 
-      - name: Generate Doxygen documentation
+      - name: Generate and Zip Doxygen documentation
         run: |
           cd Docs
           doxygen Doxyfile
           cd ..
           zip -r release-assets/doxygen-docs.zip Docs/doxygen-output/html/
 
-      - name: Build MkDocs documentation
+      - name: Build and Zip MkDocs documentation
         run: |
           pip install -q mkdocs-material mkdocs-likec4 mkdoxy
           mkdocs build
@@ -122,11 +122,6 @@ jobs:
 
       - name: Zip LikeC4 diagrams
         run: zip -r release-assets/likec4-diagrams.zip Docs/Assets/Diagrams/
-
-      - name: Create codebase archive
-        run: |
-          zip -r release-assets/stm32f4-source.zip App/ Core/ Docs/ cmake/ \
-            -x "*.o" "*.elf" "*/doxygen-output/*" "*/site/*" "*/build/*"
 
       - name: Calculate next version
         id: version
@@ -172,6 +167,5 @@ jobs:
             release-assets/doxygen-docs.zip
             release-assets/mkdocs-site.zip
             release-assets/likec4-diagrams.zip
-            release-assets/stm32f4-source.zip
           draft: false
           generate_release_notes: true

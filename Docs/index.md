@@ -1,41 +1,25 @@
 # STM32F4 ASCII Graphics Demo Documentation
 
-Welcome to the official documentation for the **STM32F4 ASCII Graphics Demo**. This project transforms a standard serial terminal into a high-performance visual canvas using bare-metal C on the STM32F407 Discovery board.
+Welcome to the official documentation for the **STM32F4 ASCII Graphics Demo**. This site contains guides, reference material, and technical explanations for working with bare-metal C on the STM32F407 Discovery board to render real-time ASCII art over a high-speed serial terminal.
 
-## Quick Start
+## Get Started
 
-If you have your hardware ready, jump straight into the setup:
-
-* **[Setting Up the Toolchain](Tutorial/setup.md)**: Install the ARM GCC compiler and flashing tools.
-* **[Flashing the Board](Tutorial/flashing.md)**: Get the demo running on your STM32 in minutes.
-* **[Connecting a Terminal](Tutorial/terminal-setup.md)**: Configure your PC terminal (PuTTY, Tera Term, etc.) to handle the demo in 921,600 baud.
+Jump to the [GitHub repository](https://github.com/Taseenk/stm32f4-ascii-graphics-demo) for source code, or read the project README to understand the system design and feature set.
 
 ## Explore the Documentation
 
-### [Tutorials](Tutorial/index.md)
+### How-to Guides
 
-Step-by-step lessons for beginners to get the project building and running from scratch.
+Practical instructions for building and controlling the demo. Learn to [use the CLI shell](How-to/use-the-shell.md) for commanding the system, or follow the guide to [add a new scene](How-to/add-a-scene.md) from scratch.
 
-### [How-to Guides](How-to/index.md)
+### Technical Reference
 
-Recipe-style instructions for specific tasks, such as [Adding a New Scene](How-to/add-a-scene.md) or [Changing the Frame Rate](How-to/change-baud-fps.md).
+Lookup tables, API documentation, and specifications. Find [screen and cursor control](Reference/terminal-screen-cursor.md), [bandwidth and timing reference](Reference/uart-bandwidth-timing.md), or [ANSI code reference](Reference/uart-bandwidth-codes.md) and [more](Reference/index.md).
 
-### [Technical Reference](Reference/index.md)
+### Explanations
 
-### [Explanations](Explanation/three-tier-architecture.md)
-
-Deep dives into the "Why" behind the design, such as the [3-Tier Architecture](Explanation/three-tier-architecture.md) and the [DMA Double-Buffering strategy](Explanation/dma-double-buffer.md).
+Understand the design. Explore [scene architecture](Explanation/scenes-architecture.md), [UART bandwidth fundamentals](Explanation/uart-bandwidth.md), or [rendering strategies](Explanation/uart-bandwidth-strategies.md).
 
 ### [Technical Documentation](stm32f4_ascii_graphics_demo/annotated.md)
 
-Low-level code documentation generated from source headers, covering [Code Modules](stm32f4_ascii_graphics_demo/files.md), [Data Structures](stm32f4_ascii_graphics_demo/annotated.md), and the complete [C API Reference](stm32f4_ascii_graphics_demo/functions.md).
-
-## System Overview
-
-The demo operates at **921,600 baud**, pushing the limits of standard UART communication to achieve smooth animations. It leverages the STM32F4's DMA (Direct Memory Access) controller to ensure that rendering doesn't stop while data is being transmitted.
-
-## Project Links
-
-* **Source Code**: [GitHub Repository](https://github.com/Taseenk/stm32f4-ascii-graphics-demo)
-* **Author**: [Taseen Khan](https://github.com/Taseenk)
-* **Inspiration**: [ASCII AA Project BB Demo](https://youtu.be/FLlDt_4EGX4?si=c_ntV8wBtghTJN6d)
+Low-level code documentation generated from source headers. Browse the [API reference](stm32f4_ascii_graphics_demo/functions.md) for data structures and function prototypes, explore the [code modules](stm32f4_ascii_graphics_demo/files.md) for file-by-file organization, or search the [complete Data Structures](stm32f4_ascii_graphics_demo/annotated.md) for all functions, macros, enums, and types.
