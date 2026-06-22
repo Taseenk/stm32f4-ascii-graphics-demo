@@ -7,6 +7,11 @@
 
 > Real-time ASCII art demo scenes rendered on a PC terminal over a high-speed UART link, running bare-metal on the STM32F407 Discovery board.
 
+[![Docs](https://img.shields.io/github/actions/workflow/status/Taseenk/stm32f4-ascii-graphics-demo/deploy-docs.yml?branch=master&label=Docs)](https://github.com/Taseenk/stm32f4-ascii-graphics-demo/actions/workflows/deploy-docs.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/Taseenk/stm32f4-ascii-graphics-demo/release-creator.yml?label=Release)](https://github.com/Taseenk/stm32f4-ascii-graphics-demo/actions/workflows/release-creator.yml)
+[![Build](https://img.shields.io/github/actions/workflow/status/Taseenk/stm32f4-ascii-graphics-demo/build-debug.yml?branch=develop&label=Build)](https://github.com/Taseenk/stm32f4-ascii-graphics-demo/actions/workflows/build-debug.yml)
+[![Latest Release](https://img.shields.io/github/v/release/Taseenk/stm32f4-ascii-graphics-demo?style=flat-square)](https://github.com/Taseenk/stm32f4-ascii-graphics-demo/releases)
+
 ![terminal-boot-sequence](Docs/Assets/Images/terminal-boot-sequence.gif)
 
 ## Overview
