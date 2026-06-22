@@ -41,6 +41,8 @@ typedef enum {
 
 	SCENE_RAIN_FADE_IN, // Transitional scene to Matrix falling rain effect
 
+	SCENE_ASCII_WIREFRAME, // Wireframe 3D cube rotating in ASCII art
+
 	SCENE_CREDITS, // Rolling credits scene with text crawling from the bottom to the top of the screen
 
 	SCENE_TOTAL_SCENES // Total number of available scenes

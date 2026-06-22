@@ -19,6 +19,7 @@
 #include "scene_credits.h"
 #include "scene_glitch.h"
 #include "scene_matrix_rain.h"
+#include "scene_wireframe.h"
 #include "scene_xterm_palette.h"
 
 // STM32 libraries
@@ -54,6 +55,8 @@ static const SceneConfig_t scene_table[] = {
     {SCENE_MATRIX_RAIN_HACKED, MATRIX_RAIN_DURATION, SCENE_TRANSITION_CLEAR, MatrixRainInit, AsciiRainHackedRender},
 
     {SCENE_RAIN_FADE_IN, RAIN_FADE_IN_DURATION, SCENE_TRANSITION_NONE, MatrixRainInit, AsciiRainFadeIn},
+
+    {SCENE_ASCII_WIREFRAME, 300, SCENE_TRANSITION_CLEAR, WireframeInit, WireframeRender},
 
     {SCENE_CREDITS, CREDITS_DURATION, SCENE_TRANSITION_CLEAR, SceneCreditsInit, SceneCreditsRender},
 };
